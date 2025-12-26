@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Navbar from './components/Navbar';
 import CodeEditor from './components/CodeEditor';
 import GradingResult from './components/GradingResult';
+import Button from './components/Button';
 import type { Category, GradingResult as GradingResultType } from './types';
 import { getTemplatesByCategory } from './data/templates';
 import { gradeAnswer } from './utils/grading';
@@ -82,12 +83,12 @@ function App() {
               <div style={styles.editorHeader}>
                 <h3 style={styles.sectionTitle}>코드 입력</h3>
                 <div style={styles.buttonGroup}>
-                  <button onClick={handleReset} style={styles.buttonSecondary}>
+                  <Button onClick={handleReset} variant="secondary">
                     초기화
-                  </button>
-                  <button onClick={handleGrade} style={styles.buttonPrimary}>
+                  </Button>
+                  <Button onClick={handleGrade} variant="primary">
                     채점하기
-                  </button>
+                  </Button>
                 </div>
               </div>
               <CodeEditor value={userCode} onChange={setUserCode} language="python" />
@@ -183,28 +184,6 @@ const styles: { [key: string]: React.CSSProperties } = {
   buttonGroup: {
     display: 'flex',
     gap: theme.spacing.sm,
-  },
-  buttonPrimary: {
-    padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
-    fontSize: '14px',
-    fontWeight: 600,
-    color: theme.colors.surface,
-    backgroundColor: theme.colors.primary,
-    border: 'none',
-    borderRadius: theme.borderRadius.md,
-    cursor: 'pointer',
-    transition: 'background-color 0.2s',
-  },
-  buttonSecondary: {
-    padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
-    fontSize: '14px',
-    fontWeight: 600,
-    color: theme.colors.primary,
-    backgroundColor: 'transparent',
-    border: `1px solid ${theme.colors.primary}`,
-    borderRadius: theme.borderRadius.md,
-    cursor: 'pointer',
-    transition: 'all 0.2s',
   },
   emptyState: {
     textAlign: 'center',
