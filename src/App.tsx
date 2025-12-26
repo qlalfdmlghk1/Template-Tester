@@ -3,6 +3,7 @@ import Navbar from './components/Navbar';
 import CodeEditor from './components/CodeEditor';
 import GradingResult from './components/GradingResult';
 import Button from './components/Button';
+import SelectBox from './components/SelectBox';
 import type { Category, GradingResult as GradingResultType } from './types';
 import { getTemplatesByCategory } from './data/templates';
 import { gradeAnswer } from './utils/grading';
@@ -61,18 +62,16 @@ function App() {
         <div className="mb-6">
           <div className="flex items-center gap-4 mb-4">
             <h2 className="text-2xl font-bold text-text m-0">템플릿 선택</h2>
-            <select
+            <SelectBox
               value={selectedTemplateId}
               onChange={(e) => handleTemplateChange(e.target.value)}
-              className="py-2 px-4 text-sm border border-border rounded-md bg-surface text-text cursor-pointer min-w-[300px]"
-            >
-              <option value="">템플릿을 선택하세요</option>
-              {templates.map((template) => (
-                <option key={template.id} value={template.id}>
-                  {template.title}
-                </option>
-              ))}
-            </select>
+              options={templates.map((template) => ({
+                value: template.id,
+                label: template.title,
+              }))}
+              placeholder="템플릿을 선택하세요"
+              className="min-w-[300px]"
+            />
           </div>
 
           {selectedTemplate && (

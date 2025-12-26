@@ -1,4 +1,4 @@
-import Editor from '@monaco-editor/react';
+import Editor from "@monaco-editor/react";
 
 interface CodeEditorProps {
   value: string;
@@ -6,23 +6,23 @@ interface CodeEditorProps {
   language?: string;
 }
 
-export default function CodeEditor({ value, onChange, language = 'javascript' }: CodeEditorProps) {
+export default function CodeEditor({ value, onChange, language = "javascript" }: CodeEditorProps) {
   return (
-    <div className="border border-border rounded-md overflow-hidden bg-[#1e1e1e]">
+    <div className="border border-border rounded-md overflow-hidden bg-[#1e1e1e] py-3">
       <Editor
         height="600px"
         language={language}
         value={value}
-        onChange={(newValue) => onChange(newValue || '')}
+        onChange={(newValue) => onChange(newValue || "")}
         theme="vs-dark"
         options={{
           minimap: { enabled: false },
           fontSize: 14,
-          lineNumbers: 'on',
+          lineNumbers: "on",
           scrollBeyondLastLine: false,
           automaticLayout: true,
           tabSize: 2,
-          wordWrap: 'on',
+          wordWrap: "on",
         }}
       />
     </div>
