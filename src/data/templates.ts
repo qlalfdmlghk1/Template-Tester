@@ -54,6 +54,48 @@ for i in range(1, v + 1):
     print(distance[i] if distance[i] != INF else 'INF')`,
   },
   {
+    id: "topological sort",
+    category: "algorithm",
+    title: "위상 정렬 (Topological Sort) 알고리즘",
+    description: "방향 그래프에서 노드 간의 순서(선행 관계)를 정하는 알고리즘",
+    answer: `from collections import deque
+
+# 정점의 수 n, 간선의 수 m 입력
+n, m = map(int, input().split())
+
+visited = []  # 위상 정렬 결과를 저장할 리스트
+graph = [[] for _ in range(n + 1)]
+
+# 각 정점의 진입 차수(Indegree)를 저장할 리스트
+indegree = [0] * (n + 1)
+
+# 간선 정보 입력
+for _ in range(m):
+    v, u = map(int, input().split())  # v -> u (v에서 u로 향하는 간선)
+    graph[v].append(u)        # v에 연결된 노드 목록에 u 추가
+    indegree[u] += 1          # u의 진입 차수 1 증가
+
+q = deque()  # 진입 차수가 0인 정점을 담을 큐
+
+# 처음 시작할 때 진입 차수가 0인 정점을 큐에 넣음
+for v in range(1, n + 1):
+    if indegree[v] == 0:
+        q.append(v)
+
+# 위상 정렬 수행 (BFS 기반)
+while q:
+    cur = q.popleft()         # 큐에서 정점 꺼냄
+    visited.append(cur)       # 정렬 결과에 추가
+
+    # 현재 정점과 연결된 다음 정점들의 진입 차수 감소
+    for nex in graph[cur]:
+        indegree[nex] -= 1    # 진입 차수 1 감소
+        if indegree[nex] == 0:
+            q.append(nex)     # 진입 차수가 0이 되면 큐에 추가
+
+print(*visited)`,
+  },
+  {
     id: "hello-world",
     category: "english",
     title: "Hello World",
