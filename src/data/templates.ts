@@ -6,89 +6,52 @@ export const templates: Template[] = [
     category: "algorithm",
     title: "다익스트라 (Dijkstra) 알고리즘",
     description: "최단 경로를 찾는 알고리즘",
-    answer: `import heapq
-import sys
+    answer: `import sys
+from heapq import heapify, heappush, heappop
 
-def dijkstra(start, graph, n):
-    # 거리 테이블 초기화
-    distance = [sys.maxsize] * (n + 1)
-    distance[start] = 0
+input = sys.stdin.readline
+INF = int(1e9)
 
-    # 우선순위 큐 초기화
-    pq = []
-    heapq.heappush(pq, (0, start))
+v, e = map(int, input().split())  # 정점 수, 간선 수
+k = int(input())  # 시작 정점
+
+graph = [[] for _ in range(v + 1)]
+
+# 간선 정보 입력
+for _ in range(e):
+    start, end, weight = map(int, input().split())
+    graph[start].append((weight, end))  # start → end 간선, 가중치 weight
+
+# 거리 배열 초기화
+distance = [INF] * (v + 1)
+
+def dijkstra(start):
+    pq = [(0, start)]  # 우선순위 큐 초기화: (거리, 노드) 형태
+    distance[start] = 0  # 시작 노드까지의 거리는 0으로 설정
 
     while pq:
-        # 현재 최단 거리 노드 꺼내기
-        dist, now = heapq.heappop(pq)
+        cur_dist, cur_node = heappop(pq)  # 현재까지 가장 짧은 거리의 노드를 꺼냄
 
-        # 이미 처리된 노드라면 무시
-        if distance[now] < dist:
+        # 이미 더 짧은 거리로 방문한 적이 있다면 스킵
+        if distance[cur_node] < cur_dist:
             continue
 
-        # 인접한 노드들을 확인
-        for next_node, weight in graph[now]:
-            cost = dist + weight
+        # 현재 노드와 인접한 모든 노드 확인
+        for nex_distance, nex_node in graph[cur_node]:
+            new_dist = cur_dist + nex_distance # 현재 거리 + 간선 가중치 = 새 거리
 
-            # 현재 노드를 거쳐서 가는 것이 더 짧은 경우
-            if cost < distance[next_node]:
-                distance[next_node] = cost
-                heapq.heappush(pq, (cost, next_node))
+            # 더 짧은 경로를 찾은 경우 갱신
+            if new_dist < distance[nex_node]:
+                distance[nex_node] = new_dist  # 최단 거리 배열 업데이트
+                heappush(pq, (new_dist, nex_node))  # 갱신된 거리와 노드를 큐에 추가
 
-    return distance
 
-# 사용 예시
-n = 6  # 노드 개수
-graph = [[] for _ in range(n + 1)]
+# 알고리즘 실행
+dijkstra(k)
 
-# 간선 정보 입력 (양방향)
-edges = [
-    (1, 2, 2),
-    (1, 3, 5),
-    (1, 4, 1),
-    (2, 3, 3),
-    (2, 4, 2),
-    (3, 2, 3),
-    (3, 6, 5),
-    (4, 3, 3),
-    (4, 5, 1),
-    (5, 3, 1),
-    (5, 6, 2),
-]
-
-for a, b, w in edges:
-    graph[a].append((b, w))
-
-# 1번 노드에서 시작
-result = dijkstra(1, graph, n)
-print(result)`,
-  },
-  {
-    id: "binary-search",
-    category: "algorithm",
-    title: "이진 탐색 (Binary Search)",
-    description: "정렬된 배열에서 특정 값을 빠르게 찾는 알고리즘",
-    answer: `def binary_search(arr, target):
-    left = 0
-    right = len(arr) - 1
-
-    while left <= right:
-        mid = (left + right) // 2
-
-        if arr[mid] == target:
-            return mid
-        elif arr[mid] < target:
-            left = mid + 1
-        else:
-            right = mid - 1
-
-    return -1
-
-# 사용 예시
-arr = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19]
-target = 7
-result = binary_search(arr, target)
-print(f"Index: {result}")`,
+# 결과 출력
+for i in range(1, v + 1):
+    print(distance[i] if distance[i] != INF else 'INF')`,
   },
   {
     id: "hello-world",

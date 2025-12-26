@@ -6,7 +6,6 @@ import Button from './components/Button';
 import type { Category, GradingResult as GradingResultType } from './types';
 import { getTemplatesByCategory } from './data/templates';
 import { gradeAnswer } from './utils/grading';
-import { theme } from './styles/theme';
 
 function App() {
   const [currentCategory, setCurrentCategory] = useState<Category>('algorithm');
@@ -38,6 +37,14 @@ function App() {
 
     const result = gradeAnswer(selectedTemplate.answer, userCode);
     setGradingResult(result);
+
+    // 채점 결과 영역으로 스크롤
+    setTimeout(() => {
+      const resultElement = document.getElementById('grading-result');
+      if (resultElement) {
+        resultElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
   };
 
   const handleReset = () => {
@@ -46,18 +53,18 @@ function App() {
   };
 
   return (
-    <div style={styles.app}>
+    <div className="min-h-screen bg-background">
       <Navbar currentCategory={currentCategory} onCategoryChange={handleCategoryChange} />
 
-      <div style={styles.container}>
+      <div className="max-w-[1400px] mx-auto px-6 py-6">
         {/* 템플릿 선택 영역 */}
-        <div style={styles.header}>
-          <div style={styles.headerLeft}>
-            <h2 style={styles.title}>템플릿 선택</h2>
+        <div className="mb-6">
+          <div className="flex items-center gap-4 mb-4">
+            <h2 className="text-2xl font-bold text-text m-0">템플릿 선택</h2>
             <select
               value={selectedTemplateId}
               onChange={(e) => handleTemplateChange(e.target.value)}
-              style={styles.select}
+              className="py-2 px-4 text-sm border border-border rounded-md bg-surface text-text cursor-pointer min-w-[300px]"
             >
               <option value="">템플릿을 선택하세요</option>
               {templates.map((template) => (
@@ -69,9 +76,9 @@ function App() {
           </div>
 
           {selectedTemplate && (
-            <div style={styles.templateInfo}>
-              <h3 style={styles.templateTitle}>{selectedTemplate.title}</h3>
-              <p style={styles.templateDesc}>{selectedTemplate.description}</p>
+            <div className="bg-surface p-6 rounded-lg border border-border">
+              <h3 className="text-xl font-semibold text-primary mb-2">{selectedTemplate.title}</h3>
+              <p className="text-sm text-textSecondary m-0">{selectedTemplate.description}</p>
             </div>
           )}
         </div>
@@ -79,10 +86,10 @@ function App() {
         {/* 코드 입력 영역 */}
         {selectedTemplate && (
           <>
-            <div style={styles.editorSection}>
-              <div style={styles.editorHeader}>
-                <h3 style={styles.sectionTitle}>코드 입력</h3>
-                <div style={styles.buttonGroup}>
+            <div className="mb-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-text m-0">코드 입력</h3>
+                <div className="flex gap-2">
                   <Button onClick={handleReset} variant="secondary">
                     초기화
                   </Button>
@@ -101,10 +108,10 @@ function App() {
 
         {/* 템플릿 미선택 상태 */}
         {!selectedTemplate && (
-          <div style={styles.emptyState}>
-            <div style={styles.emptyIcon}>📝</div>
-            <h3 style={styles.emptyTitle}>템플릿을 선택해주세요</h3>
-            <p style={styles.emptyDesc}>
+          <div className="text-center px-6 py-8 mt-[100px]">
+            <div className="text-6xl mb-4">📝</div>
+            <h3 className="text-2xl font-semibold text-text mb-2">템플릿을 선택해주세요</h3>
+            <p className="text-base text-textSecondary">
               상단에서 카테고리를 선택하고, 학습하고 싶은 템플릿을 골라보세요.
             </p>
           </div>
@@ -113,97 +120,5 @@ function App() {
     </div>
   );
 }
-
-const styles: { [key: string]: React.CSSProperties } = {
-  app: {
-    minHeight: '100vh',
-    backgroundColor: theme.colors.background,
-  },
-  container: {
-    maxWidth: '1400px',
-    margin: '0 auto',
-    padding: theme.spacing.lg,
-  },
-  header: {
-    marginBottom: theme.spacing.lg,
-  },
-  headerLeft: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing.md,
-    marginBottom: theme.spacing.md,
-  },
-  title: {
-    fontSize: '24px',
-    fontWeight: 700,
-    color: theme.colors.text,
-    margin: 0,
-  },
-  select: {
-    padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-    fontSize: '14px',
-    border: `1px solid ${theme.colors.border}`,
-    borderRadius: theme.borderRadius.md,
-    backgroundColor: theme.colors.surface,
-    color: theme.colors.text,
-    cursor: 'pointer',
-    minWidth: '300px',
-  },
-  templateInfo: {
-    backgroundColor: theme.colors.surface,
-    padding: theme.spacing.lg,
-    borderRadius: theme.borderRadius.lg,
-    border: `1px solid ${theme.colors.border}`,
-  },
-  templateTitle: {
-    fontSize: '20px',
-    fontWeight: 600,
-    color: theme.colors.primary,
-    marginBottom: theme.spacing.sm,
-  },
-  templateDesc: {
-    fontSize: '14px',
-    color: theme.colors.textSecondary,
-    margin: 0,
-  },
-  editorSection: {
-    marginBottom: theme.spacing.lg,
-  },
-  editorHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: theme.spacing.md,
-  },
-  sectionTitle: {
-    fontSize: '18px',
-    fontWeight: 600,
-    color: theme.colors.text,
-    margin: 0,
-  },
-  buttonGroup: {
-    display: 'flex',
-    gap: theme.spacing.sm,
-  },
-  emptyState: {
-    textAlign: 'center',
-    padding: `${theme.spacing.xl} ${theme.spacing.lg}`,
-    marginTop: '100px',
-  },
-  emptyIcon: {
-    fontSize: '64px',
-    marginBottom: theme.spacing.md,
-  },
-  emptyTitle: {
-    fontSize: '24px',
-    fontWeight: 600,
-    color: theme.colors.text,
-    marginBottom: theme.spacing.sm,
-  },
-  emptyDesc: {
-    fontSize: '16px',
-    color: theme.colors.textSecondary,
-  },
-};
 
 export default App;
