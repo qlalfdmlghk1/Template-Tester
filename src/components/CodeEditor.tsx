@@ -1,5 +1,4 @@
 import Editor from '@monaco-editor/react';
-import { theme } from '../styles/theme';
 
 interface CodeEditorProps {
   value: string;
@@ -9,7 +8,7 @@ interface CodeEditorProps {
 
 export default function CodeEditor({ value, onChange, language = 'javascript' }: CodeEditorProps) {
   return (
-    <div style={styles.container}>
+    <div className="border border-border rounded-md overflow-hidden bg-[#1e1e1e]">
       <Editor
         height="600px"
         language={language}
@@ -29,12 +28,3 @@ export default function CodeEditor({ value, onChange, language = 'javascript' }:
     </div>
   );
 }
-
-const styles: { [key: string]: React.CSSProperties } = {
-  container: {
-    border: `1px solid ${theme.colors.border}`,
-    borderRadius: theme.borderRadius.md,
-    overflow: 'hidden',
-    backgroundColor: '#1e1e1e',
-  },
-};

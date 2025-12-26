@@ -1,5 +1,4 @@
-import type { Category } from '../types';
-import { theme } from '../styles/theme';
+import type { Category } from "../types";
 
 interface NavbarProps {
   currentCategory: Category;
@@ -7,28 +6,27 @@ interface NavbarProps {
 }
 
 const categories: { value: Category; label: string }[] = [
-  { value: 'algorithm', label: '알고리즘' },
-  { value: 'english', label: '영어' },
-  { value: 'cs', label: 'CS' },
-  { value: 'interview', label: '면접 대비' },
+  { value: "algorithm", label: "알고리즘" },
+  { value: "english", label: "영어" },
+  { value: "cs", label: "CS" },
+  { value: "interview", label: "면접 대비" },
 ];
 
 export default function Navbar({ currentCategory, onCategoryChange }: NavbarProps) {
   return (
-    <nav style={styles.nav}>
-      <div style={styles.container}>
-        <div style={styles.logo}>
-          <span style={styles.logoText}>템플릿 테스터</span>
+    <nav className="bg-surface border-b border-border sticky top-0 z-[1000]">
+      <div className="max-w-[1400px] mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="flex items-center">
+          <span className="text-xl font-bold text-primary">템플릿 테스터</span>
         </div>
-        <div style={styles.tabs}>
+        <div className="flex gap-2">
           {categories.map((cat) => (
             <button
               key={cat.value}
               onClick={() => onCategoryChange(cat.value)}
-              style={{
-                ...styles.tab,
-                ...(currentCategory === cat.value ? styles.tabActive : {}),
-              }}
+              className={`px-4 py-2 border-none bg-transparent text-sm font-medium cursor-pointer rounded-md transition-all duration-200 ${
+                currentCategory === cat.value ? "bg-blue-50 text-primary" : "text-textSecondary hover:bg-blue-50"
+              }`}
             >
               {cat.label}
             </button>
@@ -38,49 +36,3 @@ export default function Navbar({ currentCategory, onCategoryChange }: NavbarProp
     </nav>
   );
 }
-
-const styles: { [key: string]: React.CSSProperties } = {
-  nav: {
-    backgroundColor: theme.colors.surface,
-    borderBottom: `1px solid ${theme.colors.border}`,
-    position: 'sticky',
-    top: 0,
-    zIndex: 1000,
-  },
-  container: {
-    maxWidth: '1400px',
-    margin: '0 auto',
-    padding: `${theme.spacing.md} ${theme.spacing.lg}`,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  logo: {
-    display: 'flex',
-    alignItems: 'center',
-  },
-  logoText: {
-    fontSize: '20px',
-    fontWeight: 700,
-    color: theme.colors.primary,
-  },
-  tabs: {
-    display: 'flex',
-    gap: theme.spacing.sm,
-  },
-  tab: {
-    padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-    border: 'none',
-    background: 'transparent',
-    color: theme.colors.textSecondary,
-    fontSize: '14px',
-    fontWeight: 500,
-    cursor: 'pointer',
-    borderRadius: theme.borderRadius.md,
-    transition: 'all 0.2s ease',
-  },
-  tabActive: {
-    backgroundColor: theme.colors.primary,
-    color: theme.colors.surface,
-  },
-};

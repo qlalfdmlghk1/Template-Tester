@@ -1,6 +1,3 @@
-import { useState } from "react";
-import { theme } from "../styles/theme";
-
 export type ButtonVariant = "primary" | "secondary" | "success" | "error";
 export type ButtonSize = "sm" | "md" | "lg";
 
@@ -11,129 +8,46 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
 }
 
+const variantClasses: Record<ButtonVariant, string> = {
+  primary: "bg-primary text-surface hover:bg-blue-600 hover:shadow-[0_2px_8px_rgba(191,219,254,1)]",
+  secondary: "bg-transparent text-primary border border-primary hover:bg-blue-100 hover:text-blue-700 hover:border-blue-600",
+  success: "bg-success text-surface hover:bg-green-600 hover:-translate-y-px hover:shadow-[0_2px_8px_rgba(187,247,208,1)]",
+  error: "bg-error text-surface hover:bg-red-600 hover:-translate-y-px hover:shadow-[0_2px_8px_rgba(254,202,202,1)]",
+};
+
+const sizeClasses: Record<ButtonSize, string> = {
+  sm: "px-4 py-1 text-xs",
+  md: "px-6 py-2 text-sm",
+  lg: "px-8 py-4 text-base",
+};
+
 export default function Button({
   variant = "primary",
   size = "md",
   fullWidth = false,
   children,
-  style,
+  className = "",
   disabled,
-  onMouseEnter,
-  onMouseLeave,
   ...props
 }: ButtonProps) {
-  const [isHovered, setIsHovered] = useState(false);
-
-  const buttonStyle: React.CSSProperties = {
-    ...styles.base,
-    ...styles.variant[variant],
-    ...styles.size[size],
-    ...(fullWidth && styles.fullWidth),
-    ...(disabled && styles.disabled),
-    ...(isHovered && !disabled && styles.hover[variant]),
-    ...style,
-  };
-
-  const handleMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
-    setIsHovered(true);
-    onMouseEnter?.(e);
-  };
-
-  const handleMouseLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
-    setIsHovered(false);
-    onMouseLeave?.(e);
-  };
+  const classes = [
+    "inline-flex items-center justify-center font-semibold rounded-md cursor-pointer transition-all duration-200 ease-in-out outline-none",
+    variantClasses[variant],
+    sizeClasses[size],
+    fullWidth && "w-full",
+    disabled && "opacity-50 cursor-not-allowed",
+    className,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <button
-      style={buttonStyle}
+      className={classes}
       disabled={disabled}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
       {...props}
     >
       {children}
     </button>
   );
 }
-
-const styles: {
-  base: React.CSSProperties;
-  variant: Record<ButtonVariant, React.CSSProperties>;
-  size: Record<ButtonSize, React.CSSProperties>;
-  fullWidth: React.CSSProperties;
-  disabled: React.CSSProperties;
-  hover: Record<ButtonVariant, React.CSSProperties>;
-} = {
-  base: {
-    display: "inline-flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontWeight: 600,
-    border: "none",
-    borderRadius: theme.borderRadius.md,
-    cursor: "pointer",
-    transition: "all 0.2s ease-in-out",
-    outline: "none",
-    fontFamily: "inherit",
-  },
-  variant: {
-    primary: {
-      color: theme.colors.surface,
-      backgroundColor: theme.colors.primary,
-    },
-    secondary: {
-      color: theme.colors.primary,
-      backgroundColor: "transparent",
-      border: `1px solid ${theme.colors.primary}`,
-    },
-    success: {
-      color: theme.colors.surface,
-      backgroundColor: theme.colors.success,
-    },
-    error: {
-      color: theme.colors.surface,
-      backgroundColor: theme.colors.error,
-    },
-  },
-  size: {
-    sm: {
-      padding: `${theme.spacing.xs} ${theme.spacing.md}`,
-      fontSize: "12px",
-    },
-    md: {
-      padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
-      fontSize: "14px",
-    },
-    lg: {
-      padding: `${theme.spacing.md} ${theme.spacing.xl}`,
-      fontSize: "16px",
-    },
-  },
-  fullWidth: {
-    width: "100%",
-  },
-  disabled: {
-    opacity: 0.5,
-    cursor: "not-allowed",
-  },
-  hover: {
-    primary: {
-      backgroundColor: theme.colors.primaryLight,
-    },
-    secondary: {
-      backgroundColor: theme.colors.primary,
-      color: theme.colors.surface,
-    },
-    success: {
-      backgroundColor: "#059669", // 더 어두운 green
-      transform: "translateY(-1px)",
-      boxShadow: "0 2px 8px rgba(16, 185, 129, 0.3)",
-    },
-    error: {
-      backgroundColor: "#DC2626", // 더 어두운 red
-      transform: "translateY(-1px)",
-      boxShadow: "0 2px 8px rgba(239, 68, 68, 0.3)",
-    },
-  },
-};
