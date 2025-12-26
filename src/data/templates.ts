@@ -1,6 +1,101 @@
 import type { Template } from "../types";
 
-export const templates: Template[] = [
+// ==================== 알고리즘 템플릿 ====================
+const algorithmTemplates: Template[] = [
+  {
+    id: "union-find",
+    category: "algorithm",
+    title: "유니온 파인드(Union-Find) 알고리즘",
+    description: "원소들을 서로소 집합(서로 겹치지 않는 집합)으로 관리하는 자료구조 알고리즘",
+    answer: `# 특정 원소가 속한 집합의 최상위 부모를 찾는 함수
+def findSet(parents,a) :
+    if parents[a] != a :
+        parents[a] = findSet(parents,parents[a])
+    return parents[a]
+
+# 두 원소가 속한 집합 합치는 함수
+def union(parents,a,b) :
+    aRoot = findSet(parents, a)
+    bRoot = findSet(parents, b)
+    if aRoot < bRoot :
+        parents[bRoot] = aRoot
+    else:
+        parents[aRoot] = bRoot
+
+# 노드의 개수와 간선(Union 연산)의 개수 입력 받기
+v, e = map(int, input().split())
+parents = [0] * (v + 1) # 부모 테이블 초기화하기
+
+# 부모를 자기 자신으로 초기화
+for i in range(1, v + 1):
+    parents[i] = i
+
+# Union 연산을 각각 수행
+for i in range(e):
+    a, b = map(int, input().split())
+    union(parents, a, b)
+
+# 각 원소가 속한 집합 출력하기
+print('각 원소가 속한 집합: ', end='')
+for i in range(1, v + 1):
+    print(findSet(i), end=' ')
+
+print()
+
+# 부모 테이블 내용 출력하기
+print('부모 테이블: ', end='')
+for i in range(1, v + 1):
+    print(parents[i], end=' ')`,
+  },
+
+  {
+    id: "kruskal",
+    category: "algorithm",
+    title: "크루스칼 (Kruskal) 알고리즘",
+    description: "최소 신장 트리(MST: Minimum Spanning Tree)를 찾는 알고리즘",
+    answer: `# 특정 원소가 속한 집합의 최상위 부모를 찾는 함수
+def findSet(parents,a) :
+    if parents[a] != a :
+        parents[a] = findSet(parents,parents[a])
+    return parents[a]
+
+# 두 원소가 속한 집합 합치는 함수
+def union(parents,a,b) :
+    aRoot = findSet(parents, a)
+    bRoot = findSet(parents, b)
+    if aRoot < bRoot :
+        parents[bRoot] = aRoot
+    else:
+        parents[aRoot] = bRoot
+
+
+v, e = map(int, input().split())  # 노드, 간선 수
+parents = [0] * (v + 1)
+edges = []    # 간선 정보 담을 리스트
+result = 0    # 최소 신장 트리 계산 변수
+
+# 자기 자신을 부모로 초기화
+for i in range(1, v+1) :
+    parents[i] = i
+
+# 간선을 입력받아 cost를 기준으로 오름차순
+for _ in range(e) :
+    a,b,cost = map(int, input().split())
+    edges.append((a, b, cost))
+edges.sort(key=lambda x : x[2])
+
+# 정렬된 간선을 하나씩 확인
+for edge in edges :
+    a, b, cost = edge
+    # 두 노드의 루트 노드가 서로 다르다면 사이클이 발생하지 않은 것
+    if findSet(parents,a) != findSet(parents,b) :
+        # 신장 트리에 간선 추가
+        union(parents,a,b)
+        result += cost
+
+print(result)`,
+  },
+
   {
     id: "dijkstra",
     category: "algorithm",
@@ -53,6 +148,7 @@ dijkstra(k)
 for i in range(1, v + 1):
     print(distance[i] if distance[i] != INF else 'INF')`,
   },
+
   {
     id: "topological sort",
     category: "algorithm",
@@ -95,15 +191,10 @@ while q:
 
 print(*visited)`,
   },
-  {
-    id: "hello-world",
-    category: "english",
-    title: "Hello World",
-    description: "영어 인사 표현",
-    answer: `Hello, World!
-How are you?
-I'm fine, thank you.`,
-  },
+];
+
+// ==================== CS 템플릿 ====================
+const csTemplates: Template[] = [
   {
     id: "oop-principles",
     category: "cs",
@@ -125,6 +216,23 @@ I'm fine, thank you.`,
    - 복잡한 세부사항 숨김
    - 필요한 기능만 노출`,
   },
+];
+
+// ==================== 영어 템플릿 ====================
+const englishTemplates: Template[] = [
+  {
+    id: "hello-world",
+    category: "english",
+    title: "Hello World",
+    description: "영어 인사 표현",
+    answer: `Hello, World!
+How are you?
+I'm fine, thank you.`,
+  },
+];
+
+// ==================== 면접 템플릿 ====================
+const interviewTemplates: Template[] = [
   {
     id: "interview-intro",
     category: "interview",
@@ -139,6 +247,14 @@ I'm fine, thank you.`,
 귀사에서 [기여하고 싶은 점]을 통해
 함께 성장하고 싶습니다. 감사합니다.`,
   },
+];
+
+// ==================== 전체 템플릿 통합 ====================
+export const templates: Template[] = [
+  ...algorithmTemplates,
+  ...csTemplates,
+  ...englishTemplates,
+  ...interviewTemplates,
 ];
 
 /**
