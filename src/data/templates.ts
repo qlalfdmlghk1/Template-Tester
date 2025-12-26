@@ -1,11 +1,11 @@
-import type { Template } from '../types';
+import type { Template } from "../types";
 
 export const templates: Template[] = [
   {
-    id: 'dijkstra',
-    category: 'algorithm',
-    title: '다익스트라 (Dijkstra) 알고리즘',
-    description: '최단 경로를 찾는 알고리즘',
+    id: "dijkstra",
+    category: "algorithm",
+    title: "다익스트라 (Dijkstra) 알고리즘",
+    description: "최단 경로를 찾는 알고리즘",
     answer: `import heapq
 import sys
 
@@ -64,10 +64,10 @@ result = dijkstra(1, graph, n)
 print(result)`,
   },
   {
-    id: 'binary-search',
-    category: 'algorithm',
-    title: '이진 탐색 (Binary Search)',
-    description: '정렬된 배열에서 특정 값을 빠르게 찾는 알고리즘',
+    id: "binary-search",
+    category: "algorithm",
+    title: "이진 탐색 (Binary Search)",
+    description: "정렬된 배열에서 특정 값을 빠르게 찾는 알고리즘",
     answer: `def binary_search(arr, target):
     left = 0
     right = len(arr) - 1
@@ -91,19 +91,19 @@ result = binary_search(arr, target)
 print(f"Index: {result}")`,
   },
   {
-    id: 'hello-world',
-    category: 'english',
-    title: 'Hello World',
-    description: '영어 인사 표현',
+    id: "hello-world",
+    category: "english",
+    title: "Hello World",
+    description: "영어 인사 표현",
     answer: `Hello, World!
 How are you?
 I'm fine, thank you.`,
   },
   {
-    id: 'oop-principles',
-    category: 'cs',
-    title: 'OOP 4대 원칙',
-    description: '객체지향 프로그래밍의 핵심 원칙',
+    id: "oop-principles",
+    category: "cs",
+    title: "OOP 4대 원칙",
+    description: "객체지향 프로그래밍의 핵심 원칙",
     answer: `1. 캡슐화 (Encapsulation)
    - 데이터와 메서드를 하나로 묶음
    - 외부 접근 제한
@@ -121,10 +121,10 @@ I'm fine, thank you.`,
    - 필요한 기능만 노출`,
   },
   {
-    id: 'interview-intro',
-    category: 'interview',
-    title: '자기소개',
-    description: '면접 자기소개 템플릿',
+    id: "interview-intro",
+    category: "interview",
+    title: "자기소개",
+    description: "면접 자기소개 템플릿",
     answer: `안녕하십니까. 저는 [이름]입니다.
 저는 [경력/경험]을 통해 [역량]을 키워왔습니다.
 
