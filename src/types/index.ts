@@ -20,10 +20,10 @@ export interface LineDiff {
   isCorrect: boolean;
   expected: string;
   actual: string;
-  charDiffs?: CharDiff[]; // 문자 단위 diff (틀린 경우에만)
+  wordDiffs?: WordDiff[]; // 단어 단위 diff (틀린 경우에만)
 }
 
-export interface CharDiff {
+export interface WordDiff {
   index: number;
   expected: string;
   actual: string;
