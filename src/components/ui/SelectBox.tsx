@@ -101,7 +101,7 @@ export default function SelectBox({
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 w-full mt-1 bg-surface border border-border rounded-lg shadow-lg max-h-60 overflow-auto">
+        <div className="absolute z-50 w-full mt-1 bg-surface border border-border rounded-lg shadow-lg max-h-60 overflow-auto scrollbar-hide">
           {placeholder && (
             <div
               className="px-4 py-2 text-sm text-textSecondary hover:bg-blue-50 cursor-pointer transition-colors"
