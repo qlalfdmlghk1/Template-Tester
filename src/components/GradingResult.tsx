@@ -53,22 +53,22 @@ export default function GradingResult({ result }: GradingResultProps) {
                   </code>
                 </div>
 
-                {/* 틀린 경우 문자 단위 차이 표시 */}
-                {!lineDiff.isCorrect && lineDiff.charDiffs && lineDiff.charDiffs.length > 0 && (
+                {/* 틀린 경우 단어 단위 차이 표시 */}
+                {!lineDiff.isCorrect && lineDiff.wordDiffs && lineDiff.wordDiffs.length > 0 && (
                   <div className="mt-2 pt-2 border-t border-border">
-                    <div className="text-xs font-semibold text-textSecondary mb-1">문자 단위 차이:</div>
+                    <div className="text-xs font-semibold text-textSecondary mb-1">단어 단위 차이:</div>
                     <div className="flex flex-col gap-1">
-                      {lineDiff.charDiffs.slice(0, 5).map((charDiff, idx) => (
+                      {lineDiff.wordDiffs.slice(0, 5).map((wordDiff, idx) => (
                         <div key={idx} className="text-xs text-text font-mono">
-                          위치 {charDiff.index + 1}:
-                          <span className="text-success font-semibold"> '{charDiff.expected}'</span>
+                          위치 {wordDiff.index + 1}:
+                          <span className="text-success font-semibold"> '{wordDiff.expected}'</span>
                           →
-                          <span className="text-error font-semibold"> '{charDiff.actual}'</span>
+                          <span className="text-error font-semibold"> '{wordDiff.actual}'</span>
                         </div>
                       ))}
-                      {lineDiff.charDiffs.length > 5 && (
+                      {lineDiff.wordDiffs.length > 5 && (
                         <div className="text-[11px] text-textSecondary italic">
-                          외 {lineDiff.charDiffs.length - 5}개 차이점...
+                          외 {lineDiff.wordDiffs.length - 5}개 차이점...
                         </div>
                       )}
                     </div>

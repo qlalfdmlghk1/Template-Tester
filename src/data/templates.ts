@@ -9,18 +9,18 @@ const algorithmTemplates: Template[] = [
     description: "원소들을 서로소 집합(서로 겹치지 않는 집합)으로 관리하는 자료구조 알고리즘",
     answer: `# 특정 원소가 속한 집합의 최상위 부모를 찾는 함수
 def findSet(parents,a) :
-    if parents[a] != a :
-        parents[a] = findSet(parents,parents[a])
+  if parents[a] != a :
+    parents[a] = findSet(parents,parents[a])
     return parents[a]
 
 # 두 원소가 속한 집합 합치는 함수
 def union(parents,a,b) :
-    aRoot = findSet(parents, a)
-    bRoot = findSet(parents, b)
-    if aRoot < bRoot :
-        parents[bRoot] = aRoot
-    else:
-        parents[aRoot] = bRoot
+  aRoot = findSet(parents, a)
+  bRoot = findSet(parents, b)
+  if aRoot < bRoot :
+    parents[bRoot] = aRoot
+  else:
+    parents[aRoot] = bRoot
 
 # 노드의 개수와 간선(Union 연산)의 개수 입력 받기
 v, e = map(int, input().split())
@@ -28,24 +28,24 @@ parents = [0] * (v + 1) # 부모 테이블 초기화하기
 
 # 부모를 자기 자신으로 초기화
 for i in range(1, v + 1):
-    parents[i] = i
+  parents[i] = i
 
 # Union 연산을 각각 수행
 for i in range(e):
-    a, b = map(int, input().split())
-    union(parents, a, b)
+  a, b = map(int, input().split())
+  union(parents, a, b)
 
 # 각 원소가 속한 집합 출력하기
 print('각 원소가 속한 집합: ', end='')
 for i in range(1, v + 1):
-    print(findSet(i), end=' ')
+  print(findSet(i), end=' ')
 
 print()
 
 # 부모 테이블 내용 출력하기
 print('부모 테이블: ', end='')
 for i in range(1, v + 1):
-    print(parents[i], end=' ')`,
+  print(parents[i], end=' ')`,
   },
 
   {
@@ -55,18 +55,18 @@ for i in range(1, v + 1):
     description: "최소 신장 트리(MST: Minimum Spanning Tree)를 찾는 알고리즘",
     answer: `# 특정 원소가 속한 집합의 최상위 부모를 찾는 함수
 def findSet(parents,a) :
-    if parents[a] != a :
-        parents[a] = findSet(parents,parents[a])
+  if parents[a] != a :
+    parents[a] = findSet(parents,parents[a])
     return parents[a]
 
 # 두 원소가 속한 집합 합치는 함수
 def union(parents,a,b) :
-    aRoot = findSet(parents, a)
-    bRoot = findSet(parents, b)
-    if aRoot < bRoot :
-        parents[bRoot] = aRoot
-    else:
-        parents[aRoot] = bRoot
+  aRoot = findSet(parents, a)
+  bRoot = findSet(parents, b)
+  if aRoot < bRoot :
+    parents[bRoot] = aRoot
+  else:
+    parents[aRoot] = bRoot
 
 
 v, e = map(int, input().split())  # 노드, 간선 수
@@ -76,22 +76,22 @@ result = 0    # 최소 신장 트리 계산 변수
 
 # 자기 자신을 부모로 초기화
 for i in range(1, v+1) :
-    parents[i] = i
+  parents[i] = i
 
 # 간선을 입력받아 cost를 기준으로 오름차순
 for _ in range(e) :
-    a,b,cost = map(int, input().split())
-    edges.append((a, b, cost))
+  a,b,cost = map(int, input().split())
+  edges.append((a, b, cost))
 edges.sort(key=lambda x : x[2])
 
 # 정렬된 간선을 하나씩 확인
 for edge in edges :
-    a, b, cost = edge
-    # 두 노드의 루트 노드가 서로 다르다면 사이클이 발생하지 않은 것
-    if findSet(parents,a) != findSet(parents,b) :
-        # 신장 트리에 간선 추가
-        union(parents,a,b)
-        result += cost
+  a, b, cost = edge
+  # 두 노드의 루트 노드가 서로 다르다면 사이클이 발생하지 않은 것
+  if findSet(parents,a) != findSet(parents,b) :
+    # 신장 트리에 간선 추가
+    union(parents,a,b)
+    result += cost
 
 print(result)`,
   },

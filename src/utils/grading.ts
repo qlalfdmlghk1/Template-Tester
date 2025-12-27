@@ -1,11 +1,48 @@
-import type { GradingResult, LineDiff, CharDiff } from '../types';
+import type { GradingResult, LineDiff, WordDiff } from '../types';
+
+/**
+ * 주석을 제거하는 함수
+ */
+function removeComments(line: string): string {
+  const trimmed = line.trim();
+
+  // 줄 전체가 주석인 경우 빈 문자열 반환
+  if (trimmed.startsWith('#') || trimmed.startsWith('//')) {
+    return '';
+  }
+
+  // 인라인 주석 제거 (코드 뒤의 # 또는 // 주석)
+  let result = line;
+
+  // Python 스타일 주석 (#) 제거
+  const hashIndex = result.indexOf('#');
+  if (hashIndex !== -1) {
+    result = result.substring(0, hashIndex);
+  }
+
+  // JavaScript 스타일 주석 (//) 제거
+  const slashIndex = result.indexOf('//');
+  if (slashIndex !== -1) {
+    result = result.substring(0, slashIndex);
+  }
+
+  return result;
+}
 
 /**
  * 두 문자열을 비교하여 채점 결과 생성
  */
 export function gradeAnswer(expected: string, actual: string): GradingResult {
-  const expectedLines = expected.split('\n');
-  const actualLines = actual.split('\n');
+  // 주석 제거 및 빈 줄 제거
+  const expectedLines = expected
+    .split('\n')
+    .map(removeComments)
+    .filter(line => line.trim() !== '');
+
+  const actualLines = actual
+    .split('\n')
+    .map(removeComments)
+    .filter(line => line.trim() !== '');
 
   const maxLines = Math.max(expectedLines.length, actualLines.length);
   const lineDiffs: LineDiff[] = [];
@@ -16,25 +53,10 @@ export function gradeAnswer(expected: string, actual: string): GradingResult {
     const expectedLine = expectedLines[i] || '';
     const actualLine = actualLines[i] || '';
 
-    // 양쪽 모두 빈 줄인 경우 판단에서 제외 (UI에도 표시 안 함)
-    const isBothEmpty = expectedLine.trim() === '' && actualLine.trim() === '';
-    if (isBothEmpty) {
-      continue;
-    }
-
-    // 주석 줄인 경우 판단에서 제외 (Python: #, JavaScript: //)
-    const expectedTrimmed = expectedLine.trim();
-    const actualTrimmed = actualLine.trim();
-    const isExpectedComment = expectedTrimmed.startsWith('#') || expectedTrimmed.startsWith('//');
-    const isActualComment = actualTrimmed.startsWith('#') || actualTrimmed.startsWith('//');
-
-    // 한쪽이라도 주석이면 제외
-    if (isExpectedComment || isActualComment) {
-      continue;
-    }
-
-    // 줄 끝 공백을 제거한 후 비교 (trailing space 무시)
-    const isCorrect = expectedLine.trimEnd() === actualLine.trimEnd();
+    // 모든 공백을 제거한 후 비교 (공백 무시)
+    const expectedNormalized = expectedLine.replace(/\s+/g, '');
+    const actualNormalized = actualLine.replace(/\s+/g, '');
+    const isCorrect = expectedNormalized === actualNormalized;
 
     totalNonEmptyLines++;
     if (isCorrect) {
@@ -48,9 +70,9 @@ export function gradeAnswer(expected: string, actual: string): GradingResult {
       actual: actualLine,
     };
 
-    // 틀린 경우 문자 단위 diff 계산
+    // 틀린 경우 단어 단위 diff 계산
     if (!isCorrect) {
-      lineDiff.charDiffs = getCharDiffs(expectedLine, actualLine);
+      lineDiff.wordDiffs = getWordDiffs(expectedLine, actualLine);
     }
 
     lineDiffs.push(lineDiff);
@@ -67,24 +89,29 @@ export function gradeAnswer(expected: string, actual: string): GradingResult {
 }
 
 /**
- * 두 문자열의 문자 단위 차이 계산
+ * 두 문자열의 단어 단위 차이 계산
  */
-function getCharDiffs(expected: string, actual: string): CharDiff[] {
-  const charDiffs: CharDiff[] = [];
-  const maxLength = Math.max(expected.length, actual.length);
+function getWordDiffs(expected: string, actual: string): WordDiff[] {
+  const wordDiffs: WordDiff[] = [];
+
+  // 공백 기준으로 단어 분리
+  const expectedWords = expected.split(/(\s+)/);
+  const actualWords = actual.split(/(\s+)/);
+
+  const maxLength = Math.max(expectedWords.length, actualWords.length);
 
   for (let i = 0; i < maxLength; i++) {
-    const expectedChar = expected[i] || '';
-    const actualChar = actual[i] || '';
+    const expectedWord = expectedWords[i] || '';
+    const actualWord = actualWords[i] || '';
 
-    if (expectedChar !== actualChar) {
-      charDiffs.push({
+    if (expectedWord !== actualWord) {
+      wordDiffs.push({
         index: i,
-        expected: expectedChar || '(없음)',
-        actual: actualChar || '(없음)',
+        expected: expectedWord || '(없음)',
+        actual: actualWord || '(없음)',
       });
     }
   }
 
-  return charDiffs;
+  return wordDiffs;
 }
