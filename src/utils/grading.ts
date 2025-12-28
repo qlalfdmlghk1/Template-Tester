@@ -53,9 +53,13 @@ export function gradeAnswer(expected: string, actual: string): GradingResult {
     const expectedLine = expectedLines[i] || '';
     const actualLine = actualLines[i] || '';
 
-    // 모든 공백을 제거한 후 비교 (공백 무시)
-    const expectedNormalized = expectedLine.replace(/\s+/g, '');
-    const actualNormalized = actualLine.replace(/\s+/g, '');
+    // 모든 공백을 제거하고 따옴표 통일 후 비교
+    const expectedNormalized = expectedLine
+      .replace(/\s+/g, '')
+      .replace(/"/g, "'");
+    const actualNormalized = actualLine
+      .replace(/\s+/g, '')
+      .replace(/"/g, "'");
     const isCorrect = expectedNormalized === actualNormalized;
 
     totalNonEmptyLines++;
