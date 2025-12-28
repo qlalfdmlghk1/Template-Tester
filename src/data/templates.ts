@@ -3,6 +3,27 @@ import type { Template } from "../types";
 // ==================== 알고리즘 템플릿 ====================
 const algorithmTemplates: Template[] = [
   {
+    id: "binary-search",
+    category: "algorithm",
+    title: "이분 탐색(Binary-Search) 알고리즘",
+    description: "정렬되어 있는 리스트에서 탐색 범위를 절반씩 좁혀가며 데이터를 탐색하는 알고리즘",
+    answer: `def binary_search():
+    left, right = 최소값, 최대값
+    answer = 기준값
+
+    while left <= right:
+        mid = (left + right) // 2
+
+        if 조건(mid):         # mid가 조건을 만족한다면
+            answer = mid       # 정답 후보 갱신
+            right = mid - 1    # 더 작은 값이 있는지 왼쪽 탐색
+        else:                  # mid가 조건을 만족하지 못한다면
+            left = mid + 1     # 더 큰 값이 필요한 경우 오른쪽 탐색
+
+    return answer`,
+  },
+
+  {
     id: "union-find",
     category: "algorithm",
     title: "유니온 파인드(Union-Find) 알고리즘",
@@ -228,6 +249,55 @@ const englishTemplates: Template[] = [
     answer: `Hello, World!
 How are you?
 I'm fine, thank you.`,
+  },
+
+  {
+    id: "floyd-warshall",
+    category: "algorithm",
+    title: "플로이드 와샬 (Floyd-Warshall) 알고리즘",
+    description: "그래프의 모든 정점 쌍 간 최단 거리를 동적 계획법(DP)으로 구하는 알고리즘",
+    answer: `v,e = map(int, input().split())
+INF = int(1e9)
+answer = INF
+
+# 거리를 저장할 graph
+graph = [[INF] * (v+1) for _ in range(v+1)]
+for _ in range(e) :
+    a,b,c = map(int, input().split())
+    graph[a][b] = c
+
+for k in range(1, v+1) :
+    for i in range(1, v+1) :
+        for j in range(1, v+1) :
+            graph[i][j] = min(graph[i][j], graph[i][k] + graph[k][j])
+
+for i in range(1,v+1) :
+    answer = min(answer, graph[i][i]) # i -> i까지의 거리 확인
+
+if answer == 1e9 :
+    print(-1)
+else :
+    print(answer)`,
+  },
+
+  {
+    id: "sliding window",
+    category: "algorithm",
+    title: "슬라이딩 윈도우(Sliding Window) 알고리즘",
+    description:
+      "그연속된 구간(배열 | 문자열)을 한 칸씩 밀어가며 탐색하여 합·최댓값·최솟값 등을 효율적으로 구하는 알고리즘",
+    answer: `n, k = map(int, input().split())  # n: 배열 길이, k: 구간 길이
+arr = list(map(int, input().split()))
+
+window_sum = sum(arr[:k])   # 초기 윈도우 합
+max_sum = window_sum
+
+# 윈도우를 한 칸씩 이동하면서 최대 합 갱신
+for i in range(k, n):
+    window_sum += arr[i] - arr[i-k]
+    max_sum = max(max_sum, window_sum)
+
+print(max_sum)`,
   },
 ];
 
