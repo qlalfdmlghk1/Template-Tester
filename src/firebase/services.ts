@@ -1,5 +1,5 @@
 // Firebase 데이터베이스 작업 함수들
-import { collection, addDoc, getDocs, query, where, orderBy, limit, Timestamp } from "firebase/firestore";
+import { collection, addDoc, getDocs, query, where, orderBy, limit } from "firebase/firestore";
 import {
   signInWithPopup,
   signOut,
