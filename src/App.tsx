@@ -1,17 +1,17 @@
-import { useState } from 'react';
-import Navbar from './components/Navbar';
-import CodeEditor from './components/CodeEditor';
-import GradingResult from './components/GradingResult';
-import Button from './components/ui/Button';
-import SelectBox from './components/ui/SelectBox';
-import type { Category, GradingResult as GradingResultType } from './types';
-import { getTemplatesByCategory } from './data/templates';
-import { gradeAnswer } from './utils/grading';
+import { useState } from "react";
+import Navbar from "./components/Navbar";
+import CodeEditor from "./components/CodeEditor";
+import GradingResult from "./components/GradingResult";
+import Button from "./components/ui/Button";
+import SelectBox from "./components/ui/SelectBox";
+import type { Category, GradingResult as GradingResultType } from "./types";
+import { getTemplatesByCategory } from "./data/templates";
+import { gradeAnswer } from "./utils/grading";
 
 function App() {
-  const [currentCategory, setCurrentCategory] = useState<Category>('algorithm');
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
-  const [userCode, setUserCode] = useState<string>('');
+  const [currentCategory, setCurrentCategory] = useState<Category>("algorithm");
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
+  const [userCode, setUserCode] = useState<string>("");
   const [gradingResult, setGradingResult] = useState<GradingResultType | null>(null);
 
   const templates = getTemplatesByCategory(currentCategory);
@@ -19,20 +19,20 @@ function App() {
 
   const handleCategoryChange = (category: Category) => {
     setCurrentCategory(category);
-    setSelectedTemplateId('');
-    setUserCode('');
+    setSelectedTemplateId("");
+    setUserCode("");
     setGradingResult(null);
   };
 
   const handleTemplateChange = (templateId: string) => {
     setSelectedTemplateId(templateId);
-    setUserCode('');
+    setUserCode("");
     setGradingResult(null);
   };
 
   const handleGrade = () => {
     if (!selectedTemplate) {
-      alert('템플릿을 먼저 선택해주세요.');
+      alert("템플릿을 먼저 선택해주세요.");
       return;
     }
 
@@ -41,15 +41,15 @@ function App() {
 
     // 채점 결과 영역으로 스크롤
     setTimeout(() => {
-      const resultElement = document.getElementById('grading-result');
+      const resultElement = document.getElementById("grading-result");
       if (resultElement) {
-        resultElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        resultElement.scrollIntoView({ behavior: "smooth", block: "start" });
       }
     }, 100);
   };
 
   const handleReset = () => {
-    setUserCode('');
+    setUserCode("");
     setGradingResult(null);
   };
 
@@ -61,7 +61,7 @@ function App() {
         {/* 템플릿 선택 영역 */}
         <div className="mb-6">
           <div className="flex items-center gap-4 mb-4">
-            <h2 className="text-2xl font-bold text-text m-0">템플릿 선택</h2>
+            <h2 className="hidden sm:block text-lg sm:text-xl md:text-2xl font-bold text-text m-0">템플릿 선택</h2>
             <SelectBox
               value={selectedTemplateId}
               onChange={(e) => handleTemplateChange(e.target.value)}
@@ -75,9 +75,9 @@ function App() {
           </div>
 
           {selectedTemplate && (
-            <div className="bg-surface p-6 rounded-lg border border-border">
-              <h3 className="text-xl font-semibold text-primary mb-2">{selectedTemplate.title}</h3>
-              <p className="text-sm text-textSecondary m-0">{selectedTemplate.description}</p>
+            <div className="bg-surface p-4 sm:p-5 md:p-6 rounded-lg border border-border">
+              <h3 className="text-base sm:text-lg md:text-xl font-semibold text-primary mb-2">{selectedTemplate.title}</h3>
+              <p className="text-xs sm:text-sm text-textSecondary m-0">{selectedTemplate.description}</p>
             </div>
           )}
         </div>
