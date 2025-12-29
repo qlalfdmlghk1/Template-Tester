@@ -2,11 +2,13 @@ import { useState } from "react";
 import Navbar from "./components/Navbar";
 import CodeEditor from "./components/CodeEditor";
 import GradingResult from "./components/GradingResult";
+import SubmissionHistory from "./components/SubmissionHistory";
 import Button from "./components/ui/Button";
 import SelectBox from "./components/ui/SelectBox";
 import type { Category, GradingResult as GradingResultType } from "./types";
 import { getTemplatesByCategory } from "./data/templates";
 import { gradeAnswer } from "./utils/grading";
+import { saveSubmission } from "./firebase/services";
 
 function App() {
   const [currentCategory, setCurrentCategory] = useState<Category>("algorithm");
@@ -30,7 +32,7 @@ function App() {
     setGradingResult(null);
   };
 
-  const handleGrade = () => {
+  const handleGrade = async () => {
     if (!selectedTemplate) {
       alert("템플릿을 먼저 선택해주세요.");
       return;
@@ -38,6 +40,21 @@ function App() {
 
     const result = gradeAnswer(selectedTemplate.answer, userCode);
     setGradingResult(result);
+
+    // Firebase에 제출 기록 저장
+    try {
+      await saveSubmission(
+        selectedTemplate.id,
+        selectedTemplate.title,
+        currentCategory,
+        userCode,
+        result
+      );
+      console.log("✅ 제출 기록이 Firebase에 저장되었습니다!");
+    } catch (error) {
+      console.error("❌ Firebase 저장 실패:", error);
+      // 저장 실패해도 채점 결과는 보여줌
+    }
 
     // 채점 결과 영역으로 스크롤
     setTimeout(() => {
@@ -115,6 +132,11 @@ function App() {
             </p>
           </div>
         )}
+
+        {/* 제출 기록 영역 */}
+        <div className="mt-8">
+          <SubmissionHistory />
+        </div>
       </div>
     </div>
   );
