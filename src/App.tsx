@@ -8,7 +8,6 @@ import GradingResult from "./components/GradingResult";
 import Button from "./components/ui/Button";
 import SelectBox from "./components/ui/SelectBox";
 import type { Category, GradingResult as GradingResultType, Template } from "./types";
-import { getTemplatesByCategory } from "./data/templates";
 import { gradeAnswer } from "./utils/grading";
 import { saveSubmission, getUserTemplatesByCategory } from "./firebase/services";
 
@@ -18,24 +17,20 @@ function App() {
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
   const [userCode, setUserCode] = useState<string>("");
   const [gradingResult, setGradingResult] = useState<GradingResultType | null>(null);
-  const [userTemplates, setUserTemplates] = useState<Template[]>([]);
-
-  // 기본 템플릿 + 사용자 템플릿 합치기
-  const baseTemplates = getTemplatesByCategory(currentCategory);
-  const templates = [...baseTemplates, ...userTemplates];
+  const [templates, setTemplates] = useState<Template[]>([]);
   const selectedTemplate = templates.find((t) => t.id === selectedTemplateId);
 
   // 사용자 템플릿 불러오기
   useEffect(() => {
-    const loadUserTemplates = async () => {
+    const loadTemplates = async () => {
       try {
-        const userTemps = await getUserTemplatesByCategory(currentCategory);
-        setUserTemplates(userTemps);
+        const userTemplates = await getUserTemplatesByCategory(currentCategory);
+        setTemplates(userTemplates);
       } catch (error) {
-        console.error("사용자 템플릿 로드 실패:", error);
+        console.error("템플릿 로드 실패:", error);
       }
     };
-    loadUserTemplates();
+    loadTemplates();
   }, [currentCategory]);
 
   const handleCategoryChange = (category: Category) => {
