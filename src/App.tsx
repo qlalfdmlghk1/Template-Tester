@@ -97,8 +97,8 @@ function App() {
                 }))}
                 placeholder="템플릿을 선택하세요"
               />
-              <Button onClick={() => navigate("/my-templates")} variant="secondary">
-                내 템플릿
+              <Button onClick={() => navigate("/template-registration")} variant="secondary">
+                템플릿 생성하기
               </Button>
             </div>
           }
