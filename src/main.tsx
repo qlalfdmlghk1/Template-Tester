@@ -5,6 +5,8 @@ import './index.css'
 import App from './App.tsx'
 import Login from './pages/Login.tsx'
 import Signup from './pages/Signup.tsx'
+import TemplateRegistration from './pages/TemplateRegistration.tsx'
+import MyTemplates from './pages/MyTemplates.tsx'
 import ProtectedRoute from './components/ProtectedRoute.tsx'
 import { AuthProvider } from './contexts/AuthContext.tsx'
 
@@ -20,6 +22,22 @@ createRoot(document.getElementById('root')!).render(
             element={
               <ProtectedRoute>
                 <App />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/template-registration"
+            element={
+              <ProtectedRoute>
+                <TemplateRegistration />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-templates"
+            element={
+              <ProtectedRoute>
+                <MyTemplates />
               </ProtectedRoute>
             }
           />

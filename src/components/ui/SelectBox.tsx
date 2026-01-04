@@ -66,12 +66,12 @@ export default function SelectBox({
   };
 
   const buttonClasses = [
-    "appearance-none select-custom-arrow",
-    "border border-border rounded-md bg-surface text-text cursor-pointer transition-all duration-200 ease-in-out outline-none",
-    "hover:border-primary focus:border-primary focus:ring-2 focus:ring-blue-200",
+    "box-border appearance-none select-custom-arrow",
+    "outline outline-1 outline-border rounded-md bg-surface text-text cursor-pointer transition-all duration-200 ease-in-out",
+    "hover:outline-primary focus:outline-primary focus:ring-2 focus:ring-blue-200",
     "flex items-center justify-between",
+    "w-full",
     sizeClasses[selectSize],
-    fullWidth && "w-full",
     disabled && "opacity-50 cursor-not-allowed",
     !currentValue && "text-textSecondary",
     className,
@@ -80,7 +80,7 @@ export default function SelectBox({
     .join(" ");
 
   return (
-    <div ref={dropdownRef} className="relative inline-block">
+    <div ref={dropdownRef} className={`relative ${fullWidth ? 'w-full' : 'w-64'}`}>
       <button
         type="button"
         className={buttonClasses}
@@ -101,7 +101,7 @@ export default function SelectBox({
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 w-full mt-1 bg-surface border border-border rounded-lg shadow-lg max-h-60 overflow-auto scrollbar-hide">
+        <div className="box-border absolute z-50 w-full mt-1 bg-surface outline outline-1 outline-border rounded-lg shadow-lg max-h-60 overflow-auto scrollbar-hide">
           {placeholder && (
             <div
               className="px-4 py-2 text-sm text-textSecondary hover:bg-blue-50 cursor-pointer transition-colors"
