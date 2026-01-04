@@ -33,7 +33,12 @@ export default function Navbar({ currentCategory, onCategoryChange }: NavbarProp
     <nav className="bg-surface border-b border-border sticky top-0 z-[1000]">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
         <div className="flex items-center">
-          <span className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-primary whitespace-nowrap">템플릿 테스터</span>
+          <span
+            onClick={() => navigate("/")}
+            className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-primary whitespace-nowrap cursor-pointer"
+          >
+            템플릿 테스터
+          </span>
         </div>
         <div className="flex items-center gap-3 sm:gap-4">
           <div className="flex gap-1 sm:gap-2">
@@ -53,11 +58,7 @@ export default function Navbar({ currentCategory, onCategoryChange }: NavbarProp
             <div className="flex items-center gap-2 sm:gap-3 ml-2 sm:ml-4 pl-2 sm:pl-4 border-l border-border">
               <div className="hidden sm:flex items-center gap-2">
                 {user.photoURL && (
-                  <img
-                    src={user.photoURL}
-                    alt={user.displayName || "User"}
-                    className="w-7 h-7 rounded-full"
-                  />
+                  <img src={user.photoURL} alt={user.displayName || "User"} className="w-7 h-7 rounded-full" />
                 )}
                 <span className="text-xs sm:text-sm text-textSecondary max-w-[100px] truncate">
                   {user.displayName || user.email}

@@ -1,23 +1,42 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "./components/Navbar";
+import PageHeader from "./components/PageHeader";
 import CodeEditor from "./components/CodeEditor";
 import GradingResult from "./components/GradingResult";
-import SubmissionHistory from "./components/SubmissionHistory";
+// import SubmissionHistory from "./components/SubmissionHistory";
 import Button from "./components/ui/Button";
 import SelectBox from "./components/ui/SelectBox";
-import type { Category, GradingResult as GradingResultType } from "./types";
+import type { Category, GradingResult as GradingResultType, Template } from "./types";
 import { getTemplatesByCategory } from "./data/templates";
 import { gradeAnswer } from "./utils/grading";
-import { saveSubmission } from "./firebase/services";
+import { saveSubmission, getUserTemplatesByCategory } from "./firebase/services";
 
 function App() {
+  const navigate = useNavigate();
   const [currentCategory, setCurrentCategory] = useState<Category>("algorithm");
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
   const [userCode, setUserCode] = useState<string>("");
   const [gradingResult, setGradingResult] = useState<GradingResultType | null>(null);
+  const [userTemplates, setUserTemplates] = useState<Template[]>([]);
 
-  const templates = getTemplatesByCategory(currentCategory);
+  // 기본 템플릿 + 사용자 템플릿 합치기
+  const baseTemplates = getTemplatesByCategory(currentCategory);
+  const templates = [...baseTemplates, ...userTemplates];
   const selectedTemplate = templates.find((t) => t.id === selectedTemplateId);
+
+  // 사용자 템플릿 불러오기
+  useEffect(() => {
+    const loadUserTemplates = async () => {
+      try {
+        const userTemps = await getUserTemplatesByCategory(currentCategory);
+        setUserTemplates(userTemps);
+      } catch (error) {
+        console.error("사용자 템플릿 로드 실패:", error);
+      }
+    };
+    loadUserTemplates();
+  }, [currentCategory]);
 
   const handleCategoryChange = (category: Category) => {
     setCurrentCategory(category);
@@ -43,13 +62,7 @@ function App() {
 
     // Firebase에 제출 기록 저장
     try {
-      await saveSubmission(
-        selectedTemplate.id,
-        selectedTemplate.title,
-        currentCategory,
-        userCode,
-        result
-      );
+      await saveSubmission(selectedTemplate.id, selectedTemplate.title, currentCategory, userCode, result);
       console.log("✅ 제출 기록이 Firebase에 저장되었습니다!");
     } catch (error) {
       console.error("❌ Firebase 저장 실패:", error);
@@ -76,28 +89,34 @@ function App() {
 
       <div className="max-w-[1400px] mx-auto px-6 py-6">
         {/* 템플릿 선택 영역 */}
-        <div className="mb-6">
-          <div className="flex items-center gap-4 mb-4">
-            <h2 className="hidden sm:block text-lg sm:text-xl md:text-2xl font-bold text-text m-0">템플릿 선택</h2>
-            <SelectBox
-              value={selectedTemplateId}
-              onChange={(e) => handleTemplateChange(e.target.value)}
-              options={templates.map((template) => ({
-                value: template.id,
-                label: template.title,
-              }))}
-              placeholder="템플릿을 선택하세요"
-              className="min-w-[300px]"
-            />
-          </div>
-
-          {selectedTemplate && (
-            <div className="bg-surface p-4 sm:p-5 md:p-6 rounded-lg border border-border">
-              <h3 className="text-base sm:text-lg md:text-xl font-semibold text-primary mb-2">{selectedTemplate.title}</h3>
-              <p className="text-xs sm:text-sm text-textSecondary m-0">{selectedTemplate.description}</p>
+        <PageHeader
+          title="템플릿 선택"
+          actions={
+            <div className="flex gap-3">
+              <SelectBox
+                value={selectedTemplateId}
+                onChange={(e) => handleTemplateChange(e.target.value)}
+                options={templates.map((template) => ({
+                  value: template.id,
+                  label: template.title,
+                }))}
+                placeholder="템플릿을 선택하세요"
+              />
+              <Button onClick={() => navigate("/my-templates")} variant="secondary">
+                내 템플릿
+              </Button>
             </div>
-          )}
-        </div>
+          }
+        />
+
+        {selectedTemplate && (
+          <div className="bg-surface p-4 sm:p-5 md:p-6 rounded-lg border border-border mb-6">
+            <h3 className="text-base sm:text-lg md:text-xl font-semibold text-primary mb-2">
+              {selectedTemplate.title}
+            </h3>
+            <p className="text-xs sm:text-sm text-textSecondary m-0">{selectedTemplate.description}</p>
+          </div>
+        )}
 
         {/* 코드 입력 영역 */}
         {selectedTemplate && (
@@ -134,9 +153,9 @@ function App() {
         )}
 
         {/* 제출 기록 영역 */}
-        <div className="mt-8">
+        {/* <div className="mt-8">
           <SubmissionHistory />
-        </div>
+        </div> */}
       </div>
     </div>
   );
