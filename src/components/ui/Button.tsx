@@ -1,4 +1,4 @@
-export type ButtonVariant = "primary" | "secondary" | "success" | "error";
+export type ButtonVariant = "primary" | "secondary" | "success" | "error" | "ghost";
 export type ButtonSize = "sm" | "md" | "lg";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -13,6 +13,7 @@ const variantClasses: Record<ButtonVariant, string> = {
   secondary: "bg-transparent text-primary border border-primary hover:bg-blue-100 hover:text-blue-700 hover:border-blue-600",
   success: "bg-success text-surface hover:bg-green-600 hover:-translate-y-px hover:shadow-[0_2px_8px_rgba(187,247,208,1)]",
   error: "bg-error text-surface hover:bg-red-600 hover:-translate-y-px hover:shadow-[0_2px_8px_rgba(254,202,202,1)]",
+  ghost: "bg-transparent text-textSecondary hover:bg-blue-50 hover:text-primary",
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
