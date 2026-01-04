@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Category } from "../types";
 import { useAuth } from "../contexts/useAuth";
@@ -18,6 +19,24 @@ const categories: { value: Category; label: string }[] = [
 export default function Navbar({ currentCategory, onCategoryChange }: NavbarProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // 드롭다운 외부 클릭 감지
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    if (isDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isDropdownOpen]);
 
   const handleLogout = async () => {
     try {
@@ -27,6 +46,12 @@ export default function Navbar({ currentCategory, onCategoryChange }: NavbarProp
       console.error("로그아웃 실패:", error);
       alert("로그아웃에 실패했습니다.");
     }
+    setIsDropdownOpen(false);
+  };
+
+  const handleMyTemplates = () => {
+    navigate("/my-templates");
+    setIsDropdownOpen(false);
   };
 
   return (
@@ -55,21 +80,39 @@ export default function Navbar({ currentCategory, onCategoryChange }: NavbarProp
             ))}
           </div>
           {user && (
-            <div className="flex items-center gap-2 sm:gap-3 ml-2 sm:ml-4 pl-2 sm:pl-4 border-l border-border">
-              <div className="hidden sm:flex items-center gap-2">
+            <div className="flex items-center ml-2 sm:ml-4 pl-2 sm:pl-4 border-l border-border relative" ref={dropdownRef}>
+              <div
+                className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              >
                 {user.photoURL && (
-                  <img src={user.photoURL} alt={user.displayName || "User"} className="w-7 h-7 rounded-full" />
+                  <img src={user.photoURL} alt={user.displayName || "User"} className="w-6 h-6 sm:w-7 sm:h-7 rounded-full" />
                 )}
-                <span className="text-xs sm:text-sm text-textSecondary max-w-[100px] truncate">
+                <span className="hidden sm:block text-xs sm:text-sm text-textSecondary max-w-[100px] truncate">
                   {user.displayName || user.email}
                 </span>
+                <svg className="w-4 h-4 text-textSecondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
               </div>
-              <button
-                onClick={handleLogout}
-                className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors"
-              >
-                로그아웃
-              </button>
+
+              {/* 드롭다운 메뉴 */}
+              {isDropdownOpen && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.1)] py-1 px-2 z-50">
+                  <button
+                    onClick={handleMyTemplates}
+                    className="w-full px-3 py-2.5 text-left text-sm text-text hover:bg-blue-50 transition-colors rounded-md"
+                  >
+                    내 템플릿
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full px-3 py-2.5 text-left text-sm text-text hover:bg-blue-50 transition-colors rounded-md"
+                  >
+                    로그아웃
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
