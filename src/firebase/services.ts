@@ -1,5 +1,5 @@
 // Firebase 데이터베이스 작업 함수들
-import { collection, addDoc, getDocs, query, where, orderBy, limit } from "firebase/firestore";
+import { collection, addDoc, getDocs, query, where, orderBy, limit, doc, updateDoc, deleteDoc } from "firebase/firestore";
 import {
   signInWithPopup,
   signOut,
@@ -10,7 +10,7 @@ import {
   updateProfile,
 } from "firebase/auth";
 import { db, auth } from "./config";
-import type { GradingResult } from "../types";
+import type { GradingResult, Template, TemplateType, Category } from "../types";
 
 // 제출 기록 타입
 export interface Submission {
@@ -296,6 +296,190 @@ export async function signInWithUsername(username: string, password: string) {
       throw new Error("아이디 또는 비밀번호가 일치하지 않습니다.");
     }
     console.error("로그인 실패:", error);
+    throw error;
+  }
+}
+
+// ==================== 사용자 템플릿 관리 ====================
+
+/**
+ * 사용자 템플릿 저장
+ */
+export async function saveUserTemplate(
+  category: Category,
+  title: string,
+  description: string,
+  answer: string,
+  type: TemplateType
+): Promise<string> {
+  try {
+    const user = auth.currentUser;
+
+    if (!user) {
+      throw new Error("로그인이 필요합니다.");
+    }
+
+    const templateData = {
+      userId: user.uid,
+      userEmail: user.email,
+      category,
+      title,
+      description,
+      answer,
+      type,
+      createdAt: new Date(),
+    };
+
+    const docRef = await addDoc(collection(db, "userTemplates"), templateData);
+    console.log("템플릿 저장 완료:", docRef.id);
+    return docRef.id;
+  } catch (error) {
+    console.error("템플릿 저장 실패:", error);
+    throw error;
+  }
+}
+
+/**
+ * 현재 사용자의 템플릿 가져오기
+ */
+export async function getUserTemplates(): Promise<Template[]> {
+  try {
+    const user = auth.currentUser;
+
+    if (!user) {
+      return [];
+    }
+
+    const q = query(
+      collection(db, "userTemplates"),
+      where("userId", "==", user.uid)
+    );
+
+    const querySnapshot = await getDocs(q);
+
+    const templates: Template[] = [];
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      templates.push({
+        id: doc.id,
+        category: data.category,
+        title: data.title,
+        description: data.description,
+        answer: data.answer,
+        type: data.type,
+        userId: data.userId,
+        createdAt: data.createdAt?.toDate(),
+      });
+    });
+
+    // 클라이언트에서 정렬
+    return templates.sort((a, b) => {
+      if (!a.createdAt || !b.createdAt) return 0;
+      return b.createdAt.getTime() - a.createdAt.getTime();
+    });
+  } catch (error) {
+    console.error("사용자 템플릿 조회 실패:", error);
+    throw error;
+  }
+}
+
+/**
+ * 특정 카테고리의 사용자 템플릿 가져오기
+ */
+export async function getUserTemplatesByCategory(category: Category): Promise<Template[]> {
+  try {
+    const user = auth.currentUser;
+
+    if (!user) {
+      return [];
+    }
+
+    const q = query(
+      collection(db, "userTemplates"),
+      where("userId", "==", user.uid),
+      where("category", "==", category)
+    );
+
+    const querySnapshot = await getDocs(q);
+
+    const templates: Template[] = [];
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      templates.push({
+        id: doc.id,
+        category: data.category,
+        title: data.title,
+        description: data.description,
+        answer: data.answer,
+        type: data.type,
+        userId: data.userId,
+        createdAt: data.createdAt?.toDate(),
+      });
+    });
+
+    // 클라이언트에서 정렬
+    return templates.sort((a, b) => {
+      if (!a.createdAt || !b.createdAt) return 0;
+      return b.createdAt.getTime() - a.createdAt.getTime();
+    });
+  } catch (error) {
+    console.error("카테고리별 사용자 템플릿 조회 실패:", error);
+    throw error;
+  }
+}
+
+/**
+ * 사용자 템플릿 수정
+ */
+export async function updateUserTemplate(
+  templateId: string,
+  category: Category,
+  title: string,
+  description: string,
+  answer: string,
+  type: TemplateType
+): Promise<void> {
+  try {
+    const user = auth.currentUser;
+
+    if (!user) {
+      throw new Error("로그인이 필요합니다.");
+    }
+
+    const templateRef = doc(db, "userTemplates", templateId);
+    await updateDoc(templateRef, {
+      category,
+      title,
+      description,
+      answer,
+      type,
+      updatedAt: new Date(),
+    });
+
+    console.log("템플릿 수정 완료:", templateId);
+  } catch (error) {
+    console.error("템플릿 수정 실패:", error);
+    throw error;
+  }
+}
+
+/**
+ * 사용자 템플릿 삭제
+ */
+export async function deleteUserTemplate(templateId: string): Promise<void> {
+  try {
+    const user = auth.currentUser;
+
+    if (!user) {
+      throw new Error("로그인이 필요합니다.");
+    }
+
+    const templateRef = doc(db, "userTemplates", templateId);
+    await deleteDoc(templateRef);
+
+    console.log("템플릿 삭제 완료:", templateId);
+  } catch (error) {
+    console.error("템플릿 삭제 실패:", error);
     throw error;
   }
 }
