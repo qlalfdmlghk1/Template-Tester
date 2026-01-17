@@ -1,24 +1,17 @@
 import { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import type { Category } from "../types";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/useAuth";
 import { logout } from "../firebase/services";
 
-interface NavbarProps {
-  currentCategory: Category;
-  onCategoryChange: (category: Category) => void;
-}
-
-const categories: { value: Category; label: string }[] = [
-  { value: "algorithm", label: "알고리즘" },
-  { value: "english", label: "영어" },
-  { value: "cs", label: "CS" },
-  { value: "interview", label: "면접 대비" },
+const menuItems = [
+  { path: "/", label: "템플릿" },
+  { path: "/wrong-notes", label: "오답노트" },
 ];
 
-export default function Navbar({ currentCategory, onCategoryChange }: NavbarProps) {
+export default function Navbar() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -57,36 +50,43 @@ export default function Navbar({ currentCategory, onCategoryChange }: NavbarProp
   return (
     <nav className="bg-surface border-b border-border sticky top-0 z-[1000]">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
-        <div className="flex items-center">
+        <div className="flex w-full justify-between items-center gap-6">
           <span
             onClick={() => navigate("/")}
             className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-primary whitespace-nowrap cursor-pointer"
           >
             템플릿 테스터
           </span>
-        </div>
-        <div className="flex items-center gap-3 sm:gap-4">
           <div className="flex gap-1 sm:gap-2">
-            {categories.map((cat) => (
+            {menuItems.map((item) => (
               <button
-                key={cat.value}
-                onClick={() => onCategoryChange(cat.value)}
+                key={item.path}
+                onClick={() => navigate(item.path)}
                 className={`px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 border-none bg-transparent text-xs sm:text-sm md:text-base font-medium cursor-pointer rounded-md transition-all duration-200 ${
-                  currentCategory === cat.value ? "bg-blue-50 text-primary" : "text-textSecondary hover:bg-blue-50"
+                  location.pathname === item.path ? "bg-blue-50 text-primary" : "text-textSecondary hover:bg-blue-50"
                 }`}
               >
-                {cat.label}
+                {item.label}
               </button>
             ))}
           </div>
+        </div>
+        <div className="flex items-center gap-3 sm:gap-4">
           {user && (
-            <div className="flex items-center ml-2 sm:ml-4 pl-2 sm:pl-4 border-l border-border relative" ref={dropdownRef}>
+            <div
+              className="flex items-center ml-2 sm:ml-4 pl-2 sm:pl-4 border-l border-border relative"
+              ref={dropdownRef}
+            >
               <div
                 className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               >
                 {user.photoURL && (
-                  <img src={user.photoURL} alt={user.displayName || "User"} className="w-6 h-6 sm:w-7 sm:h-7 rounded-full" />
+                  <img
+                    src={user.photoURL}
+                    alt={user.displayName || "User"}
+                    className="w-6 h-6 sm:w-7 sm:h-7 rounded-full"
+                  />
                 )}
                 <span className="hidden sm:block text-xs sm:text-sm text-textSecondary max-w-[100px] truncate">
                   {user.displayName || user.email}
@@ -98,7 +98,7 @@ export default function Navbar({ currentCategory, onCategoryChange }: NavbarProp
 
               {/* 드롭다운 메뉴 */}
               {isDropdownOpen && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.1)] py-1 px-2 z-50">
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.1)] py-1 px-2 z-50 min-w-[120px]">
                   <button
                     onClick={handleMyTemplates}
                     className="w-full px-3 py-2.5 text-left text-sm text-text hover:bg-blue-50 transition-colors rounded-md"
