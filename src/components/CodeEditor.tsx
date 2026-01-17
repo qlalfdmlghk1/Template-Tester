@@ -4,13 +4,21 @@ interface CodeEditorProps {
   value: string;
   onChange: (value: string) => void;
   language?: string;
+  readOnly?: boolean;
+  height?: string;
 }
 
-export default function CodeEditor({ value, onChange, language = "javascript" }: CodeEditorProps) {
+export default function CodeEditor({
+  value,
+  onChange,
+  language = "javascript",
+  readOnly = false,
+  height = "600px",
+}: CodeEditorProps) {
   return (
     <div className="border border-border rounded-md overflow-hidden bg-[#1e1e1e] py-3">
       <Editor
-        height="600px"
+        height={height}
         language={language}
         value={value}
         onChange={(newValue) => onChange(newValue || "")}
@@ -23,6 +31,7 @@ export default function CodeEditor({ value, onChange, language = "javascript" }:
           automaticLayout: true,
           tabSize: 2,
           wordWrap: "on",
+          readOnly,
         }}
       />
     </div>

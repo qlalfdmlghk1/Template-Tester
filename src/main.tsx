@@ -8,6 +8,7 @@ import Signup from './pages/Signup.tsx'
 import TemplateRegistration from './pages/TemplateRegistration.tsx'
 import MyTemplates from './pages/MyTemplates.tsx'
 import WrongNotes from './pages/WrongNotes.tsx'
+import WrongNoteDetail from './pages/WrongNoteDetail.tsx'
 import ProtectedRoute from './components/ProtectedRoute.tsx'
 import { AuthProvider } from './contexts/AuthContext.tsx'
 
@@ -47,6 +48,14 @@ createRoot(document.getElementById('root')!).render(
             element={
               <ProtectedRoute>
                 <WrongNotes />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/wrong-notes/:id"
+            element={
+              <ProtectedRoute>
+                <WrongNoteDetail />
               </ProtectedRoute>
             }
           />

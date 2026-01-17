@@ -1,5 +1,16 @@
 // Firebase 데이터베이스 작업 함수들
-import { collection, addDoc, getDocs, query, where, orderBy, limit, doc, updateDoc, deleteDoc } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  where,
+  orderBy,
+  limit,
+  doc,
+  updateDoc,
+  deleteDoc,
+} from "firebase/firestore";
 import {
   signInWithPopup,
   signOut,
@@ -35,7 +46,7 @@ export async function saveSubmission(
   templateTitle: string,
   category: string,
   userCode: string,
-  gradingResult: GradingResult
+  gradingResult: GradingResult,
 ): Promise<string> {
   try {
     const user = auth.currentUser;
@@ -83,7 +94,7 @@ export async function getRecentSubmissions(limitCount: number = 10): Promise<Sub
       collection(db, "submissions"),
       where("userId", "==", user.uid),
       orderBy("createdAt", "desc"),
-      limit(limitCount)
+      limit(limitCount),
     );
 
     const querySnapshot = await getDocs(q);
@@ -128,7 +139,7 @@ export async function getSubmissionsByCategory(category: string): Promise<Submis
       collection(db, "submissions"),
       where("userId", "==", user.uid),
       where("category", "==", category),
-      orderBy("createdAt", "desc")
+      orderBy("createdAt", "desc"),
     );
 
     const querySnapshot = await getDocs(q);
@@ -310,7 +321,7 @@ export async function saveUserTemplate(
   title: string,
   description: string,
   answer: string,
-  type: TemplateType
+  type: TemplateType,
 ): Promise<string> {
   try {
     const user = auth.currentUser;
@@ -350,10 +361,7 @@ export async function getUserTemplates(): Promise<Template[]> {
       return [];
     }
 
-    const q = query(
-      collection(db, "userTemplates"),
-      where("userId", "==", user.uid)
-    );
+    const q = query(collection(db, "userTemplates"), where("userId", "==", user.uid));
 
     const querySnapshot = await getDocs(q);
 
@@ -397,7 +405,7 @@ export async function getUserTemplatesByCategory(category: Category): Promise<Te
     const q = query(
       collection(db, "userTemplates"),
       where("userId", "==", user.uid),
-      where("category", "==", category)
+      where("category", "==", category),
     );
 
     const querySnapshot = await getDocs(q);
@@ -437,7 +445,7 @@ export async function updateUserTemplate(
   title: string,
   description: string,
   answer: string,
-  type: TemplateType
+  type: TemplateType,
 ): Promise<void> {
   try {
     const user = auth.currentUser;
@@ -480,6 +488,151 @@ export async function deleteUserTemplate(templateId: string): Promise<void> {
     console.log("템플릿 삭제 완료:", templateId);
   } catch (error) {
     console.error("템플릿 삭제 실패:", error);
+    throw error;
+  }
+}
+
+// ==================== 오답노트 관리 ====================
+
+export interface WrongNote {
+  id?: string;
+  userId: string;
+  userEmail: string | null;
+  link: string;
+  date: string;
+  platform: string;
+  grade: string;
+  myCode: string;
+  solution: string;
+  comment: string;
+  share: boolean;
+  tags: string[];
+  result: string;
+  createdAt: Date;
+  updatedAt?: Date;
+}
+
+/**
+ * 오답노트 저장
+ */
+export async function saveWrongNote(
+  data: Omit<WrongNote, "id" | "userId" | "userEmail" | "createdAt">,
+): Promise<string> {
+  try {
+    const user = auth.currentUser;
+
+    if (!user) {
+      throw new Error("로그인이 필요합니다.");
+    }
+
+    const wrongNoteData: Omit<WrongNote, "id"> = {
+      ...data,
+      userId: user.uid,
+      userEmail: user.email,
+      createdAt: new Date(),
+    };
+
+    const docRef = await addDoc(collection(db, "wrongNotes"), wrongNoteData);
+    console.log("오답노트 저장 완료:", docRef.id);
+    return docRef.id;
+  } catch (error) {
+    console.error("오답노트 저장 실패:", error);
+    throw error;
+  }
+}
+
+/**
+ * 현재 사용자의 오답노트 목록 가져오기
+ */
+export async function getWrongNotes(): Promise<WrongNote[]> {
+  try {
+    const user = auth.currentUser;
+
+    if (!user) {
+      return [];
+    }
+
+    const q = query(collection(db, "wrongNotes"), where("userId", "==", user.uid));
+
+    const querySnapshot = await getDocs(q);
+
+    const wrongNotes: WrongNote[] = [];
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      wrongNotes.push({
+        id: doc.id,
+        userId: data.userId,
+        userEmail: data.userEmail,
+        link: data.link,
+        date: data.date,
+        platform: data.platform,
+        grade: data.grade,
+        myCode: data.myCode,
+        solution: data.solution,
+        comment: data.comment,
+        share: data.share,
+        tags: data.tags,
+        result: data.result,
+        createdAt: data.createdAt?.toDate(),
+        updatedAt: data.updatedAt?.toDate(),
+      });
+    });
+
+    // 클라이언트에서 정렬 (복합 인덱스 없이 작동)
+    return wrongNotes.sort((a, b) => {
+      if (!a.createdAt || !b.createdAt) return 0;
+      return b.createdAt.getTime() - a.createdAt.getTime();
+    });
+  } catch (error) {
+    console.error("오답노트 조회 실패:", error);
+    throw error;
+  }
+}
+
+/**
+ * 오답노트 수정
+ */
+export async function updateWrongNote(
+  noteId: string,
+  data: Omit<WrongNote, "id" | "userId" | "userEmail" | "createdAt">,
+): Promise<void> {
+  try {
+    const user = auth.currentUser;
+
+    if (!user) {
+      throw new Error("로그인이 필요합니다.");
+    }
+
+    const noteRef = doc(db, "wrongNotes", noteId);
+    await updateDoc(noteRef, {
+      ...data,
+      updatedAt: new Date(),
+    });
+
+    console.log("오답노트 수정 완료:", noteId);
+  } catch (error) {
+    console.error("오답노트 수정 실패:", error);
+    throw error;
+  }
+}
+
+/**
+ * 오답노트 삭제
+ */
+export async function deleteWrongNote(noteId: string): Promise<void> {
+  try {
+    const user = auth.currentUser;
+
+    if (!user) {
+      throw new Error("로그인이 필요합니다.");
+    }
+
+    const noteRef = doc(db, "wrongNotes", noteId);
+    await deleteDoc(noteRef);
+
+    console.log("오답노트 삭제 완료:", noteId);
+  } catch (error) {
+    console.error("오답노트 삭제 실패:", error);
     throw error;
   }
 }
