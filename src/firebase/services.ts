@@ -499,6 +499,7 @@ export interface WrongNote {
   userId: string;
   userEmail: string | null;
   link: string;
+  language: string;
   date: string;
   platform: string;
   grade: string;
@@ -564,6 +565,7 @@ export async function getWrongNotes(): Promise<WrongNote[]> {
         userId: data.userId,
         userEmail: data.userEmail,
         link: data.link,
+        language: data.language || "",
         date: data.date,
         platform: data.platform,
         grade: data.grade,
