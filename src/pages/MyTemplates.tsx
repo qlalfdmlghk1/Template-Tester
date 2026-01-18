@@ -8,7 +8,7 @@ import type { Category, Template } from "../types";
 
 function MyTemplates() {
   const navigate = useNavigate();
-  const [currentCategory, setCurrentCategory] = useState<Category>("algorithm");
+  const [currentCategory] = useState<Category>("algorithm");
   const [templates, setTemplates] = useState<Template[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -27,10 +27,6 @@ function MyTemplates() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleCategoryChange = (category: Category) => {
-    setCurrentCategory(category);
   };
 
   const handleEdit = (templateId: string) => {
@@ -58,7 +54,7 @@ function MyTemplates() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar currentCategory={currentCategory} onCategoryChange={handleCategoryChange} />
+      <Navbar />
 
       <div className="max-w-[1400px] mx-auto px-6 py-6">
         <PageHeader title="내 템플릿 관리" description="등록한 템플릿을 확인하고 수정/삭제할 수 있습니다." />
