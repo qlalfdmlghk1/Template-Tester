@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import PageHeader from "../components/PageHeader";
 import Button from "../components/ui/Button";
+import Chip from "../components/ui/Chip";
 import SelectBox from "../components/ui/SelectBox";
 import ToggleButtonGroup from "../components/ui/ToggleButtonGroup";
 import CodeEditor from "../components/CodeEditor";
@@ -327,25 +328,21 @@ export default function WrongNotes() {
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
-                          <span className="px-2 py-0.5 text-xs rounded bg-blue-100 text-primary">
-                            {getPlatformLabel(note.platform)}
-                          </span>
+                          <Chip variant="primary">{getPlatformLabel(note.platform)}</Chip>
                           {note.grade && (
-                            <span className="px-2 py-0.5 text-xs rounded bg-gray-100 text-textSecondary">
-                              {getGradeLabel(note.platform, note.grade)}
-                            </span>
+                            <Chip variant="secondary">{getGradeLabel(note.platform, note.grade)}</Chip>
                           )}
-                          <span
-                            className={`px-2 py-0.5 text-xs rounded ${
+                          <Chip
+                            variant={
                               note.result === "correct"
-                                ? "bg-green-100 text-green-700"
+                                ? "success"
                                 : note.result === "timeout"
-                                  ? "bg-yellow-100 text-yellow-700"
-                                  : "bg-red-100 text-red-700"
-                            }`}
+                                  ? "warning"
+                                  : "error"
+                            }
                           >
                             {getResultLabel(note.result)}
-                          </span>
+                          </Chip>
                         </div>
                         <a
                           href={note.link}
