@@ -45,8 +45,22 @@ const resultOptions = [
   { value: "wrong", label: "틀림" },
 ];
 
+// 언어 옵션
+const languageOptions = [
+  { value: "python", label: "Python" },
+  { value: "javascript", label: "JavaScript" },
+  { value: "java", label: "Java" },
+  { value: "cpp", label: "C++" },
+  { value: "c", label: "C" },
+  { value: "kotlin", label: "Kotlin" },
+  { value: "swift", label: "Swift" },
+  { value: "go", label: "Go" },
+  { value: "rust", label: "Rust" },
+];
+
 interface FormData {
   link: string;
+  language: string;
   date: string;
   platform: string;
   grade: string;
@@ -95,6 +109,7 @@ export default function WrongNotes() {
   const [activeTab, setActiveTab] = useState<"write" | "list">("list");
   const [formData, setFormData] = useState<FormData>({
     link: "",
+    language: "",
     date: new Date().toISOString().split("T")[0],
     platform: "",
     grade: "",
@@ -169,6 +184,7 @@ export default function WrongNotes() {
   const resetForm = () => {
     setFormData({
       link: "",
+      language: "",
       date: new Date().toISOString().split("T")[0],
       platform: "",
       grade: "",
@@ -349,14 +365,12 @@ export default function WrongNotes() {
                             </>
                           )}
                         </div>
-                        {note.comment && (
-                          <p className="mt-2 text-sm text-textSecondary line-clamp-2">{note.comment}</p>
-                        )}
+                        {note.comment ? <p className="mt-2 text-sm text-textSecondary line-clamp-2">{note.comment}</p> : null}
                       </div>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          note.id && handleDelete(note.id);
+                          if (note.id) handleDelete(note.id);
                         }}
                         className="p-2 text-textSecondary hover:text-error transition-colors"
                       >
@@ -380,17 +394,29 @@ export default function WrongNotes() {
         {/* 작성 탭 */}
         {activeTab === "write" && (
           <div className="mt-6 space-y-6">
-            {/* 문제 사이트 링크 */}
-            <div>
-              <label className="block text-sm font-medium text-text mb-2">문제 링크</label>
-              <input
-                type="url"
-                value={formData.link}
-                onChange={(e) => handleInputChange("link", e.target.value)}
-                placeholder="https://programmers.co.kr/..."
-                className="w-full px-4 py-2 text-sm outline outline-1 outline-border rounded-md bg-surface text-text
-                  hover:outline-primary focus:outline-primary focus:ring-2 focus:ring-blue-200 transition-all"
-              />
+            {/* 문제 링크 & 언어 */}
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-4">
+              <div>
+                <label className="block text-sm font-medium text-text mb-2">문제 링크</label>
+                <input
+                  type="url"
+                  value={formData.link}
+                  onChange={(e) => handleInputChange("link", e.target.value)}
+                  placeholder="https://programmers.co.kr/..."
+                  className="w-full px-4 py-2 text-sm outline outline-1 outline-border rounded-md bg-surface text-text
+                    hover:outline-primary focus:outline-primary focus:ring-2 focus:ring-blue-200 transition-all"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-text mb-2">언어</label>
+                <SelectBox
+                  options={languageOptions}
+                  value={formData.language}
+                  onChange={(e) => handleInputChange("language", e.target.value)}
+                  placeholder="언어 선택"
+                  fullWidth
+                />
+              </div>
             </div>
 
             {/* 날짜 & 플랫폼 & 등급 */}
@@ -497,7 +523,6 @@ export default function WrongNotes() {
           </div>
         )}
       </div>
-
     </div>
   );
 }
