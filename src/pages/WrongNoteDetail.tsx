@@ -45,6 +45,19 @@ const resultOptions = [
   { value: "wrong", label: "틀림" },
 ];
 
+// 언어 옵션
+const languageOptions = [
+  { value: "python", label: "Python" },
+  { value: "javascript", label: "JavaScript" },
+  { value: "java", label: "Java" },
+  { value: "cpp", label: "C++" },
+  { value: "c", label: "C" },
+  { value: "kotlin", label: "Kotlin" },
+  { value: "swift", label: "Swift" },
+  { value: "go", label: "Go" },
+  { value: "rust", label: "Rust" },
+];
+
 // 플랫폼 라벨 변환
 const getPlatformLabel = (value: string) => {
   return platformOptions.find((p) => p.value === value)?.label || value;
@@ -71,8 +84,14 @@ const getTagLabels = (tags: string[]) => {
   return tags.map((t) => tagOptions.find((opt) => opt.value === t)?.label || t);
 };
 
+// 언어 라벨 변환
+const getLanguageLabel = (value: string) => {
+  return languageOptions.find((l) => l.value === value)?.label || value;
+};
+
 interface FormData {
   link: string;
+  language: string;
   date: string;
   platform: string;
   grade: string;
@@ -93,6 +112,7 @@ export default function WrongNoteDetail() {
   const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     link: "",
+    language: "",
     date: "",
     platform: "",
     grade: "",
@@ -113,6 +133,7 @@ export default function WrongNoteDetail() {
         if (found) {
           setFormData({
             link: found.link,
+            language: found.language || "",
             date: found.date,
             platform: found.platform,
             grade: found.grade,
@@ -181,6 +202,7 @@ export default function WrongNoteDetail() {
     if (note) {
       setFormData({
         link: note.link,
+        language: note.language || "",
         date: note.date,
         platform: note.platform,
         grade: note.grade,
@@ -232,17 +254,29 @@ export default function WrongNoteDetail() {
           <PageHeader title="오답노트 수정" />
 
           <div className="mt-6 space-y-6">
-            {/* 문제 링크 */}
-            <div>
-              <label className="block text-sm font-medium text-text mb-2">문제 링크</label>
-              <input
-                type="url"
-                value={formData.link}
-                onChange={(e) => handleInputChange("link", e.target.value)}
-                placeholder="https://programmers.co.kr/..."
-                className="w-full px-4 py-2 text-sm outline outline-1 outline-border rounded-md bg-surface text-text
-                  hover:outline-primary focus:outline-primary focus:ring-2 focus:ring-blue-200 transition-all"
-              />
+            {/* 문제 링크 & 언어 */}
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-4">
+              <div>
+                <label className="block text-sm font-medium text-text mb-2">문제 링크</label>
+                <input
+                  type="url"
+                  value={formData.link}
+                  onChange={(e) => handleInputChange("link", e.target.value)}
+                  placeholder="https://programmers.co.kr/..."
+                  className="w-full px-4 py-2 text-sm outline outline-1 outline-border rounded-md bg-surface text-text
+                    hover:outline-primary focus:outline-primary focus:ring-2 focus:ring-blue-200 transition-all"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-text mb-2">언어</label>
+                <SelectBox
+                  options={languageOptions}
+                  value={formData.language}
+                  onChange={(e) => handleInputChange("language", e.target.value)}
+                  placeholder="언어 선택"
+                  fullWidth
+                />
+              </div>
             </div>
 
             {/* 날짜 & 플랫폼 & 등급 */}
@@ -422,16 +456,26 @@ export default function WrongNoteDetail() {
           </div>
 
           {/* 문제 링크 */}
-          <div>
-            <h3 className="text-sm font-medium text-textSecondary mb-1">문제 링크</h3>
-            <a
-              href={note.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:underline break-all"
-            >
-              {note.link}
-            </a>
+          <div className="flex items-start gap-4">
+            <div className="flex-1">
+              <h3 className="text-sm font-medium text-textSecondary mb-1">문제 링크</h3>
+              <a
+                href={note.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline break-all"
+              >
+                {note.link}
+              </a>
+            </div>
+            {note.language && (
+              <div>
+                <h3 className="text-sm font-medium text-textSecondary mb-1">언어</h3>
+                <span className="px-2 py-0.5 text-xs rounded bg-purple-100 text-purple-700">
+                  {getLanguageLabel(note.language)}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* 작성 이유 */}
@@ -458,18 +502,26 @@ export default function WrongNoteDetail() {
 
           {/* 내 풀이 */}
           {note.myCode && (
-            <div>
-              <h3 className="text-sm font-medium text-textSecondary mb-2">내 풀이</h3>
-              <CodeEditor value={note.myCode} onChange={() => {}} readOnly height="400px" />
-            </div>
+            <CodeEditor
+              value={note.myCode}
+              onChange={() => {}}
+              readOnly
+              height="400px"
+              collapsible
+              title="내 풀이"
+            />
           )}
 
           {/* 참조한 풀이 */}
           {note.solution && (
-            <div>
-              <h3 className="text-sm font-medium text-textSecondary mb-2">참조한 풀이</h3>
-              <CodeEditor value={note.solution} onChange={() => {}} readOnly height="400px" />
-            </div>
+            <CodeEditor
+              value={note.solution}
+              onChange={() => {}}
+              readOnly
+              height="400px"
+              collapsible
+              title="참조한 풀이"
+            />
           )}
         </div>
       </div>
