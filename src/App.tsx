@@ -11,6 +11,13 @@ import type { Category, GradingResult as GradingResultType, Template } from "./t
 import { gradeAnswer } from "./utils/grading";
 import { saveSubmission, getUserTemplatesByCategory } from "./firebase/services";
 
+const categories: { value: Category; label: string }[] = [
+  { value: "algorithm", label: "알고리즘" },
+  { value: "english", label: "영어" },
+  { value: "cs", label: "CS" },
+  { value: "interview", label: "면접 대비" },
+];
+
 function App() {
   const navigate = useNavigate();
   const [currentCategory, setCurrentCategory] = useState<Category>("algorithm");
@@ -80,7 +87,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar currentCategory={currentCategory} onCategoryChange={handleCategoryChange} />
+      <Navbar />
 
       <div className="max-w-[1400px] mx-auto px-6 py-6">
         {/* 템플릿 선택 영역 */}
@@ -88,6 +95,15 @@ function App() {
           title="템플릿 선택"
           actions={
             <div className="flex gap-3">
+              <SelectBox
+                value={currentCategory}
+                onChange={(e) => handleCategoryChange(e.target.value as Category)}
+                options={categories.map((cat) => ({
+                  value: cat.value,
+                  label: cat.label,
+                }))}
+                placeholder="카테고리 선택"
+              />
               <SelectBox
                 value={selectedTemplateId}
                 onChange={(e) => handleTemplateChange(e.target.value)}
