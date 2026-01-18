@@ -53,10 +53,6 @@ function TemplateRegistration() {
     }
   };
 
-  const handleCategoryChange = (category: Category) => {
-    setCurrentCategory(category);
-  };
-
   const handleSubmit = async () => {
     if (!title.trim()) {
       alert("템플릿 제목을 입력해주세요.");
@@ -118,7 +114,7 @@ function TemplateRegistration() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar currentCategory={currentCategory} onCategoryChange={handleCategoryChange} />
+      <Navbar />
 
       <div className="max-w-[1400px] mx-auto px-6 py-6">
         <PageHeader

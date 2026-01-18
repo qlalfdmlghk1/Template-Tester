@@ -229,7 +229,7 @@ export default function WrongNoteDetail() {
         <Navbar />
 
         <div className="max-w-[1400px] mx-auto px-6 py-6">
-          <PageHeader title="오답노트 수정" backLink="/wrong-notes" />
+          <PageHeader title="오답노트 수정" />
 
           <div className="mt-6 space-y-6">
             {/* 문제 링크 */}
@@ -361,7 +361,7 @@ export default function WrongNoteDetail() {
       <Navbar />
 
       <div className="max-w-[1400px] mx-auto px-6 py-6">
-        <PageHeader title="오답노트" backLink="/wrong-notes" />
+        <PageHeader title="오답노트" />
 
         {/* 상세 내용 */}
         <div className="mt-6 p-6 bg-surface border border-border rounded-lg space-y-6">
