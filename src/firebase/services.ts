@@ -82,7 +82,9 @@ export async function saveSubmission(
 /**
  * 최근 제출 기록 가져오기 (현재 로그인한 사용자의 기록만)
  */
-export async function getRecentSubmissions(limitCount: number = 10): Promise<Submission[]> {
+export async function getRecentSubmissions(
+  limitCount: number = 10,
+): Promise<Submission[]> {
   try {
     const user = auth.currentUser;
 
@@ -127,7 +129,9 @@ export async function getRecentSubmissions(limitCount: number = 10): Promise<Sub
 /**
  * 특정 카테고리의 제출 기록 가져오기 (현재 로그인한 사용자의 기록만)
  */
-export async function getSubmissionsByCategory(category: string): Promise<Submission[]> {
+export async function getSubmissionsByCategory(
+  category: string,
+): Promise<Submission[]> {
   try {
     const user = auth.currentUser;
 
@@ -264,7 +268,11 @@ function usernameToEmail(username: string): string {
 /**
  * 아이디/비밀번호로 회원가입
  */
-export async function signUpWithUsername(username: string, password: string, displayName?: string) {
+export async function signUpWithUsername(
+  username: string,
+  password: string,
+  displayName?: string,
+) {
   try {
     const email = usernameToEmail(username);
     const result = await createUserWithEmailAndPassword(auth, email, password);
@@ -361,7 +369,10 @@ export async function getUserTemplates(): Promise<Template[]> {
       return [];
     }
 
-    const q = query(collection(db, "userTemplates"), where("userId", "==", user.uid));
+    const q = query(
+      collection(db, "userTemplates"),
+      where("userId", "==", user.uid),
+    );
 
     const querySnapshot = await getDocs(q);
 
@@ -394,7 +405,9 @@ export async function getUserTemplates(): Promise<Template[]> {
 /**
  * 특정 카테고리의 사용자 템플릿 가져오기
  */
-export async function getUserTemplatesByCategory(category: Category): Promise<Template[]> {
+export async function getUserTemplatesByCategory(
+  category: Category,
+): Promise<Template[]> {
   try {
     const user = auth.currentUser;
 
@@ -500,6 +513,7 @@ export interface WrongNote {
   userEmail: string | null;
   link: string;
   language: string;
+  category: string;
   date: string;
   platform: string;
   grade: string;
@@ -553,7 +567,10 @@ export async function getWrongNotes(): Promise<WrongNote[]> {
       return [];
     }
 
-    const q = query(collection(db, "wrongNotes"), where("userId", "==", user.uid));
+    const q = query(
+      collection(db, "wrongNotes"),
+      where("userId", "==", user.uid),
+    );
 
     const querySnapshot = await getDocs(q);
 
@@ -568,6 +585,7 @@ export async function getWrongNotes(): Promise<WrongNote[]> {
         language: data.language || "",
         date: data.date,
         platform: data.platform,
+        category: data.category,
         grade: data.grade,
         myCode: data.myCode,
         solution: data.solution,
