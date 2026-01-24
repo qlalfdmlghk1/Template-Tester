@@ -7,7 +7,12 @@ import Chip from "../components/ui/Chip";
 import SelectBox from "../components/ui/SelectBox";
 import ToggleButtonGroup from "../components/ui/ToggleButtonGroup";
 import CodeEditor from "../components/CodeEditor";
-import { saveWrongNote, getWrongNotes, deleteWrongNote, type WrongNote } from "../firebase/services";
+import {
+  saveWrongNote,
+  getWrongNotes,
+  deleteWrongNote,
+  type WrongNote,
+} from "../firebase/services";
 
 // 플랫폼별 등급 옵션
 const platformOptions = [
@@ -23,7 +28,14 @@ const programmersGrades = [
   { value: "lv5", label: "Lv.5" },
 ];
 
-const baekjoonTiers = ["루비", "다이아몬드", "플래티넘", "골드", "실버", "브론즈"];
+const baekjoonTiers = [
+  "루비",
+  "다이아몬드",
+  "플래티넘",
+  "골드",
+  "실버",
+  "브론즈",
+];
 const baekjoonGrades = baekjoonTiers.flatMap((tier) =>
   [1, 2, 3, 4, 5].map((level) => ({
     value: `${tier.toLowerCase()}${level}`,
@@ -59,11 +71,29 @@ const languageOptions = [
   { value: "rust", label: "Rust" },
 ];
 
+// 알고리즘 분류 옵션
+const categoryOptions = [
+  { value: "math", label: "수학" },
+  { value: "simulation", label: "구현" },
+  { value: "dp", label: "DP" },
+  { value: "graph", label: "그래프 탐색" },
+  { value: "greedy", label: "그리디" },
+  { value: "bfs", label: "BFS" },
+  { value: "dfs", label: "DFS" },
+  { value: "backtracking", label: "백트래킹" },
+  { value: "data_structure", label: "자료구조" },
+  { value: "two_pointer", label: "투포인터" },
+  { value: "full_search", label: "완전 탐색" },
+  { value: "priority_queue", label: "우선순위 큐" },
+  { value: "etc", label: "기타" },
+];
+
 interface FormData {
   link: string;
   language: string;
   date: string;
   platform: string;
+  category: string;
   grade: string;
   myCode: string;
   solution: string;
@@ -76,6 +106,11 @@ interface FormData {
 // 플랫폼 라벨 변환
 const getPlatformLabel = (value: string) => {
   return platformOptions.find((p) => p.value === value)?.label || value;
+};
+
+// 플랫폼 라벨 변환
+const getCategoryLabel = (value: string) => {
+  return categoryOptions.find((p) => p.value === value)?.label || value;
 };
 
 // 등급 라벨 변환
@@ -102,6 +137,7 @@ const getTagLabels = (tags: string[]) => {
 // 필터 타입
 interface Filters {
   platform: string;
+  category: string;
   result: string;
   tag: string;
 }
@@ -113,6 +149,7 @@ export default function WrongNotes() {
     language: "",
     date: new Date().toISOString().split("T")[0],
     platform: "",
+    category: "",
     grade: "",
     myCode: "",
     solution: "",
@@ -126,6 +163,7 @@ export default function WrongNotes() {
   const [isLoading, setIsLoading] = useState(false);
   const [filters, setFilters] = useState<Filters>({
     platform: "",
+    category: "",
     result: "",
     tag: "",
   });
@@ -134,6 +172,7 @@ export default function WrongNotes() {
   // 필터링된 노트
   const filteredNotes = notes.filter((note) => {
     if (filters.platform && note.platform !== filters.platform) return false;
+    if (filters.category && note.category !== filters.category) return false;
     if (filters.result && note.result !== filters.result) return false;
     if (filters.tag && !note.tags.includes(filters.tag)) return false;
     return true;
@@ -144,7 +183,7 @@ export default function WrongNotes() {
   };
 
   const clearFilters = () => {
-    setFilters({ platform: "", result: "", tag: "" });
+    setFilters({ platform: "", category: "", result: "", tag: "" });
   };
 
   const hasActiveFilters = filters.platform || filters.result || filters.tag;
@@ -168,7 +207,10 @@ export default function WrongNotes() {
     }
   }, [activeTab]);
 
-  const handleInputChange = (field: keyof FormData, value: string | boolean | string[]) => {
+  const handleInputChange = (
+    field: keyof FormData,
+    value: string | boolean | string[],
+  ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -189,6 +231,7 @@ export default function WrongNotes() {
       date: new Date().toISOString().split("T")[0],
       platform: "",
       grade: "",
+      category: "",
       myCode: "",
       solution: "",
       comment: "",
@@ -266,9 +309,20 @@ export default function WrongNotes() {
               <div className="flex flex-wrap items-center gap-3 mb-4 p-4 bg-surface border border-border rounded-lg">
                 <span className="text-sm font-medium text-text">필터</span>
                 <SelectBox
+                  options={categoryOptions}
+                  value={filters.category}
+                  onChange={(e) =>
+                    handleFilterChange("category", e.target.value)
+                  }
+                  placeholder="알고리즘"
+                  selectSize="sm"
+                />
+                <SelectBox
                   options={platformOptions}
                   value={filters.platform}
-                  onChange={(e) => handleFilterChange("platform", e.target.value)}
+                  onChange={(e) =>
+                    handleFilterChange("platform", e.target.value)
+                  }
                   placeholder="플랫폼"
                   selectSize="sm"
                 />
@@ -301,18 +355,24 @@ export default function WrongNotes() {
             )}
 
             {isLoading ? (
-              <div className="text-center py-12 text-textSecondary">불러오는 중...</div>
+              <div className="text-center py-12 text-textSecondary">
+                불러오는 중...
+              </div>
             ) : notes.length === 0 ? (
               <div className="text-center py-12">
                 <div className="text-4xl mb-4">📝</div>
-                <p className="text-textSecondary mb-4">아직 작성한 오답노트가 없습니다.</p>
+                <p className="text-textSecondary mb-4">
+                  아직 작성한 오답노트가 없습니다.
+                </p>
                 <Button variant="primary" onClick={() => setActiveTab("write")}>
                   첫 오답노트 작성하기
                 </Button>
               </div>
             ) : filteredNotes.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-textSecondary mb-4">필터 조건에 맞는 오답노트가 없습니다.</p>
+                <p className="text-textSecondary mb-4">
+                  필터 조건에 맞는 오답노트가 없습니다.
+                </p>
                 <Button variant="ghost" onClick={clearFilters}>
                   필터 초기화
                 </Button>
@@ -328,9 +388,16 @@ export default function WrongNotes() {
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
-                          <Chip variant="primary">{getPlatformLabel(note.platform)}</Chip>
+                          <Chip variant="success">
+                            {getCategoryLabel(note.category)}
+                          </Chip>
+                          <Chip variant="primary">
+                            {getPlatformLabel(note.platform)}
+                          </Chip>
                           {note.grade && (
-                            <Chip variant="secondary">{getGradeLabel(note.platform, note.grade)}</Chip>
+                            <Chip variant="secondary">
+                              {getGradeLabel(note.platform, note.grade)}
+                            </Chip>
                           )}
                           <Chip
                             variant={
@@ -362,7 +429,11 @@ export default function WrongNotes() {
                             </>
                           )}
                         </div>
-                        {note.comment ? <p className="mt-2 text-sm text-textSecondary line-clamp-2">{note.comment}</p> : null}
+                        {note.comment ? (
+                          <p className="mt-2 text-sm text-textSecondary line-clamp-2">
+                            {note.comment}
+                          </p>
+                        ) : null}
                       </div>
                       <button
                         onClick={(e) => {
@@ -371,7 +442,12 @@ export default function WrongNotes() {
                         }}
                         className="p-2 text-textSecondary hover:text-error transition-colors"
                       >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
                           <path
                             strokeLinecap="round"
                             strokeLinejoin="round"
@@ -394,7 +470,9 @@ export default function WrongNotes() {
             {/* 문제 링크 & 언어 */}
             <div className="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-4">
               <div>
-                <label className="block text-sm font-medium text-text mb-2">문제 링크</label>
+                <label className="block text-sm font-medium text-text mb-2">
+                  문제 링크
+                </label>
                 <input
                   type="url"
                   value={formData.link}
@@ -405,11 +483,15 @@ export default function WrongNotes() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-text mb-2">언어</label>
+                <label className="block text-sm font-medium text-text mb-2">
+                  언어
+                </label>
                 <SelectBox
                   options={languageOptions}
                   value={formData.language}
-                  onChange={(e) => handleInputChange("language", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("language", e.target.value)
+                  }
                   placeholder="언어 선택"
                   fullWidth
                 />
@@ -417,9 +499,11 @@ export default function WrongNotes() {
             </div>
 
             {/* 날짜 & 플랫폼 & 등급 */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
-                <label className="block text-sm font-medium text-text mb-2">날짜</label>
+                <label className="block text-sm font-medium text-text mb-2">
+                  날짜
+                </label>
                 <input
                   type="date"
                   value={formData.date}
@@ -429,7 +513,23 @@ export default function WrongNotes() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-text mb-2">플랫폼</label>
+                <label className="block text-sm font-medium text-text mb-2">
+                  알고리즘
+                </label>
+                <SelectBox
+                  options={categoryOptions}
+                  value={formData.category}
+                  onChange={(e) =>
+                    handleInputChange("category", e.target.value)
+                  }
+                  placeholder="알고리즘 선택"
+                  fullWidth
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-text mb-2">
+                  플랫폼
+                </label>
                 <SelectBox
                   options={platformOptions}
                   value={formData.platform}
@@ -439,12 +539,16 @@ export default function WrongNotes() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-text mb-2">등급</label>
+                <label className="block text-sm font-medium text-text mb-2">
+                  등급
+                </label>
                 <SelectBox
                   options={getGradeOptions()}
                   value={formData.grade}
                   onChange={(e) => handleInputChange("grade", e.target.value)}
-                  placeholder={formData.platform ? "등급 선택" : "플랫폼을 먼저 선택"}
+                  placeholder={
+                    formData.platform ? "등급 선택" : "플랫폼을 먼저 선택"
+                  }
                   disabled={!formData.platform}
                   fullWidth
                 />
@@ -454,7 +558,9 @@ export default function WrongNotes() {
             {/* 제출 결과 & 작성 이유 */}
             <div className="flex w-full justify-between items-start">
               <div className="w-[50%]">
-                <label className="block text-sm font-medium text-text mb-2">제출 결과</label>
+                <label className="block text-sm font-medium text-text mb-2">
+                  제출 결과
+                </label>
                 <ToggleButtonGroup
                   options={resultOptions}
                   value={formData.result}
@@ -462,7 +568,9 @@ export default function WrongNotes() {
                 />
               </div>
               <div className="w-[50%]">
-                <label className="block text-sm font-medium text-text mb-2">작성 이유 (복수 선택 가능)</label>
+                <label className="block text-sm font-medium text-text mb-2">
+                  작성 이유 (복수 선택 가능)
+                </label>
                 <ToggleButtonGroup
                   options={tagOptions}
                   value={formData.tags}
@@ -474,19 +582,31 @@ export default function WrongNotes() {
 
             {/* 내 풀이 */}
             <div>
-              <label className="block text-sm font-medium text-text mb-2">내 풀이</label>
-              <CodeEditor value={formData.myCode} onChange={(value) => handleInputChange("myCode", value)} />
+              <label className="block text-sm font-medium text-text mb-2">
+                내 풀이
+              </label>
+              <CodeEditor
+                value={formData.myCode}
+                onChange={(value) => handleInputChange("myCode", value)}
+              />
             </div>
 
             {/* 참조한 풀이 */}
             <div>
-              <label className="block text-sm font-medium text-text mb-2">참조한 풀이</label>
-              <CodeEditor value={formData.solution} onChange={(value) => handleInputChange("solution", value)} />
+              <label className="block text-sm font-medium text-text mb-2">
+                참조한 풀이
+              </label>
+              <CodeEditor
+                value={formData.solution}
+                onChange={(value) => handleInputChange("solution", value)}
+              />
             </div>
 
             {/* 코멘트 */}
             <div>
-              <label className="block text-sm font-medium text-text mb-2">코멘트</label>
+              <label className="block text-sm font-medium text-text mb-2">
+                코멘트
+              </label>
               <textarea
                 value={formData.comment}
                 onChange={(e) => handleInputChange("comment", e.target.value)}
@@ -506,14 +626,22 @@ export default function WrongNotes() {
                 onChange={(e) => handleInputChange("share", e.target.checked)}
                 className="w-4 h-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
               />
-              <label htmlFor="share" className="text-sm text-text cursor-pointer">
+              <label
+                htmlFor="share"
+                className="text-sm text-text cursor-pointer"
+              >
                 다른 사용자에게 공유하기
               </label>
             </div>
 
             {/* 제출 버튼 */}
             <div className="flex justify-end pt-4">
-              <Button variant="primary" size="lg" onClick={handleSubmit} disabled={isSubmitting}>
+              <Button
+                variant="primary"
+                size="lg"
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+              >
                 {isSubmitting ? "저장 중..." : "오답노트 저장"}
               </Button>
             </div>
