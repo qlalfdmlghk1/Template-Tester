@@ -13,134 +13,24 @@ import {
   deleteWrongNote,
   type WrongNote,
 } from "../firebase/services";
-
-// 플랫폼별 등급 옵션
-const platformOptions = [
-  { value: "programmers", label: "프로그래머스" },
-  { value: "baekjoon", label: "백준" },
-];
-
-const programmersGrades = [
-  { value: "lv1", label: "Lv.1" },
-  { value: "lv2", label: "Lv.2" },
-  { value: "lv3", label: "Lv.3" },
-  { value: "lv4", label: "Lv.4" },
-  { value: "lv5", label: "Lv.5" },
-];
-
-const baekjoonTiers = [
-  "루비",
-  "다이아몬드",
-  "플래티넘",
-  "골드",
-  "실버",
-  "브론즈",
-];
-const baekjoonGrades = baekjoonTiers.flatMap((tier) =>
-  [1, 2, 3, 4, 5].map((level) => ({
-    value: `${tier.toLowerCase()}${level}`,
-    label: `${tier} ${level}`,
-  })),
-);
-
-// 오답 노트 작성 이유 태그
-const tagOptions = [
-  { value: "better_solution", label: "더 좋은 풀이 있음" },
-  { value: "algorithm_fail", label: "알고리즘 파악 실패" },
-  { value: "misunderstand", label: "문제 잘못 이해" },
-  { value: "implementation_fail", label: "구현 실패" },
-];
-
-// 제출 결과 옵션
-const resultOptions = [
-  { value: "correct", label: "정답" },
-  { value: "timeout", label: "시간 초과" },
-  { value: "wrong", label: "틀림" },
-];
-
-// 언어 옵션
-const languageOptions = [
-  { value: "python", label: "Python" },
-  { value: "javascript", label: "JavaScript" },
-  { value: "java", label: "Java" },
-  { value: "cpp", label: "C++" },
-  { value: "c", label: "C" },
-  { value: "kotlin", label: "Kotlin" },
-  { value: "swift", label: "Swift" },
-  { value: "go", label: "Go" },
-  { value: "rust", label: "Rust" },
-];
-
-// 알고리즘 분류 옵션
-const categoryOptions = [
-  { value: "math", label: "수학" },
-  { value: "simulation", label: "구현" },
-  { value: "dp", label: "DP" },
-  { value: "graph", label: "그래프 탐색" },
-  { value: "greedy", label: "그리디" },
-  { value: "bfs", label: "BFS" },
-  { value: "dfs", label: "DFS" },
-  { value: "backtracking", label: "백트래킹" },
-  { value: "data_structure", label: "자료구조" },
-  { value: "two_pointer", label: "투포인터" },
-  { value: "full_search", label: "완전 탐색" },
-  { value: "priority_queue", label: "우선순위 큐" },
-  { value: "etc", label: "기타" },
-];
-
-interface FormData {
-  link: string;
-  language: string;
-  date: string;
-  platform: string;
-  category: string;
-  grade: string;
-  myCode: string;
-  solution: string;
-  comment: string;
-  share: boolean;
-  tags: string[];
-  result: string;
-}
-
-// 플랫폼 라벨 변환
-const getPlatformLabel = (value: string) => {
-  return platformOptions.find((p) => p.value === value)?.label || value;
-};
-
-// 플랫폼 라벨 변환
-const getCategoryLabel = (value: string) => {
-  return categoryOptions.find((p) => p.value === value)?.label || value;
-};
-
-// 등급 라벨 변환
-const getGradeLabel = (platform: string, grade: string) => {
-  if (platform === "programmers") {
-    return programmersGrades.find((g) => g.value === grade)?.label || grade;
-  }
-  if (platform === "baekjoon") {
-    return baekjoonGrades.find((g) => g.value === grade)?.label || grade;
-  }
-  return grade;
-};
-
-// 제출 결과 라벨 변환
-const getResultLabel = (value: string) => {
-  return resultOptions.find((r) => r.value === value)?.label || value;
-};
-
-// 태그 라벨 변환
-const getTagLabels = (tags: string[]) => {
-  return tags.map((t) => tagOptions.find((opt) => opt.value === t)?.label || t);
-};
-
-// 필터 타입
-interface Filters {
-  platform: string;
-  category: string;
-  result: string;
-  tag: string;
-}
+import {
+  categoryOptions,
+  languageOptions,
+  platformOptions,
+  programmersGrades,
+  resultOptions,
+  tagOptions,
+} from "../constants/options.constants";
+import type { Filters, FormData } from "../types/wrong-notes.types";
+import {
+  baekjoonGrades,
+  getCategoryLabel,
+  getGradeLabel,
+  getLanguageLabel,
+  getPlatformLabel,
+  getResultLabel,
+  getTagLabels,
+} from "../utils/options.utils";
 
 export default function WrongNotes() {
   const [activeTab, setActiveTab] = useState<"write" | "list">("list");
@@ -164,6 +54,7 @@ export default function WrongNotes() {
   const [filters, setFilters] = useState<Filters>({
     platform: "",
     category: "",
+    language: "",
     result: "",
     tag: "",
   });
@@ -174,6 +65,7 @@ export default function WrongNotes() {
     if (filters.platform && note.platform !== filters.platform) return false;
     if (filters.category && note.category !== filters.category) return false;
     if (filters.result && note.result !== filters.result) return false;
+    if (filters.language && note.language !== filters.language) return false;
     if (filters.tag && !note.tags.includes(filters.tag)) return false;
     return true;
   });
@@ -183,7 +75,13 @@ export default function WrongNotes() {
   };
 
   const clearFilters = () => {
-    setFilters({ platform: "", category: "", result: "", tag: "" });
+    setFilters({
+      platform: "",
+      category: "",
+      language: "",
+      result: "",
+      tag: "",
+    });
   };
 
   const hasActiveFilters = filters.platform || filters.result || filters.tag;
@@ -306,48 +204,60 @@ export default function WrongNotes() {
           <div className="mt-6">
             {/* 필터 */}
             {notes.length > 0 && (
-              <div className="flex flex-wrap items-center gap-3 mb-4 p-4 bg-surface border border-border rounded-lg">
-                <span className="text-sm font-medium text-text">필터</span>
-                <SelectBox
-                  options={categoryOptions}
-                  value={filters.category}
-                  onChange={(e) =>
-                    handleFilterChange("category", e.target.value)
-                  }
-                  placeholder="알고리즘"
-                  selectSize="sm"
-                />
-                <SelectBox
-                  options={platformOptions}
-                  value={filters.platform}
-                  onChange={(e) =>
-                    handleFilterChange("platform", e.target.value)
-                  }
-                  placeholder="플랫폼"
-                  selectSize="sm"
-                />
-                <SelectBox
-                  options={resultOptions}
-                  value={filters.result}
-                  onChange={(e) => handleFilterChange("result", e.target.value)}
-                  placeholder="결과"
-                  selectSize="sm"
-                />
-                <SelectBox
-                  options={tagOptions}
-                  value={filters.tag}
-                  onChange={(e) => handleFilterChange("tag", e.target.value)}
-                  placeholder="작성 이유"
-                  selectSize="sm"
-                />
-                {hasActiveFilters && (
-                  <button
-                    onClick={clearFilters}
-                    className="px-3 py-1 text-xs text-textSecondary hover:text-error transition-colors"
-                  >
-                    초기화
-                  </button>
-                )}
+              <div className="flex flex-col mb-4 p-4 bg-surface border border-border rounded-lg gap-4">
+                <div className="grid grid-cols-5 gap-3">
+                  <SelectBox
+                    options={platformOptions}
+                    value={filters.platform}
+                    onChange={(e) =>
+                      handleFilterChange("platform", e.target.value)
+                    }
+                    placeholder="플랫폼"
+                    selectSize="sm"
+                  />
+                  <SelectBox
+                    options={categoryOptions}
+                    value={filters.category}
+                    onChange={(e) =>
+                      handleFilterChange("category", e.target.value)
+                    }
+                    placeholder="알고리즘"
+                    selectSize="sm"
+                  />
+                  <SelectBox
+                    options={languageOptions}
+                    value={filters.language}
+                    onChange={(e) =>
+                      handleFilterChange("language", e.target.value)
+                    }
+                    placeholder="언어"
+                    selectSize="sm"
+                  />
+                  <SelectBox
+                    options={resultOptions}
+                    value={filters.result}
+                    onChange={(e) =>
+                      handleFilterChange("result", e.target.value)
+                    }
+                    placeholder="결과"
+                    selectSize="sm"
+                  />
+                  <SelectBox
+                    options={tagOptions}
+                    value={filters.tag}
+                    onChange={(e) => handleFilterChange("tag", e.target.value)}
+                    placeholder="작성 이유"
+                    selectSize="sm"
+                  />
+                  {hasActiveFilters && (
+                    <button
+                      onClick={clearFilters}
+                      className="px-3 py-1 text-xs text-textSecondary hover:text-error transition-colors"
+                    >
+                      초기화
+                    </button>
+                  )}
+                </div>
                 <span className="ml-auto text-xs text-textSecondary">
                   {filteredNotes.length}개 / 전체 {notes.length}개
                 </span>
@@ -393,6 +303,9 @@ export default function WrongNotes() {
                           </Chip>
                           <Chip variant="primary">
                             {getPlatformLabel(note.platform)}
+                          </Chip>
+                          <Chip variant="purple">
+                            {getLanguageLabel(note.language)}
                           </Chip>
                           {note.grade && (
                             <Chip variant="secondary">
@@ -581,25 +494,29 @@ export default function WrongNotes() {
             </div>
 
             {/* 내 풀이 */}
-            <div>
-              <label className="block text-sm font-medium text-text mb-2">
-                내 풀이
-              </label>
-              <CodeEditor
-                value={formData.myCode}
-                onChange={(value) => handleInputChange("myCode", value)}
-              />
-            </div>
+            <div className="flex w-full flex-row gap-2">
+              <div className="w-full">
+                <label className="block text-sm font-medium text-text mb-2">
+                  내 풀이
+                </label>
+                <CodeEditor
+                  value={formData.myCode}
+                  language={formData.language}
+                  onChange={(value) => handleInputChange("myCode", value)}
+                />
+              </div>
 
-            {/* 참조한 풀이 */}
-            <div>
-              <label className="block text-sm font-medium text-text mb-2">
-                참조한 풀이
-              </label>
-              <CodeEditor
-                value={formData.solution}
-                onChange={(value) => handleInputChange("solution", value)}
-              />
+              {/* 참조한 풀이 */}
+              <div className="w-full">
+                <label className="block text-sm font-medium text-text mb-2">
+                  참조한 풀이
+                </label>
+                <CodeEditor
+                  value={formData.solution}
+                  language={formData.language}
+                  onChange={(value) => handleInputChange("solution", value)}
+                />
+              </div>
             </div>
 
             {/* 코멘트 */}
