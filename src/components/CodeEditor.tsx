@@ -15,7 +15,7 @@ interface CodeEditorProps {
 export default function CodeEditor({
   value,
   onChange,
-  language = "javascript",
+  language = "python",
   readOnly = false,
   height = "600px",
   collapsible = false,
@@ -26,7 +26,7 @@ export default function CodeEditor({
 
   if (collapsible) {
     return (
-      <div className="border border-border rounded-md overflow-hidden bg-[#1e1e1e]">
+      <div className="w-full border border-border rounded-md overflow-hidden bg-[#1e1e1e]">
         <button
           type="button"
           onClick={() => setIsCollapsed(!isCollapsed)}
@@ -39,7 +39,12 @@ export default function CodeEditor({
             stroke="currentColor"
             viewBox="0 0 24 24"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 9l-7 7-7-7"
+            />
           </svg>
         </button>
         {!isCollapsed && (
