@@ -17,7 +17,7 @@ const categories: { value: Category; label: string }[] = [
   { value: "interview", label: "면접 대비" },
 ];
 
-export default function Home() {
+export default function IndexPage() {
   const navigate = useNavigate();
   const [currentCategory, setCurrentCategory] = useState<Category>("algorithm");
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
@@ -161,11 +161,6 @@ export default function Home() {
             </p>
           </div>
         )}
-
-        {/* 제출 기록 영역 */}
-        {/* <div className="mt-8">
-          <SubmissionHistory />
-        </div> */}
       </div>
     </div>
   );

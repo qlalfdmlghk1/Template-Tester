@@ -3,6 +3,8 @@ import {
   collection,
   addDoc,
   getDocs,
+  getDoc,
+  setDoc,
   query,
   where,
   orderBy,
@@ -22,6 +24,8 @@ import {
 } from "firebase/auth";
 import { db, auth } from "./config";
 import type { GradingResult, Template, TemplateType, Category } from "../types";
+import type { UserProfile } from "../types/user.types";
+import type { Friendship, FriendInfo } from "../types/friendship.types";
 
 // 제출 기록 타입
 export interface Submission {
@@ -653,6 +657,633 @@ export async function deleteWrongNote(noteId: string): Promise<void> {
     console.log("오답노트 삭제 완료:", noteId);
   } catch (error) {
     console.error("오답노트 삭제 실패:", error);
+    throw error;
+  }
+}
+
+// ==================== 사용자 프로필 관리 ====================
+
+/**
+ * 사용자 프로필을 Firestore에 저장/업데이트
+ * 로그인 시 호출하여 검색 가능하게 함
+ */
+export async function syncUserProfile(): Promise<void> {
+  try {
+    const user = auth.currentUser;
+
+    if (!user) {
+      return;
+    }
+
+    const userRef = doc(db, "users", user.uid);
+    const userDoc = await getDoc(userRef);
+
+    if (userDoc.exists()) {
+      // 기존 사용자: 업데이트
+      await updateDoc(userRef, {
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL,
+        updatedAt: new Date(),
+      });
+    } else {
+      // 신규 사용자: 생성
+      const userProfile: UserProfile = {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL,
+        createdAt: new Date(),
+      };
+      await setDoc(userRef, userProfile);
+    }
+
+    console.log("사용자 프로필 동기화 완료:", user.uid);
+  } catch (error) {
+    console.error("사용자 프로필 동기화 실패:", error);
+    throw error;
+  }
+}
+
+/**
+ * 닉네임 또는 이메일로 사용자 검색 (친구 추가용)
+ */
+export async function searchUserByDisplayName(
+  searchQuery: string,
+): Promise<UserProfile[]> {
+  try {
+    const user = auth.currentUser;
+
+    if (!user) {
+      return [];
+    }
+
+    // displayName 또는 이메일이 검색어를 포함하는 사용자 찾기
+    // Firestore는 부분 일치 검색을 지원하지 않으므로, 전체 사용자를 가져와서 필터링
+    const q = query(collection(db, "users"));
+    const querySnapshot = await getDocs(q);
+
+    const searchLower = searchQuery.toLowerCase();
+    const users: UserProfile[] = [];
+
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+
+      // 자기 자신 제외
+      if (data.uid === user.uid) return;
+
+      // displayName 또는 이메일이 검색어를 포함하는 경우
+      const matchesDisplayName = data.displayName?.toLowerCase().includes(searchLower);
+      const matchesEmail = data.email?.toLowerCase().includes(searchLower);
+
+      if (matchesDisplayName || matchesEmail) {
+        users.push({
+          uid: data.uid,
+          email: data.email,
+          displayName: data.displayName,
+          photoURL: data.photoURL,
+          createdAt: data.createdAt?.toDate(),
+        });
+      }
+    });
+
+    return users;
+  } catch (error) {
+    console.error("사용자 검색 실패:", error);
+    throw error;
+  }
+}
+
+// ==================== 친구 관계 관리 ====================
+
+/**
+ * 두 사용자 간의 친구 관계 상태 확인
+ */
+export async function getFriendshipStatus(
+  otherUserId: string,
+): Promise<Friendship | null> {
+  try {
+    const user = auth.currentUser;
+
+    if (!user) {
+      return null;
+    }
+
+    // 내가 보낸 요청 확인
+    const sentQuery = query(
+      collection(db, "friendships"),
+      where("requesterId", "==", user.uid),
+      where("receiverId", "==", otherUserId),
+    );
+    const sentSnapshot = await getDocs(sentQuery);
+
+    if (!sentSnapshot.empty) {
+      const doc = sentSnapshot.docs[0];
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data,
+        createdAt: data.createdAt?.toDate(),
+        updatedAt: data.updatedAt?.toDate(),
+      } as Friendship;
+    }
+
+    // 내가 받은 요청 확인
+    const receivedQuery = query(
+      collection(db, "friendships"),
+      where("requesterId", "==", otherUserId),
+      where("receiverId", "==", user.uid),
+    );
+    const receivedSnapshot = await getDocs(receivedQuery);
+
+    if (!receivedSnapshot.empty) {
+      const doc = receivedSnapshot.docs[0];
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data,
+        createdAt: data.createdAt?.toDate(),
+        updatedAt: data.updatedAt?.toDate(),
+      } as Friendship;
+    }
+
+    return null;
+  } catch (error) {
+    console.error("친구 관계 확인 실패:", error);
+    throw error;
+  }
+}
+
+/**
+ * 친구 요청 보내기
+ */
+export async function sendFriendRequest(receiverUserId: string): Promise<string> {
+  try {
+    const user = auth.currentUser;
+
+    if (!user) {
+      throw new Error("로그인이 필요합니다.");
+    }
+
+    if (user.uid === receiverUserId) {
+      throw new Error("자기 자신에게 친구 요청을 보낼 수 없습니다.");
+    }
+
+    // 이미 친구 관계가 있는지 확인
+    const existingFriendship = await getFriendshipStatus(receiverUserId);
+    if (existingFriendship) {
+      if (existingFriendship.status === "accepted") {
+        throw new Error("이미 친구입니다.");
+      } else if (existingFriendship.status === "pending") {
+        throw new Error("이미 친구 요청이 진행 중입니다.");
+      }
+    }
+
+    // 상대방 정보 가져오기
+    const receiverRef = doc(db, "users", receiverUserId);
+    const receiverDoc = await getDoc(receiverRef);
+
+    if (!receiverDoc.exists()) {
+      throw new Error("존재하지 않는 사용자입니다.");
+    }
+
+    const receiverData = receiverDoc.data();
+
+    const friendship: Omit<Friendship, "id"> = {
+      requesterId: user.uid,
+      requesterEmail: user.email,
+      requesterDisplayName: user.displayName,
+      requesterPhotoURL: user.photoURL,
+      receiverId: receiverUserId,
+      receiverEmail: receiverData.email,
+      receiverDisplayName: receiverData.displayName,
+      receiverPhotoURL: receiverData.photoURL,
+      status: "pending",
+      createdAt: new Date(),
+    };
+
+    const docRef = await addDoc(collection(db, "friendships"), friendship);
+    console.log("친구 요청 전송 완료:", docRef.id);
+    return docRef.id;
+  } catch (error) {
+    console.error("친구 요청 전송 실패:", error);
+    throw error;
+  }
+}
+
+/**
+ * 친구 요청 수락
+ */
+export async function acceptFriendRequest(friendshipId: string): Promise<void> {
+  try {
+    const user = auth.currentUser;
+
+    if (!user) {
+      throw new Error("로그인이 필요합니다.");
+    }
+
+    const friendshipRef = doc(db, "friendships", friendshipId);
+    await updateDoc(friendshipRef, {
+      status: "accepted",
+      updatedAt: new Date(),
+    });
+
+    console.log("친구 요청 수락 완료:", friendshipId);
+  } catch (error) {
+    console.error("친구 요청 수락 실패:", error);
+    throw error;
+  }
+}
+
+/**
+ * 친구 요청 거절
+ */
+export async function rejectFriendRequest(friendshipId: string): Promise<void> {
+  try {
+    const user = auth.currentUser;
+
+    if (!user) {
+      throw new Error("로그인이 필요합니다.");
+    }
+
+    const friendshipRef = doc(db, "friendships", friendshipId);
+    await updateDoc(friendshipRef, {
+      status: "rejected",
+      updatedAt: new Date(),
+    });
+
+    console.log("친구 요청 거절 완료:", friendshipId);
+  } catch (error) {
+    console.error("친구 요청 거절 실패:", error);
+    throw error;
+  }
+}
+
+/**
+ * 친구 삭제 (친구 관계 삭제)
+ */
+export async function deleteFriendship(friendshipId: string): Promise<void> {
+  try {
+    const user = auth.currentUser;
+
+    if (!user) {
+      throw new Error("로그인이 필요합니다.");
+    }
+
+    const friendshipRef = doc(db, "friendships", friendshipId);
+    await deleteDoc(friendshipRef);
+
+    console.log("친구 삭제 완료:", friendshipId);
+  } catch (error) {
+    console.error("친구 삭제 실패:", error);
+    throw error;
+  }
+}
+
+/**
+ * 보낸 친구 요청 목록 조회
+ */
+export async function getSentFriendRequests(): Promise<Friendship[]> {
+  try {
+    const user = auth.currentUser;
+
+    if (!user) {
+      return [];
+    }
+
+    const q = query(
+      collection(db, "friendships"),
+      where("requesterId", "==", user.uid),
+      where("status", "==", "pending"),
+    );
+
+    const querySnapshot = await getDocs(q);
+
+    const requests: Friendship[] = [];
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      requests.push({
+        id: doc.id,
+        requesterId: data.requesterId,
+        requesterEmail: data.requesterEmail,
+        requesterDisplayName: data.requesterDisplayName,
+        requesterPhotoURL: data.requesterPhotoURL,
+        receiverId: data.receiverId,
+        receiverEmail: data.receiverEmail,
+        receiverDisplayName: data.receiverDisplayName,
+        receiverPhotoURL: data.receiverPhotoURL,
+        status: data.status,
+        createdAt: data.createdAt?.toDate(),
+        updatedAt: data.updatedAt?.toDate(),
+      });
+    });
+
+    return requests.sort((a, b) => {
+      if (!a.createdAt || !b.createdAt) return 0;
+      return b.createdAt.getTime() - a.createdAt.getTime();
+    });
+  } catch (error) {
+    console.error("보낸 친구 요청 조회 실패:", error);
+    throw error;
+  }
+}
+
+/**
+ * 받은 친구 요청 목록 조회 (pending 상태만)
+ */
+export async function getReceivedFriendRequests(): Promise<Friendship[]> {
+  try {
+    const user = auth.currentUser;
+
+    if (!user) {
+      return [];
+    }
+
+    const q = query(
+      collection(db, "friendships"),
+      where("receiverId", "==", user.uid),
+      where("status", "==", "pending"),
+    );
+
+    const querySnapshot = await getDocs(q);
+
+    const requests: Friendship[] = [];
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      requests.push({
+        id: doc.id,
+        requesterId: data.requesterId,
+        requesterEmail: data.requesterEmail,
+        requesterDisplayName: data.requesterDisplayName,
+        requesterPhotoURL: data.requesterPhotoURL,
+        receiverId: data.receiverId,
+        receiverEmail: data.receiverEmail,
+        receiverDisplayName: data.receiverDisplayName,
+        receiverPhotoURL: data.receiverPhotoURL,
+        status: data.status,
+        createdAt: data.createdAt?.toDate(),
+        updatedAt: data.updatedAt?.toDate(),
+      });
+    });
+
+    return requests.sort((a, b) => {
+      if (!a.createdAt || !b.createdAt) return 0;
+      return b.createdAt.getTime() - a.createdAt.getTime();
+    });
+  } catch (error) {
+    console.error("받은 친구 요청 조회 실패:", error);
+    throw error;
+  }
+}
+
+/**
+ * 친구 목록 조회 (accepted 상태만)
+ */
+export async function getFriendList(): Promise<FriendInfo[]> {
+  try {
+    const user = auth.currentUser;
+
+    if (!user) {
+      return [];
+    }
+
+    // 내가 요청을 보낸 친구 관계
+    const sentQuery = query(
+      collection(db, "friendships"),
+      where("requesterId", "==", user.uid),
+      where("status", "==", "accepted"),
+    );
+
+    // 내가 요청을 받은 친구 관계
+    const receivedQuery = query(
+      collection(db, "friendships"),
+      where("receiverId", "==", user.uid),
+      where("status", "==", "accepted"),
+    );
+
+    const [sentSnapshot, receivedSnapshot] = await Promise.all([
+      getDocs(sentQuery),
+      getDocs(receivedQuery),
+    ]);
+
+    const friends: FriendInfo[] = [];
+
+    // 내가 요청을 보낸 경우: 상대방은 receiver
+    sentSnapshot.forEach((doc) => {
+      const data = doc.data();
+      friends.push({
+        odUserId: data.receiverId,
+        email: data.receiverEmail,
+        displayName: data.receiverDisplayName,
+        photoURL: data.receiverPhotoURL,
+      });
+    });
+
+    // 내가 요청을 받은 경우: 상대방은 requester
+    receivedSnapshot.forEach((doc) => {
+      const data = doc.data();
+      friends.push({
+        odUserId: data.requesterId,
+        email: data.requesterEmail,
+        displayName: data.requesterDisplayName,
+        photoURL: data.requesterPhotoURL,
+      });
+    });
+
+    return friends;
+  } catch (error) {
+    console.error("친구 목록 조회 실패:", error);
+    throw error;
+  }
+}
+
+// ==================== 친구의 공유 오답노트 ====================
+
+/**
+ * 모든 친구의 공유된 오답노트 조회
+ */
+export async function getFriendsSharedWrongNotes(): Promise<WrongNote[]> {
+  try {
+    const user = auth.currentUser;
+
+    if (!user) {
+      return [];
+    }
+
+    // 친구 목록 가져오기
+    const friends = await getFriendList();
+
+    if (friends.length === 0) {
+      return [];
+    }
+
+    // 친구들의 userId 배열
+    const friendUserIds = friends.map((f) => f.odUserId);
+
+    // Firestore 'in' 쿼리는 최대 10개까지만 지원
+    // 친구가 10명 이상인 경우 여러 쿼리로 분할
+    const allNotes: WrongNote[] = [];
+
+    for (let i = 0; i < friendUserIds.length; i += 10) {
+      const chunk = friendUserIds.slice(i, i + 10);
+      const q = query(
+        collection(db, "wrongNotes"),
+        where("userId", "in", chunk),
+        where("share", "==", true),
+      );
+
+      const querySnapshot = await getDocs(q);
+
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        allNotes.push({
+          id: doc.id,
+          userId: data.userId,
+          userEmail: data.userEmail,
+          link: data.link,
+          language: data.language || "",
+          date: data.date,
+          platform: data.platform,
+          category: data.category,
+          grade: data.grade,
+          myCode: data.myCode,
+          solution: data.solution,
+          comment: data.comment,
+          share: data.share,
+          tags: data.tags,
+          result: data.result,
+          createdAt: data.createdAt?.toDate(),
+          updatedAt: data.updatedAt?.toDate(),
+        });
+      });
+    }
+
+    // 클라이언트에서 정렬
+    return allNotes.sort((a, b) => {
+      if (!a.createdAt || !b.createdAt) return 0;
+      return b.createdAt.getTime() - a.createdAt.getTime();
+    });
+  } catch (error) {
+    console.error("친구 오답노트 조회 실패:", error);
+    throw error;
+  }
+}
+
+/**
+ * ID로 오답노트 조회 (본인 노트 또는 친구의 공유 노트)
+ */
+export async function getWrongNoteById(
+  noteId: string,
+): Promise<{ note: WrongNote | null; isOwner: boolean }> {
+  try {
+    const user = auth.currentUser;
+
+    if (!user) {
+      return { note: null, isOwner: false };
+    }
+
+    const noteRef = doc(db, "wrongNotes", noteId);
+    const noteDoc = await getDoc(noteRef);
+
+    if (!noteDoc.exists()) {
+      return { note: null, isOwner: false };
+    }
+
+    const data = noteDoc.data();
+    const isOwner = data.userId === user.uid;
+
+    // 본인 노트이거나, 공유된 노트인 경우에만 반환
+    if (!isOwner && !data.share) {
+      return { note: null, isOwner: false };
+    }
+
+    // 본인 노트가 아닌 경우 친구인지 확인
+    if (!isOwner) {
+      const friends = await getFriendList();
+      const isFriend = friends.some((f) => f.odUserId === data.userId);
+      if (!isFriend) {
+        return { note: null, isOwner: false };
+      }
+    }
+
+    const note: WrongNote = {
+      id: noteDoc.id,
+      userId: data.userId,
+      userEmail: data.userEmail,
+      link: data.link,
+      language: data.language || "",
+      date: data.date,
+      platform: data.platform,
+      category: data.category,
+      grade: data.grade,
+      myCode: data.myCode,
+      solution: data.solution,
+      comment: data.comment,
+      share: data.share,
+      tags: data.tags,
+      result: data.result,
+      createdAt: data.createdAt?.toDate(),
+      updatedAt: data.updatedAt?.toDate(),
+    };
+
+    return { note, isOwner };
+  } catch (error) {
+    console.error("오답노트 조회 실패:", error);
+    throw error;
+  }
+}
+
+/**
+ * 특정 친구의 공유된 오답노트 조회
+ */
+export async function getFriendSharedWrongNotes(
+  friendUserId: string,
+): Promise<WrongNote[]> {
+  try {
+    const user = auth.currentUser;
+
+    if (!user) {
+      return [];
+    }
+
+    const q = query(
+      collection(db, "wrongNotes"),
+      where("userId", "==", friendUserId),
+      where("share", "==", true),
+    );
+
+    const querySnapshot = await getDocs(q);
+
+    const notes: WrongNote[] = [];
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      notes.push({
+        id: doc.id,
+        userId: data.userId,
+        userEmail: data.userEmail,
+        link: data.link,
+        language: data.language || "",
+        date: data.date,
+        platform: data.platform,
+        category: data.category,
+        grade: data.grade,
+        myCode: data.myCode,
+        solution: data.solution,
+        comment: data.comment,
+        share: data.share,
+        tags: data.tags,
+        result: data.result,
+        createdAt: data.createdAt?.toDate(),
+        updatedAt: data.updatedAt?.toDate(),
+      });
+    });
+
+    return notes.sort((a, b) => {
+      if (!a.createdAt || !b.createdAt) return 0;
+      return b.createdAt.getTime() - a.createdAt.getTime();
+    });
+  } catch (error) {
+    console.error("친구 오답노트 조회 실패:", error);
     throw error;
   }
 }
