@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/useAuth";
-import { logout } from "../firebase/services";
+import { logout, getReceivedFriendRequests } from "../firebase/services";
 
 const menuItems = [
   { path: "/", label: "템플릿" },
   { path: "/wrong-notes", label: "오답노트" },
+  { path: "/friends", label: "친구" },
 ];
 
 export default function Navbar() {
@@ -13,7 +14,27 @@ export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [pendingRequestCount, setPendingRequestCount] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // 친구 요청 수 가져오기
+  useEffect(() => {
+    if (!user) return;
+
+    const loadPendingRequests = async () => {
+      try {
+        const requests = await getReceivedFriendRequests();
+        setPendingRequestCount(requests.length);
+      } catch (error) {
+        console.error("친구 요청 수 로드 실패:", error);
+      }
+    };
+
+    loadPendingRequests();
+    // 30초마다 새로고침
+    const interval = setInterval(loadPendingRequests, 30000);
+    return () => clearInterval(interval);
+  }, [user]);
 
   // 드롭다운 외부 클릭 감지
   useEffect(() => {
@@ -62,11 +83,18 @@ export default function Navbar() {
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                className={`px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 border-none bg-transparent text-xs sm:text-sm md:text-base font-medium cursor-pointer rounded-md transition-all duration-200 ${
-                  location.pathname === item.path ? "bg-blue-50 text-primary" : "text-textSecondary hover:bg-blue-50"
+                className={`px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 border-none bg-transparent text-xs sm:text-sm md:text-base font-medium cursor-pointer rounded-md transition-all duration-200 relative ${
+                  location.pathname === item.path || (item.path !== "/" && location.pathname.startsWith(item.path))
+                    ? "bg-blue-50 text-primary"
+                    : "text-textSecondary hover:bg-blue-50"
                 }`}
               >
                 {item.label}
+                {item.path === "/friends" && pendingRequestCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs min-w-[18px] h-[18px] flex items-center justify-center rounded-full">
+                    {pendingRequestCount}
+                  </span>
+                )}
               </button>
             ))}
           </div>
