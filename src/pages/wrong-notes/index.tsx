@@ -1,18 +1,18 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../components/Navbar";
-import PageHeader from "../components/PageHeader";
-import Button from "../components/ui/Button";
-import Chip from "../components/ui/Chip";
-import SelectBox from "../components/ui/SelectBox";
-import ToggleButtonGroup from "../components/ui/ToggleButtonGroup";
-import CodeEditor from "../components/CodeEditor";
+import Navbar from "../../components/Navbar";
+import PageHeader from "../../components/PageHeader";
+import Button from "../../components/ui/Button";
+import Chip from "../../components/ui/Chip";
+import SelectBox from "../../components/ui/SelectBox";
+import ToggleButtonGroup from "../../components/ui/ToggleButtonGroup";
+import CodeEditor from "../../components/CodeEditor";
 import {
   saveWrongNote,
   getWrongNotes,
   deleteWrongNote,
   type WrongNote,
-} from "../firebase/services";
+} from "../../firebase/services";
 import {
   categoryOptions,
   languageOptions,
@@ -20,8 +20,8 @@ import {
   programmersGrades,
   resultOptions,
   tagOptions,
-} from "../constants/options.constants";
-import type { Filters, FormData } from "../types/wrong-notes.types";
+} from "../../constants/options.constants";
+import type { Filters, FormData } from "../../types/wrong-notes.types";
 import {
   baekjoonGrades,
   getCategoryLabel,
@@ -30,7 +30,7 @@ import {
   getPlatformLabel,
   getResultLabel,
   getTagLabels,
-} from "../utils/options.utils";
+} from "../../utils/options.utils";
 
 export default function WrongNotes() {
   const [activeTab, setActiveTab] = useState<"write" | "list">("list");

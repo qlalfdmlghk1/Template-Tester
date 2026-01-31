@@ -1,65 +1,50 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, useRoutes } from 'react-router-dom'
+import routes from '~react-pages'
 import './index.css'
-import App from './App.tsx'
-import Login from './pages/Login.tsx'
-import Signup from './pages/Signup.tsx'
-import TemplateRegistration from './pages/TemplateRegistration.tsx'
-import MyTemplates from './pages/MyTemplates.tsx'
-import WrongNotes from './pages/WrongNotes.tsx'
-import WrongNoteDetail from './pages/WrongNoteDetail.tsx'
-import ProtectedRoute from './components/ProtectedRoute.tsx'
+import ProtectedRoute from './components/ProtectedRoute'
 import { AuthProvider } from './contexts/AuthContext.tsx'
+
+// 인증이 필요 없는 경로
+const publicPaths = ['/login', '/signup']
+
+// routes를 가공하여 ProtectedRoute 적용
+function processRoutes(routes: any[]): any[] {
+  return routes.map(route => {
+    const isPublic = publicPaths.includes(route.path || '')
+
+    if (route.children) {
+      return {
+        ...route,
+        children: processRoutes(route.children),
+      }
+    }
+
+    if (isPublic) {
+      return route
+    }
+
+    // 인증이 필요한 경로는 ProtectedRoute로 감싸기
+    return {
+      ...route,
+      element: route.element ? (
+        <ProtectedRoute>{route.element}</ProtectedRoute>
+      ) : route.element,
+    }
+  })
+}
+
+function App() {
+  const protectedRoutes = processRoutes(routes)
+  return useRoutes(protectedRoutes)
+}
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <AuthProvider>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <App />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/template-registration"
-            element={
-              <ProtectedRoute>
-                <TemplateRegistration />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/my-templates"
-            element={
-              <ProtectedRoute>
-                <MyTemplates />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/wrong-notes"
-            element={
-              <ProtectedRoute>
-                <WrongNotes />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/wrong-notes/:id"
-            element={
-              <ProtectedRoute>
-                <WrongNoteDetail />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
+        <App />
       </AuthProvider>
     </BrowserRouter>
   </StrictMode>,
