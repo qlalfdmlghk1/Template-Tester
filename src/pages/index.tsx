@@ -1,15 +1,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "./components/Navbar";
-import PageHeader from "./components/PageHeader";
-import CodeEditor from "./components/CodeEditor";
-import GradingResult from "./components/GradingResult";
-// import SubmissionHistory from "./components/SubmissionHistory";
-import Button from "./components/ui/Button";
-import SelectBox from "./components/ui/SelectBox";
-import type { Category, GradingResult as GradingResultType, Template } from "./types";
-import { gradeAnswer } from "./utils/grading";
-import { saveSubmission, getUserTemplatesByCategory } from "./firebase/services";
+import Navbar from "../components/Navbar";
+import PageHeader from "../components/PageHeader";
+import CodeEditor from "../components/CodeEditor";
+import GradingResult from "../components/GradingResult";
+import Button from "../components/ui/Button";
+import SelectBox from "../components/ui/SelectBox";
+import type { Category, GradingResult as GradingResultType, Template } from "../types";
+import { gradeAnswer } from "../utils/grading";
+import { saveSubmission, getUserTemplatesByCategory } from "../firebase/services";
 
 const categories: { value: Category; label: string }[] = [
   { value: "algorithm", label: "알고리즘" },
@@ -18,7 +17,7 @@ const categories: { value: Category; label: string }[] = [
   { value: "interview", label: "면접 대비" },
 ];
 
-function App() {
+export default function IndexPage() {
   const navigate = useNavigate();
   const [currentCategory, setCurrentCategory] = useState<Category>("algorithm");
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
@@ -162,14 +161,7 @@ function App() {
             </p>
           </div>
         )}
-
-        {/* 제출 기록 영역 */}
-        {/* <div className="mt-8">
-          <SubmissionHistory />
-        </div> */}
       </div>
     </div>
   );
 }
-
-export default App;
