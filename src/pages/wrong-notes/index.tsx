@@ -78,7 +78,12 @@ export default function WrongNotes() {
     if (filters.category && note.category !== filters.category) return false;
     if (filters.result && note.result !== filters.result) return false;
     if (filters.language && note.language !== filters.language) return false;
-    if (searchQuery && !note.title?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const matchesTitle = note.title?.toLowerCase().includes(query);
+      const matchesLink = note.link?.toLowerCase().includes(query);
+      if (!matchesTitle && !matchesLink) return false;
+    }
     return true;
   });
 
@@ -95,7 +100,12 @@ export default function WrongNotes() {
     if (filters.result && note.result !== filters.result) return false;
     if (filters.language && note.language !== filters.language) return false;
     if (filters.tag && !note.tags.includes(filters.tag)) return false;
-    if (searchQuery && !note.title?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const matchesTitle = note.title?.toLowerCase().includes(query);
+      const matchesLink = note.link?.toLowerCase().includes(query);
+      if (!matchesTitle && !matchesLink) return false;
+    }
     return true;
   });
 
@@ -265,7 +275,7 @@ export default function WrongNotes() {
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="문제 이름으로 검색..."
+                    placeholder="문제 이름 또는 문제 번호로 검색..."
                     className="w-full px-4 py-2 pl-10 text-sm outline outline-1 outline-border rounded-md bg-surface text-text
                       hover:outline-primary focus:outline-primary focus:ring-2 focus:ring-blue-200 transition-all"
                   />
@@ -371,9 +381,7 @@ export default function WrongNotes() {
                             {getResultLabel(note.result)}
                           </Chip>
                         </div>
-                        <h3 className="text-text font-medium">
-                          {note.title || "제목 없음"}
-                        </h3>
+                        <h3 className="text-text font-medium">{note.title || "제목 없음"}</h3>
                         <a
                           href={note.link}
                           target="_blank"
@@ -432,7 +440,7 @@ export default function WrongNotes() {
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="문제 이름으로 검색..."
+                    placeholder="문제 이름 또는 문제 번호로 검색..."
                     className="w-full px-4 py-2 pl-10 text-sm outline outline-1 outline-border rounded-md bg-surface text-text
                       hover:outline-primary focus:outline-primary focus:ring-2 focus:ring-blue-200 transition-all"
                   />
@@ -491,7 +499,12 @@ export default function WrongNotes() {
                   />
                 </div>
                 <div className="flex justify-between items-center">
-                  {(friendFilter || filters.platform || filters.category || filters.language || filters.result || searchQuery) && (
+                  {(friendFilter ||
+                    filters.platform ||
+                    filters.category ||
+                    filters.language ||
+                    filters.result ||
+                    searchQuery) && (
                     <Button
                       variant="ghost"
                       size="sm"
@@ -566,9 +579,7 @@ export default function WrongNotes() {
                             {getResultLabel(note.result)}
                           </Chip>
                         </div>
-                        <h3 className="text-text font-medium">
-                          {note.title || "제목 없음"}
-                        </h3>
+                        <h3 className="text-text font-medium">{note.title || "제목 없음"}</h3>
                         <a
                           href={note.link}
                           target="_blank"
