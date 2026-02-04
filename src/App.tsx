@@ -1,5 +1,5 @@
 import { useRoutes, type RouteObject } from "react-router-dom";
-import { Suspense } from "react";  // 추가
+import { Suspense } from "react";
 import routes from "~react-pages";
 import ProtectedRoute from "./components/ProtectedRoute";
 
