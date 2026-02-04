@@ -1,4 +1,5 @@
 export interface FormData {
+  title: string;
   link: string;
   language: string;
   date: string;
