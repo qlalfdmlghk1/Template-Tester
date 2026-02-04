@@ -41,6 +41,7 @@ export default function WrongNoteDetail() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState<FormData>({
+    title: "",
     link: "",
     language: "",
     date: "",
@@ -68,6 +69,7 @@ export default function WrongNoteDetail() {
         setIsOwner(owner);
         if (found) {
           setFormData({
+            title: found.title || "",
             link: found.link,
             language: found.language || "",
             date: found.date,
@@ -141,6 +143,7 @@ export default function WrongNoteDetail() {
   const handleCancel = () => {
     if (note) {
       setFormData({
+        title: note.title || "",
         link: note.link,
         language: note.language || "",
         date: note.date,
@@ -199,17 +202,17 @@ export default function WrongNoteDetail() {
           <PageHeader title="오답노트 수정" />
 
           <div className="mt-6 space-y-6">
-            {/* 문제 링크 & 언어 */}
+            {/* 문제 이름 & 언어 */}
             <div className="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-4">
               <div>
                 <label className="block text-sm font-medium text-text mb-2">
-                  문제 링크
+                  문제 이름
                 </label>
                 <input
-                  type="url"
-                  value={formData.link}
-                  onChange={(e) => handleInputChange("link", e.target.value)}
-                  placeholder="https://programmers.co.kr/..."
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) => handleInputChange("title", e.target.value)}
+                  placeholder="예: 두 수의 합, 타겟 넘버 등"
                   className="w-full px-4 py-2 text-sm outline outline-1 outline-border rounded-md bg-surface text-text
                     hover:outline-primary focus:outline-primary focus:ring-2 focus:ring-blue-200 transition-all"
                 />
@@ -228,6 +231,21 @@ export default function WrongNoteDetail() {
                   fullWidth
                 />
               </div>
+            </div>
+
+            {/* 문제 링크 */}
+            <div>
+              <label className="block text-sm font-medium text-text mb-2">
+                문제 링크
+              </label>
+              <input
+                type="url"
+                value={formData.link}
+                onChange={(e) => handleInputChange("link", e.target.value)}
+                placeholder="https://programmers.co.kr/..."
+                className="w-full px-4 py-2 text-sm outline outline-1 outline-border rounded-md bg-surface text-text
+                  hover:outline-primary focus:outline-primary focus:ring-2 focus:ring-blue-200 transition-all"
+              />
             </div>
 
             {/* 날짜 & 플랫폼 & 등급 */}
@@ -468,7 +486,14 @@ export default function WrongNoteDetail() {
             )}
           </div>
 
-          {/* 문제 링크 */}
+          {/* 문제 이름 */}
+          <div>
+            <h2 className="text-xl font-semibold text-text">
+              {note.title || "제목 없음"}
+            </h2>
+          </div>
+
+          {/* 문제 링크 & 언어 */}
           <div className="flex items-start gap-4">
             <div className="flex-1">
               <h3 className="text-sm font-medium text-textSecondary mb-1">
