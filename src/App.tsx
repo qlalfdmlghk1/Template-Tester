@@ -1,34 +1,9 @@
-import { useRoutes, type RouteObject } from "react-router-dom";
+import { useRoutes } from "react-router-dom";
 import { Suspense } from "react";
 import routes from "~react-pages";
-import ProtectedRoute from "./components/ProtectedRoute";
-
-const publicPaths = ["login", "signup"];
-
-function processRoutes(routes: RouteObject[]): RouteObject[] {
-  return routes.map((route): RouteObject => {
-    const normalizedPath = (route.path || "").replace(/^\//, "");
-    const isPublic = publicPaths.includes(normalizedPath);
-
-    if (route.children) {
-      return {
-        ...route,
-        children: processRoutes(route.children),
-      };
-    }
-
-    if (isPublic) {
-      return route;
-    }
-
-    return {
-      ...route,
-      element: route.element ? <ProtectedRoute>{route.element}</ProtectedRoute> : route.element,
-    };
-  });
-}
 
 export default function App() {
-  const protectedRoutes = processRoutes(routes);
-  return <Suspense fallback={<div>Loading...</div>}>{useRoutes(protectedRoutes)}</Suspense>;
+  // processRoutes 없이, routes를 단순 복사만
+  const copied = routes.map((r) => ({ ...r }));
+  return <Suspense fallback={<div>Loading...</div>}>{useRoutes(copied)}</Suspense>;
 }
