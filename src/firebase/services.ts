@@ -515,6 +515,7 @@ export interface WrongNote {
   id?: string;
   userId: string;
   userEmail: string | null;
+  title: string;
   link: string;
   language: string;
   category: string;
@@ -585,6 +586,7 @@ export async function getWrongNotes(): Promise<WrongNote[]> {
         id: doc.id,
         userId: data.userId,
         userEmail: data.userEmail,
+        title: data.title || "",
         link: data.link,
         language: data.language || "",
         date: data.date,
@@ -1140,6 +1142,7 @@ export async function getFriendsSharedWrongNotes(): Promise<WrongNote[]> {
           id: doc.id,
           userId: data.userId,
           userEmail: data.userEmail,
+          title: data.title || "",
           link: data.link,
           language: data.language || "",
           date: data.date,
@@ -1210,6 +1213,7 @@ export async function getWrongNoteById(
       id: noteDoc.id,
       userId: data.userId,
       userEmail: data.userEmail,
+      title: data.title || "",
       link: data.link,
       language: data.language || "",
       date: data.date,
@@ -1261,6 +1265,7 @@ export async function getFriendSharedWrongNotes(
         id: doc.id,
         userId: data.userId,
         userEmail: data.userEmail,
+        title: data.title || "",
         link: data.link,
         language: data.language || "",
         date: data.date,

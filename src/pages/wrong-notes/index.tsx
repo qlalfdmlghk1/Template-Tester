@@ -38,6 +38,7 @@ import {
 export default function WrongNotes() {
   const [activeTab, setActiveTab] = useState<"write" | "list" | "friends">("list");
   const [formData, setFormData] = useState<FormData>({
+    title: "",
     link: "",
     language: "",
     date: new Date().toISOString().split("T")[0],
@@ -61,6 +62,7 @@ export default function WrongNotes() {
     result: "",
     tag: "",
   });
+  const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
 
   // 친구 오답노트 관련 state
@@ -76,6 +78,7 @@ export default function WrongNotes() {
     if (filters.category && note.category !== filters.category) return false;
     if (filters.result && note.result !== filters.result) return false;
     if (filters.language && note.language !== filters.language) return false;
+    if (searchQuery && !note.title?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     return true;
   });
 
@@ -92,6 +95,7 @@ export default function WrongNotes() {
     if (filters.result && note.result !== filters.result) return false;
     if (filters.language && note.language !== filters.language) return false;
     if (filters.tag && !note.tags.includes(filters.tag)) return false;
+    if (searchQuery && !note.title?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     return true;
   });
 
@@ -107,9 +111,10 @@ export default function WrongNotes() {
       result: "",
       tag: "",
     });
+    setSearchQuery("");
   };
 
-  const hasActiveFilters = filters.platform || filters.result || filters.tag;
+  const hasActiveFilters = filters.platform || filters.result || filters.tag || searchQuery;
 
   // 목록 불러오기
   const loadNotes = async () => {
@@ -162,6 +167,7 @@ export default function WrongNotes() {
 
   const resetForm = () => {
     setFormData({
+      title: "",
       link: "",
       language: "",
       date: new Date().toISOString().split("T")[0],
@@ -253,6 +259,30 @@ export default function WrongNotes() {
             {/* 필터 */}
             {notes.length > 0 && (
               <div className="flex flex-col mb-4 p-4 bg-surface border border-border rounded-lg gap-4">
+                {/* 검색 */}
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="문제 이름으로 검색..."
+                    className="w-full px-4 py-2 pl-10 text-sm outline outline-1 outline-border rounded-md bg-surface text-text
+                      hover:outline-primary focus:outline-primary focus:ring-2 focus:ring-blue-200 transition-all"
+                  />
+                  <svg
+                    className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-textSecondary"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
+                </div>
                 <div className="grid grid-cols-5 gap-3">
                   <SelectBox
                     options={platformOptions}
@@ -341,12 +371,15 @@ export default function WrongNotes() {
                             {getResultLabel(note.result)}
                           </Chip>
                         </div>
+                        <h3 className="text-text font-medium">
+                          {note.title || "제목 없음"}
+                        </h3>
                         <a
                           href={note.link}
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={(e) => e.stopPropagation()}
-                          className="text-text font-medium hover:text-primary transition-colors"
+                          className="text-sm text-textSecondary hover:text-primary transition-colors truncate block"
                         >
                           {note.link}
                         </a>
@@ -393,6 +426,30 @@ export default function WrongNotes() {
             {/* 필터 */}
             {friendNotes.length > 0 && (
               <div className="flex flex-col mb-4 p-4 bg-surface border border-border rounded-lg gap-4">
+                {/* 검색 */}
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="문제 이름으로 검색..."
+                    className="w-full px-4 py-2 pl-10 text-sm outline outline-1 outline-border rounded-md bg-surface text-text
+                      hover:outline-primary focus:outline-primary focus:ring-2 focus:ring-blue-200 transition-all"
+                  />
+                  <svg
+                    className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-textSecondary"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
+                </div>
                 <div className="grid grid-cols-5 gap-3">
                   <SelectBox
                     options={friendList.map((f) => ({
@@ -434,7 +491,7 @@ export default function WrongNotes() {
                   />
                 </div>
                 <div className="flex justify-between items-center">
-                  {(friendFilter || filters.platform || filters.category || filters.language || filters.result) && (
+                  {(friendFilter || filters.platform || filters.category || filters.language || filters.result || searchQuery) && (
                     <Button
                       variant="ghost"
                       size="sm"
@@ -509,11 +566,15 @@ export default function WrongNotes() {
                             {getResultLabel(note.result)}
                           </Chip>
                         </div>
+                        <h3 className="text-text font-medium">
+                          {note.title || "제목 없음"}
+                        </h3>
                         <a
                           href={note.link}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-text font-medium hover:text-primary transition-colors"
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-sm text-textSecondary hover:text-primary transition-colors truncate block"
                         >
                           {note.link}
                         </a>
@@ -539,15 +600,15 @@ export default function WrongNotes() {
         {/* 작성 탭 */}
         {activeTab === "write" && (
           <div className="mt-6 space-y-6">
-            {/* 문제 링크 & 언어 */}
+            {/* 문제 이름 & 언어 */}
             <div className="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-4">
               <div>
-                <label className="block text-sm font-medium text-text mb-2">문제 링크</label>
+                <label className="block text-sm font-medium text-text mb-2">문제 이름</label>
                 <input
-                  type="url"
-                  value={formData.link}
-                  onChange={(e) => handleInputChange("link", e.target.value)}
-                  placeholder="https://programmers.co.kr/..."
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) => handleInputChange("title", e.target.value)}
+                  placeholder="예: 두 수의 합, 타겟 넘버 등"
                   className="w-full px-4 py-2 text-sm outline outline-1 outline-border rounded-md bg-surface text-text
                     hover:outline-primary focus:outline-primary focus:ring-2 focus:ring-blue-200 transition-all"
                 />
@@ -562,6 +623,19 @@ export default function WrongNotes() {
                   fullWidth
                 />
               </div>
+            </div>
+
+            {/* 문제 링크 */}
+            <div>
+              <label className="block text-sm font-medium text-text mb-2">문제 링크</label>
+              <input
+                type="url"
+                value={formData.link}
+                onChange={(e) => handleInputChange("link", e.target.value)}
+                placeholder="https://programmers.co.kr/..."
+                className="w-full px-4 py-2 text-sm outline outline-1 outline-border rounded-md bg-surface text-text
+                  hover:outline-primary focus:outline-primary focus:ring-2 focus:ring-blue-200 transition-all"
+              />
             </div>
 
             {/* 날짜 & 플랫폼 & 등급 */}
