@@ -1,18 +1,17 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import Navbar from "../../components/Navbar";
-import PageHeader from "../../components/PageHeader";
-import Button from "../../components/ui/Button";
-import Chip from "../../components/ui/Chip";
-import SelectBox from "../../components/ui/SelectBox";
-import ToggleButtonGroup from "../../components/ui/ToggleButtonGroup";
-import CodeEditor from "../../components/CodeEditor";
+import Navbar from "@/components/Navbar";
+import PageHeader from "@/components/PageHeader";
+import Button from "@/components/ui/Button";
+import Chip from "@/components/ui/Chip";
+import SelectBox from "@/components/ui/SelectBox";
+import ToggleButtonGroup from "@/components/ui/ToggleButtonGroup";
 import {
   getWrongNoteById,
   deleteWrongNote,
   updateWrongNote,
   type WrongNote,
-} from "../../firebase/services";
+} from "@/firebase/services";
 import {
   categoryOptions,
   languageOptions,
@@ -20,8 +19,8 @@ import {
   programmersGrades,
   resultOptions,
   tagOptions,
-} from "../../constants/options.constants";
-import type { FormData } from "../../types/wrong-notes.types";
+} from "@/constants/options.constants";
+import type { FormData } from "@/types/wrong-notes.types";
 import {
   baekjoonGrades,
   getCategoryLabel,
@@ -30,7 +29,8 @@ import {
   getPlatformLabel,
   getResultLabel,
   getTagLabels,
-} from "../../utils/options.utils";
+} from "@/utils/options.utils";
+import CodeEditorGroup from "@/components/CodeEditorGroup";
 
 export default function WrongNoteDetail() {
   const { id } = useParams<{ id: string }>();
@@ -330,31 +330,15 @@ export default function WrongNoteDetail() {
               </div>
             </div>
 
-            {/* 내 풀이 */}
-            <div className="flex w-full flex-row gap-2">
-              <div className="flex flex-col w-full">
-                <label className="block text-sm font-medium text-text mb-2">
-                  내 풀이
-                </label>
-                <CodeEditor
-                  value={formData.myCode}
-                  language={formData.language}
-                  onChange={(value) => handleInputChange("myCode", value)}
-                />
-              </div>
-
-              {/* 참조한 풀이 */}
-              <div className="flex flex-col w-full">
-                <label className="block text-sm font-medium text-text mb-2">
-                  참조한 풀이
-                </label>
-                <CodeEditor
-                  value={formData.solution}
-                  language={formData.language}
-                  onChange={(value) => handleInputChange("solution", value)}
-                />
-              </div>
-            </div>
+            {/* 코드 */}
+            <CodeEditorGroup
+              isEditMode={true}
+              language={formData.language}
+              myCode={formData.myCode}
+              solution={formData.solution}
+              onChangeMyCode={(value) => handleInputChange("myCode", value)}
+              onChangeSolution={(value) => handleInputChange("solution", value)}
+            />
 
             {/* 코멘트 */}
             <div>
@@ -546,31 +530,12 @@ export default function WrongNoteDetail() {
               <p className="text-text whitespace-pre-wrap">{note.comment}</p>
             </div>
           )}
-          <div className="flex w-full flex-row gap-2">
-            {/* 내 풀이 */}
-            {note.myCode && (
-              <CodeEditor
-                value={note.myCode}
-                language={formData.language}
-                onChange={() => {}}
-                readOnly
-                collapsible
-                title="내 풀이"
-              />
-            )}
-
-            {/* 참조한 풀이 */}
-            {note.solution && (
-              <CodeEditor
-                value={note.solution}
-                language={formData.language}
-                onChange={() => {}}
-                readOnly
-                collapsible
-                title="참조한 풀이"
-              />
-            )}
-          </div>
+          <CodeEditorGroup
+            isEditMode={false}
+            language={note.language}
+            myCode={note.myCode}
+            solution={note.solution}
+          />
         </div>
       </div>
     </div>
