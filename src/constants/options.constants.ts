@@ -4,6 +4,13 @@ export const platformOptions = [
   { value: "baekjoon", label: "백준" },
 ];
 
+export const wrongNoteSortOptions = [
+  { value: "latest", label: "최신순" },
+  { value: "oldest", label: "날짜순" },
+  // { value: "easy", label: "쉬운순" },
+  // { value: "difficult", label: "어려운순" },
+];
+
 export const programmersGrades = [
   { value: "lv1", label: "Lv.1" },
   { value: "lv2", label: "Lv.2" },

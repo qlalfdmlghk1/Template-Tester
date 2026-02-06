@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import PageHeader from "@/components/PageHeader";
@@ -22,6 +22,7 @@ import {
   programmersGrades,
   resultOptions,
   tagOptions,
+  wrongNoteSortOptions,
 } from "@/constants/options.constants";
 import type { Filters, FormData } from "@/types/wrong-notes.types";
 import {
@@ -34,6 +35,7 @@ import {
   getTagLabels,
 } from "@/utils/options.utils";
 import CodeEditorGroup from "@/components/CodeEditorGroup";
+import WrongNoteFilter from "@/components/WrongNoteFilter";
 
 export default function WrongNotes() {
   const [activeTab, setActiveTab] = useState<"write" | "list" | "friends">(
@@ -57,6 +59,7 @@ export default function WrongNotes() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [notes, setNotes] = useState<WrongNote[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [sortBy, setSortBy] = useState("latest");
   const [filters, setFilters] = useState<Filters>({
     platform: "",
     category: "",
@@ -74,19 +77,34 @@ export default function WrongNotes() {
   const [friendFilter, setFriendFilter] = useState<string>("");
 
   // 친구별 필터링된 노트
-  const filteredFriendNotes = friendNotes.filter((note) => {
-    if (friendFilter && note.userId !== friendFilter) return false;
-    if (filters.platform && note.platform !== filters.platform) return false;
-    if (filters.category && note.category !== filters.category) return false;
-    if (filters.result && note.result !== filters.result) return false;
-    if (filters.language && note.language !== filters.language) return false;
-    if (
-      searchQuery &&
-      !note.title?.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-      return false;
-    return true;
-  });
+  const filteredFriendNotes = useMemo(() => {
+    return friendNotes
+      .filter((note) => {
+        if (friendFilter && note.userId !== friendFilter) return false;
+        if (filters.platform && note.platform !== filters.platform)
+          return false;
+        if (filters.category && note.category !== filters.category)
+          return false;
+        if (filters.result && note.result !== filters.result) return false;
+        if (filters.language && note.language !== filters.language)
+          return false;
+        if (
+          searchQuery &&
+          !note.title?.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+          return false;
+        return true;
+      })
+      .sort((a, b) => {
+        const dateA = new Date(a.date).getTime();
+        const dateB = new Date(b.date).getTime();
+
+        if (sortBy === "latest") return dateB - dateA;
+        if (sortBy === "oldest") return dateA - dateB;
+
+        return 0;
+      });
+  }, [friendNotes, filters, searchQuery, sortBy]);
 
   // 친구 이름 가져오기 helper
   const getFriendDisplayName = (userId: string): string => {
@@ -95,19 +113,36 @@ export default function WrongNotes() {
   };
 
   // 필터링된 노트
-  const filteredNotes = notes.filter((note) => {
-    if (filters.platform && note.platform !== filters.platform) return false;
-    if (filters.category && note.category !== filters.category) return false;
-    if (filters.result && note.result !== filters.result) return false;
-    if (filters.language && note.language !== filters.language) return false;
-    if (filters.tag && !note.tags.includes(filters.tag)) return false;
-    if (
-      searchQuery &&
-      !note.title?.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-      return false;
-    return true;
-  });
+  const filteredNotes = useMemo(() => {
+    return notes
+      .filter((note) => {
+        if (filters.platform && note.platform !== filters.platform)
+          return false;
+        if (filters.category && note.category !== filters.category)
+          return false;
+        if (filters.result && note.result !== filters.result) return false;
+        if (filters.language && note.language !== filters.language)
+          return false;
+        if (filters.tag && !note.tags.includes(filters.tag)) return false;
+
+        if (
+          searchQuery &&
+          !note.title?.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+          return false;
+
+        return true;
+      })
+      .sort((a, b) => {
+        const dateA = new Date(a.date).getTime();
+        const dateB = new Date(b.date).getTime();
+
+        if (sortBy === "latest") return dateB - dateA;
+        if (sortBy === "oldest") return dateA - dateB;
+
+        return 0;
+      });
+  }, [notes, filters, searchQuery, sortBy]);
 
   const handleFilterChange = (key: keyof Filters, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -124,8 +159,11 @@ export default function WrongNotes() {
     setSearchQuery("");
   };
 
-  const hasActiveFilters =
-    filters.platform || filters.result || filters.tag || searchQuery;
+  const hasActiveFilters = useMemo(() => {
+    return (
+      !!filters.platform || !!filters.result || !!filters.tag || !!searchQuery
+    );
+  }, [filters.platform, filters.result, filters.tag, searchQuery]);
 
   // 목록 불러오기
   const loadNotes = async () => {
@@ -174,6 +212,10 @@ export default function WrongNotes() {
 
   const handlePlatformChange = (value: string) => {
     setFormData((prev) => ({ ...prev, platform: value, grade: "" }));
+  };
+
+  const handleSortByChange = (value: string) => {
+    setSortBy(value);
   };
 
   const getGradeOptions = () => {
@@ -275,86 +317,27 @@ export default function WrongNotes() {
           <div className="mt-6">
             {/* 필터 */}
             {notes.length > 0 && (
-              <div className="flex flex-col mb-4 p-4 bg-surface border border-border rounded-lg gap-4">
-                {/* 검색 */}
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="문제 이름으로 검색..."
-                    className="w-full px-4 py-2 pl-10 text-sm outline outline-1 outline-border rounded-md bg-surface text-text
-                      hover:outline-primary focus:outline-primary focus:ring-2 focus:ring-blue-200 transition-all"
-                  />
-                  <svg
-                    className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-textSecondary"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    />
-                  </svg>
-                </div>
-                <div className="grid grid-cols-5 gap-3">
-                  <SelectBox
-                    options={platformOptions}
-                    value={filters.platform}
-                    onChange={(e) =>
-                      handleFilterChange("platform", e.target.value)
-                    }
-                    placeholder="플랫폼"
-                    selectSize="sm"
-                  />
-                  <SelectBox
-                    options={categoryOptions}
-                    value={filters.category}
-                    onChange={(e) =>
-                      handleFilterChange("category", e.target.value)
-                    }
-                    placeholder="알고리즘"
-                    selectSize="sm"
-                  />
-                  <SelectBox
-                    options={languageOptions}
-                    value={filters.language}
-                    onChange={(e) =>
-                      handleFilterChange("language", e.target.value)
-                    }
-                    placeholder="언어"
-                    selectSize="sm"
-                  />
-                  <SelectBox
-                    options={resultOptions}
-                    value={filters.result}
-                    onChange={(e) =>
-                      handleFilterChange("result", e.target.value)
-                    }
-                    placeholder="결과"
-                    selectSize="sm"
-                  />
-                  <SelectBox
-                    options={tagOptions}
-                    value={filters.tag}
-                    onChange={(e) => handleFilterChange("tag", e.target.value)}
-                    placeholder="작성 이유"
-                    selectSize="sm"
-                  />
-                  {hasActiveFilters && (
-                    <Button variant="ghost" size="sm" onClick={clearFilters}>
-                      초기화
-                    </Button>
-                  )}
-                </div>
-                <span className="ml-auto text-xs text-textSecondary">
-                  {filteredNotes.length}개 / 전체 {notes.length}개
-                </span>
-              </div>
+              <WrongNoteFilter
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                filters={filters}
+                onFilterChange={handleFilterChange}
+                hasActiveFilters={hasActiveFilters}
+                onClearFilters={clearFilters}
+              />
             )}
+
+            <div className="flex flex-row w-full justify-between items-center mb-4">
+              <span className="text-xs text-textSecondary">
+                {filteredNotes.length}개 / 전체 {notes.length}개
+              </span>
+              <SelectBox
+                options={wrongNoteSortOptions}
+                value={sortBy}
+                onChange={(e) => handleSortByChange(e.target.value)}
+                placeholder="정렬순 선택"
+              />
+            </div>
 
             {isLoading ? (
               <div className="text-center py-12 text-textSecondary">
@@ -477,103 +460,27 @@ export default function WrongNotes() {
           <div className="mt-6">
             {/* 필터 */}
             {friendNotes.length > 0 && (
-              <div className="flex flex-col mb-4 p-4 bg-surface border border-border rounded-lg gap-4">
-                {/* 검색 */}
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="문제 이름으로 검색..."
-                    className="w-full px-4 py-2 pl-10 text-sm outline outline-1 outline-border rounded-md bg-surface text-text
-                      hover:outline-primary focus:outline-primary focus:ring-2 focus:ring-blue-200 transition-all"
-                  />
-                  <svg
-                    className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-textSecondary"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    />
-                  </svg>
-                </div>
-                <div className="grid grid-cols-5 gap-3">
-                  <SelectBox
-                    options={friendList.map((f) => ({
-                      value: f.odUserId,
-                      label: f.displayName || f.email || "알 수 없음",
-                    }))}
-                    value={friendFilter}
-                    onChange={(e) => setFriendFilter(e.target.value)}
-                    placeholder="모든 친구"
-                    selectSize="sm"
-                  />
-                  <SelectBox
-                    options={platformOptions}
-                    value={filters.platform}
-                    onChange={(e) =>
-                      handleFilterChange("platform", e.target.value)
-                    }
-                    placeholder="플랫폼"
-                    selectSize="sm"
-                  />
-                  <SelectBox
-                    options={categoryOptions}
-                    value={filters.category}
-                    onChange={(e) =>
-                      handleFilterChange("category", e.target.value)
-                    }
-                    placeholder="알고리즘"
-                    selectSize="sm"
-                  />
-                  <SelectBox
-                    options={languageOptions}
-                    value={filters.language}
-                    onChange={(e) =>
-                      handleFilterChange("language", e.target.value)
-                    }
-                    placeholder="언어"
-                    selectSize="sm"
-                  />
-                  <SelectBox
-                    options={resultOptions}
-                    value={filters.result}
-                    onChange={(e) =>
-                      handleFilterChange("result", e.target.value)
-                    }
-                    placeholder="결과"
-                    selectSize="sm"
-                  />
-                </div>
-                <div className="flex justify-between items-center">
-                  {(friendFilter ||
-                    filters.platform ||
-                    filters.category ||
-                    filters.language ||
-                    filters.result ||
-                    searchQuery) && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setFriendFilter("");
-                        clearFilters();
-                      }}
-                    >
-                      초기화
-                    </Button>
-                  )}
-                  <span className="ml-auto text-xs text-textSecondary">
-                    {filteredFriendNotes.length}개 / 전체 {friendNotes.length}개
-                  </span>
-                </div>
-              </div>
+              <WrongNoteFilter
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                filters={filters}
+                onFilterChange={handleFilterChange}
+                hasActiveFilters={hasActiveFilters}
+                onClearFilters={clearFilters}
+              />
             )}
+
+            <div className="flex flex-row w-full justify-between items-center mb-4">
+              <span className="text-xs text-textSecondary">
+                {filteredFriendNotes.length}개 / 전체 {friendNotes.length}개
+              </span>
+              <SelectBox
+                options={wrongNoteSortOptions}
+                value={sortBy}
+                onChange={(e) => handleSortByChange(e.target.value)}
+                placeholder="정렬순 선택"
+              />
+            </div>
 
             {isFriendNotesLoading ? (
               <div className="text-center py-12 text-textSecondary">
