@@ -1,21 +1,16 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../../components/Navbar";
-import PageHeader from "../../components/PageHeader";
-import Button from "../../components/ui/Button";
-import Chip from "../../components/ui/Chip";
-import SelectBox from "../../components/ui/SelectBox";
-import ToggleButtonGroup from "../../components/ui/ToggleButtonGroup";
-import CodeEditor from "../../components/CodeEditor";
-import {
-  saveWrongNote,
-  getWrongNotes,
-  deleteWrongNote,
-  getFriendsSharedWrongNotes,
-  getFriendList,
-  type WrongNote,
-} from "../../firebase/services";
-import type { FriendInfo } from "../../types/friendship.types";
+import Navbar from "@/widgets/Navbar/Navbar";
+import PageHeader from "@/shared/ui/molecules/PageHeader/PageHeader";
+import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
+import Chip from "@/shared/ui/atoms/Chip/Chip";
+import SelectBox from "@/shared/ui/atoms/SelectBox/SelectBox";
+import ToggleButtonGroup from "@/shared/ui/atoms/ToggleButtonGroup/ToggleButtonGroup";
+import CodeEditor from "@/shared/ui/molecules/CodeEditor/CodeEditor";
+import { saveWrongNote, getWrongNotes, deleteWrongNote, getFriendsSharedWrongNotes } from "@/entities/wrong-note/api/wrong-note.api";
+import type { WrongNote, Filters, FormData } from "@/entities/wrong-note/model/wrong-note.type";
+import { getFriendList } from "@/entities/friend/api/friend.api";
+import type { FriendInfo } from "@/entities/friend/model/friend.type";
 import {
   categoryOptions,
   languageOptions,
@@ -23,9 +18,6 @@ import {
   programmersGrades,
   resultOptions,
   tagOptions,
-} from "../../constants/options.constants";
-import type { Filters, FormData } from "../../types/wrong-notes.types";
-import {
   baekjoonGrades,
   getCategoryLabel,
   getGradeLabel,
@@ -33,7 +25,7 @@ import {
   getPlatformLabel,
   getResultLabel,
   getTagLabels,
-} from "../../utils/options.utils";
+} from "@/shared/lib/options";
 
 export default function WrongNotes() {
   const [activeTab, setActiveTab] = useState<"write" | "list" | "friends">("list");
@@ -330,9 +322,9 @@ export default function WrongNotes() {
                     selectSize="sm"
                   />
                   {hasActiveFilters && (
-                    <Button variant="ghost" size="sm" onClick={clearFilters}>
+                    <AppButton variant="ghost" size="sm" onClick={clearFilters}>
                       초기화
-                    </Button>
+                    </AppButton>
                   )}
                 </div>
                 <span className="ml-auto text-xs text-textSecondary">
@@ -347,16 +339,16 @@ export default function WrongNotes() {
               <div className="text-center py-12">
                 <div className="text-4xl mb-4">📝</div>
                 <p className="text-textSecondary mb-4">아직 작성한 오답노트가 없습니다.</p>
-                <Button variant="primary" onClick={() => setActiveTab("write")}>
+                <AppButton variant="solid" onClick={() => setActiveTab("write")}>
                   첫 오답노트 작성하기
-                </Button>
+                </AppButton>
               </div>
             ) : filteredNotes.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-textSecondary mb-4">필터 조건에 맞는 오답노트가 없습니다.</p>
-                <Button variant="ghost" onClick={clearFilters}>
+                <AppButton variant="ghost" onClick={clearFilters}>
                   필터 초기화
-                </Button>
+                </AppButton>
               </div>
             ) : (
               <div className="space-y-4">
@@ -505,7 +497,7 @@ export default function WrongNotes() {
                     filters.language ||
                     filters.result ||
                     searchQuery) && (
-                    <Button
+                    <AppButton
                       variant="ghost"
                       size="sm"
                       onClick={() => {
@@ -514,7 +506,7 @@ export default function WrongNotes() {
                       }}
                     >
                       초기화
-                    </Button>
+                    </AppButton>
                   )}
                   <span className="ml-auto text-xs text-textSecondary">
                     {filteredFriendNotes.length}개 / 전체 {friendNotes.length}개
@@ -529,9 +521,9 @@ export default function WrongNotes() {
               <div className="text-center py-12">
                 <div className="text-4xl mb-4">👥</div>
                 <p className="text-textSecondary mb-4">아직 친구가 없습니다.</p>
-                <Button variant="primary" onClick={() => navigate("/friends")}>
+                <AppButton variant="solid" onClick={() => navigate("/friends")}>
                   친구 추가하러 가기
-                </Button>
+                </AppButton>
               </div>
             ) : friendNotes.length === 0 ? (
               <div className="text-center py-12">
@@ -541,7 +533,7 @@ export default function WrongNotes() {
             ) : filteredFriendNotes.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-textSecondary mb-4">필터 조건에 맞는 오답노트가 없습니다.</p>
-                <Button
+                <AppButton
                   variant="ghost"
                   onClick={() => {
                     setFriendFilter("");
@@ -549,7 +541,7 @@ export default function WrongNotes() {
                   }}
                 >
                   필터 초기화
-                </Button>
+                </AppButton>
               </div>
             ) : (
               <div className="space-y-4">
@@ -766,9 +758,9 @@ export default function WrongNotes() {
 
             {/* 제출 버튼 */}
             <div className="flex justify-end pt-4">
-              <Button variant="primary" size="lg" onClick={handleSubmit} disabled={isSubmitting}>
+              <AppButton variant="solid" size="lg" onClick={handleSubmit} disabled={isSubmitting}>
                 {isSubmitting ? "저장 중..." : "오답노트 저장"}
-              </Button>
+              </AppButton>
             </div>
           </div>
         )}

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { signUpWithUsername } from "../firebase/services";
+import { signUpWithUsername } from "@/features/auth/api/auth.api";
 import { useNavigate, Link } from "react-router-dom";
 
 function Signup() {

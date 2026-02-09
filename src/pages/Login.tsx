@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { signInWithGoogle, signInWithGithub, signInWithUsername } from "../firebase/services";
+import { signInWithGoogle, signInWithGithub, signInWithUsername } from "@/features/auth/api/auth.api";
 import { useNavigate, Link } from "react-router-dom";
 
 function Login() {

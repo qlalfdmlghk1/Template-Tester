@@ -1,14 +1,16 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../components/Navbar";
-import PageHeader from "../components/PageHeader";
-import CodeEditor from "../components/CodeEditor";
-import GradingResult from "../components/GradingResult";
-import Button from "../components/ui/Button";
-import SelectBox from "../components/ui/SelectBox";
-import type { Category, GradingResult as GradingResultType, Template } from "../types";
-import { gradeAnswer } from "../utils/grading";
-import { saveSubmission, getUserTemplatesByCategory } from "../firebase/services";
+import Navbar from "@/widgets/Navbar/Navbar";
+import PageHeader from "@/shared/ui/molecules/PageHeader/PageHeader";
+import CodeEditor from "@/shared/ui/molecules/CodeEditor/CodeEditor";
+import GradingResult from "@/features/grading/ui/GradingResult";
+import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
+import SelectBox from "@/shared/ui/atoms/SelectBox/SelectBox";
+import type { Category, Template } from "@/entities/template/model/template.type";
+import type { GradingResult as GradingResultType } from "@/entities/submission/model/submission.type";
+import { gradeAnswer } from "@/features/grading/model/grading";
+import { saveSubmission } from "@/entities/submission/api/submission.api";
+import { getUserTemplatesByCategory } from "@/entities/template/api/template.api";
 
 const categories: { value: Category; label: string }[] = [
   { value: "algorithm", label: "알고리즘" },
@@ -112,9 +114,9 @@ export default function IndexPage() {
                 }))}
                 placeholder="템플릿을 선택하세요"
               />
-              <Button onClick={() => navigate("/template-registration")} variant="secondary">
+              <AppButton onClick={() => navigate("/template-registration")} variant="outline" size="sm">
                 템플릿 생성하기
-              </Button>
+              </AppButton>
             </div>
           }
         />
@@ -135,12 +137,12 @@ export default function IndexPage() {
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold text-text m-0">코드 입력</h3>
                 <div className="flex gap-2">
-                  <Button onClick={handleReset} variant="secondary">
+                  <AppButton onClick={handleReset} variant="outline">
                     초기화
-                  </Button>
-                  <Button onClick={handleGrade} variant="primary">
+                  </AppButton>
+                  <AppButton onClick={handleGrade} variant="solid">
                     채점하기
-                  </Button>
+                  </AppButton>
                 </div>
               </div>
               <CodeEditor value={userCode} onChange={setUserCode} language="python" />
