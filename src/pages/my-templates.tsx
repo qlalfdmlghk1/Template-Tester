@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../components/Navbar";
-import PageHeader from "../components/PageHeader";
-import Button from "../components/ui/Button";
-import { getUserTemplatesByCategory, deleteUserTemplate } from "../firebase/services";
-import type { Category, Template } from "../types";
+import Navbar from "@/widgets/Navbar/Navbar";
+import PageHeader from "@/shared/ui/molecules/PageHeader/PageHeader";
+import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
+import { getUserTemplatesByCategory, deleteUserTemplate } from "@/entities/template/api/template.api";
+import type { Category, Template } from "@/entities/template/model/template.type";
 
 function MyTemplates() {
   const navigate = useNavigate();
@@ -60,9 +60,9 @@ function MyTemplates() {
         <PageHeader title="내 템플릿 관리" description="등록한 템플릿을 확인하고 수정/삭제할 수 있습니다." />
 
         <div className="mb-6 flex justify-end">
-          <Button onClick={handleCreateNew} variant="primary">
+          <AppButton onClick={handleCreateNew} variant="solid">
             새 템플릿 등록
-          </Button>
+          </AppButton>
         </div>
 
         {isLoading ? (
@@ -70,9 +70,9 @@ function MyTemplates() {
         ) : templates.length === 0 ? (
           <div className="bg-surface p-12 rounded-lg border border-border text-center">
             <p className="text-textSecondary mb-4">등록된 템플릿이 없습니다.</p>
-            <Button onClick={handleCreateNew} variant="primary">
+            <AppButton onClick={handleCreateNew} variant="solid">
               템플릿 등록하기
-            </Button>
+            </AppButton>
           </div>
         ) : (
           <div className="space-y-4">
@@ -96,12 +96,12 @@ function MyTemplates() {
                   </div>
 
                   <div className="flex">
-                    <Button onClick={() => handleEdit(template.id)} variant="ghost" size="sm">
+                    <AppButton onClick={() => handleEdit(template.id)} variant="ghost" size="sm">
                       수정
-                    </Button>
-                    <Button onClick={() => handleDelete(template.id, template.title)} variant="ghost" size="sm">
+                    </AppButton>
+                    <AppButton onClick={() => handleDelete(template.id, template.title)} variant="ghost" size="sm">
                       삭제
-                    </Button>
+                    </AppButton>
                   </div>
                 </div>
               </div>

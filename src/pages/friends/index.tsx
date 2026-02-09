@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../contexts/useAuth";
-import Navbar from "../../components/Navbar";
-import PageHeader from "../../components/PageHeader";
-import Button from "../../components/ui/Button";
+import { useAuth } from "@/features/auth/model/useAuth";
+import Navbar from "@/widgets/Navbar/Navbar";
+import PageHeader from "@/shared/ui/molecules/PageHeader/PageHeader";
+import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
 import {
   getFriendList,
   getReceivedFriendRequests,
@@ -11,13 +11,12 @@ import {
   acceptFriendRequest,
   rejectFriendRequest,
   deleteFriendship,
-  searchUserByDisplayName,
   sendFriendRequest,
   getFriendshipStatus,
-} from "../../firebase/services";
-import type { FriendInfo } from "../../types/friendship.types";
-import type { Friendship } from "../../types/friendship.types";
-import type { UserProfile } from "../../types/user.types";
+} from "@/entities/friend/api/friend.api";
+import { searchUserByDisplayName } from "@/entities/user/api/user.api";
+import type { FriendInfo, Friendship } from "@/entities/friend/model/friend.type";
+import type { UserProfile } from "@/entities/user/model/user.type";
 
 type TabType = "list" | "requests" | "add";
 
@@ -251,9 +250,9 @@ export default function Friends() {
                 <div className="text-center py-12">
                   <div className="text-4xl mb-4">👥</div>
                   <p className="text-textSecondary mb-4">아직 친구가 없습니다.</p>
-                  <Button variant="primary" size="md" onClick={() => setActiveTab("add")}>
+                  <AppButton variant="solid" size="md" onClick={() => setActiveTab("add")}>
                     친구 추가하기
-                  </Button>
+                  </AppButton>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -329,12 +328,12 @@ export default function Friends() {
                           </div>
                         </div>
                         <div className="flex gap-2">
-                          <Button variant="primary" size="sm" onClick={() => handleAccept(request.id!)}>
+                          <AppButton variant="solid" size="sm" onClick={() => handleAccept(request.id!)}>
                             수락
-                          </Button>
-                          <Button variant="secondary" size="sm" onClick={() => handleReject(request.id!)}>
+                          </AppButton>
+                          <AppButton variant="outline" size="sm" onClick={() => handleReject(request.id!)}>
                             거절
-                          </Button>
+                          </AppButton>
                         </div>
                       </div>
                     ))}
@@ -373,9 +372,9 @@ export default function Friends() {
                             <p className="text-sm text-textSecondary">{request.receiverEmail}</p>
                           </div>
                         </div>
-                        <Button variant="secondary" size="sm" onClick={() => handleCancelRequest(request.id!)}>
+                        <AppButton variant="outline" size="sm" onClick={() => handleCancelRequest(request.id!)}>
                           취소
-                        </Button>
+                        </AppButton>
                       </div>
                     ))}
                   </div>
@@ -398,9 +397,9 @@ export default function Friends() {
                     placeholder="닉네임 또는 이메일을 입력하세요"
                     className="flex-1 px-4 py-2 border border-border rounded-lg bg-surface text-text focus:outline-none focus:border-primary"
                   />
-                  <Button variant="primary" onClick={handleSearch} disabled={isSearching}>
+                  <AppButton variant="solid" onClick={handleSearch} disabled={isSearching}>
                     {isSearching ? "검색 중..." : "검색"}
-                  </Button>
+                  </AppButton>
                 </div>
               </div>
 
@@ -430,14 +429,14 @@ export default function Friends() {
                           <p className="text-sm text-textSecondary">{searchUser.email}</p>
                         </div>
                       </div>
-                      <Button
-                        variant={isRequestDisabled(searchUser.uid) ? "secondary" : "primary"}
+                      <AppButton
+                        variant={isRequestDisabled(searchUser.uid) ? "outline" : "solid"}
                         size="sm"
                         disabled={isRequestDisabled(searchUser.uid)}
                         onClick={() => handleSendRequest(searchUser.uid)}
                       >
                         {getRequestButtonText(searchUser.uid)}
-                      </Button>
+                      </AppButton>
                     </div>
                   ))}
                 </div>

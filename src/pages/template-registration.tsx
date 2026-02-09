@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import Navbar from "../components/Navbar";
-import PageHeader from "../components/PageHeader";
-import Button from "../components/ui/Button";
-import SelectBox from "../components/ui/SelectBox";
-import CodeEditor from "../components/CodeEditor";
-import { saveUserTemplate, updateUserTemplate, getUserTemplates } from "../firebase/services";
-import type { Category, TemplateType } from "../types";
+import Navbar from "@/widgets/Navbar/Navbar";
+import PageHeader from "@/shared/ui/molecules/PageHeader/PageHeader";
+import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
+import SelectBox from "@/shared/ui/atoms/SelectBox/SelectBox";
+import CodeEditor from "@/shared/ui/molecules/CodeEditor/CodeEditor";
+import { saveUserTemplate, updateUserTemplate, getUserTemplates } from "@/entities/template/api/template.api";
+import type { Category, TemplateType } from "@/entities/template/model/template.type";
 
 function TemplateRegistration() {
   const navigate = useNavigate();
@@ -212,14 +212,14 @@ function TemplateRegistration() {
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold text-text m-0">정답 입력</h3>
             <div className="flex gap-2">
-              <Button onClick={handleReset} variant="secondary">
+              <AppButton onClick={handleReset} variant="outline">
                 초기화
-              </Button>
-              <Button onClick={handleSubmit} variant="primary" disabled={isSubmitting}>
+              </AppButton>
+              <AppButton onClick={handleSubmit} variant="solid" disabled={isSubmitting}>
                 {isSubmitting
                   ? (isEditMode ? "수정 중..." : "등록 중...")
                   : (isEditMode ? "템플릿 수정" : "템플릿 등록")}
-              </Button>
+              </AppButton>
             </div>
           </div>
           <CodeEditor value={answer} onChange={setAnswer} language="python" />

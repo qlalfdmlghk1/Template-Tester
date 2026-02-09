@@ -1,18 +1,14 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import Navbar from "../../components/Navbar";
-import PageHeader from "../../components/PageHeader";
-import Button from "../../components/ui/Button";
-import Chip from "../../components/ui/Chip";
-import SelectBox from "../../components/ui/SelectBox";
-import ToggleButtonGroup from "../../components/ui/ToggleButtonGroup";
-import CodeEditor from "../../components/CodeEditor";
-import {
-  getWrongNoteById,
-  deleteWrongNote,
-  updateWrongNote,
-  type WrongNote,
-} from "../../firebase/services";
+import Navbar from "@/widgets/Navbar/Navbar";
+import PageHeader from "@/shared/ui/molecules/PageHeader/PageHeader";
+import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
+import Chip from "@/shared/ui/atoms/Chip/Chip";
+import SelectBox from "@/shared/ui/atoms/SelectBox/SelectBox";
+import ToggleButtonGroup from "@/shared/ui/atoms/ToggleButtonGroup/ToggleButtonGroup";
+import CodeEditor from "@/shared/ui/molecules/CodeEditor/CodeEditor";
+import { getWrongNoteById, deleteWrongNote, updateWrongNote } from "@/entities/wrong-note/api/wrong-note.api";
+import type { WrongNote, FormData } from "@/entities/wrong-note/model/wrong-note.type";
 import {
   categoryOptions,
   languageOptions,
@@ -20,9 +16,6 @@ import {
   programmersGrades,
   resultOptions,
   tagOptions,
-} from "../../constants/options.constants";
-import type { FormData } from "../../types/wrong-notes.types";
-import {
   baekjoonGrades,
   getCategoryLabel,
   getGradeLabel,
@@ -30,7 +23,7 @@ import {
   getPlatformLabel,
   getResultLabel,
   getTagLabels,
-} from "../../utils/options.utils";
+} from "@/shared/lib/options";
 
 export default function WrongNoteDetail() {
   const { id } = useParams<{ id: string }>();
@@ -183,9 +176,9 @@ export default function WrongNoteDetail() {
             <p className="text-textSecondary mb-4">
               오답노트를 찾을 수 없습니다.
             </p>
-            <Button variant="primary" onClick={() => navigate("/wrong-notes")}>
+            <AppButton variant="solid" onClick={() => navigate("/wrong-notes")}>
               목록으로 돌아가기
-            </Button>
+            </AppButton>
           </div>
         </div>
       </div>
@@ -390,16 +383,16 @@ export default function WrongNoteDetail() {
 
             {/* 버튼 */}
             <div className="flex justify-end gap-3 pt-4">
-              <Button variant="ghost" onClick={handleCancel}>
+              <AppButton variant="ghost" onClick={handleCancel}>
                 취소
-              </Button>
-              <Button
-                variant="primary"
+              </AppButton>
+              <AppButton
+                variant="solid"
                 onClick={handleSave}
                 disabled={isSaving}
               >
                 {isSaving ? "저장 중..." : "저장"}
-              </Button>
+              </AppButton>
             </div>
           </div>
         </div>
