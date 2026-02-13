@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { getRecentSubmissions } from "../api/submission.api";
 import type { Submission } from "../model/submission.type";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
+import AppFallback from "@/shared/ui/molecules/AppFallback/AppFallback";
 
 export default function SubmissionHistory() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
@@ -55,10 +56,11 @@ export default function SubmissionHistory() {
     return (
       <div className="bg-surface p-6 rounded-lg border border-border">
         <h3 className="text-xl font-bold text-text mb-4">최근 제출 기록</h3>
-        <p className="text-red-500 mb-4">{error}</p>
-        <AppButton onClick={loadSubmissions} variant="outline">
-          다시 시도
-        </AppButton>
+        <AppFallback
+          type="error"
+          title={error}
+          onAction={loadSubmissions}
+        />
       </div>
     );
   }
@@ -67,7 +69,12 @@ export default function SubmissionHistory() {
     return (
       <div className="bg-surface p-6 rounded-lg border border-border">
         <h3 className="text-xl font-bold text-text mb-4">최근 제출 기록</h3>
-        <p className="text-textSecondary">아직 제출 기록이 없습니다.</p>
+        <AppFallback
+          type="empty"
+          title="아직 제출 기록이 없습니다."
+          description="템플릿을 학습하고 제출하면 여기에 기록됩니다."
+          hideButton
+        />
       </div>
     );
   }

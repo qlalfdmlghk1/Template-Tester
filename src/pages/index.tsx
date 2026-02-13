@@ -5,7 +5,8 @@ import PageHeader from "@/shared/ui/molecules/PageHeader/PageHeader";
 import CodeEditor from "@/shared/ui/molecules/CodeEditor/CodeEditor";
 import GradingResult from "@/features/grading/ui/GradingResult";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
-import SelectBox from "@/shared/ui/atoms/SelectBox/SelectBox";
+import AppSelect from "@/shared/ui/atoms/AppSelect/AppSelect";
+
 import type { Category, Template } from "@/entities/template/model/template.type";
 import type { GradingResult as GradingResultType } from "@/entities/submission/model/submission.type";
 import { gradeAnswer } from "@/features/grading/model/grading";
@@ -92,34 +93,45 @@ export default function IndexPage() {
 
       <div className="max-w-[1400px] mx-auto px-6 py-6">
         {/* 템플릿 선택 영역 */}
-        <PageHeader
-          title="템플릿 선택"
-          actions={
-            <div className="flex gap-3">
-              <SelectBox
+        <PageHeader title="템플릿 선택" />
+
+        <div className="bg-surface p-4 rounded-lg border border-border mb-6">
+          <div className="flex items-end gap-4">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-textSecondary">카테고리</label>
+              <AppSelect
                 value={currentCategory}
-                onChange={(e) => handleCategoryChange(e.target.value as Category)}
+                onChange={(value) => handleCategoryChange(value as Category)}
                 options={categories.map((cat) => ({
                   value: cat.value,
                   label: cat.label,
                 }))}
                 placeholder="카테고리 선택"
+                size="sm"
+                width="140px"
               />
-              <SelectBox
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-textSecondary">템플릿</label>
+              <AppSelect
                 value={selectedTemplateId}
-                onChange={(e) => handleTemplateChange(e.target.value)}
+                onChange={(value) => handleTemplateChange(value as string)}
                 options={templates.map((template) => ({
                   value: template.id,
                   label: template.title,
                 }))}
                 placeholder="템플릿을 선택하세요"
+                size="sm"
+                width="260px"
               />
+            </div>
+            <div className="ml-auto">
               <AppButton onClick={() => navigate("/template-registration")} variant="outline" size="sm">
-                템플릿 생성하기
+                + 템플릿 생성하기
               </AppButton>
             </div>
-          }
-        />
+          </div>
+        </div>
 
         {selectedTemplate && (
           <div className="bg-surface p-4 sm:p-5 md:p-6 rounded-lg border border-border mb-6">
