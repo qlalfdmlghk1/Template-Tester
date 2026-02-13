@@ -12,6 +12,7 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
+    "@iconify/react": "^6.0.2",
     "@monaco-editor/react": "^4.7.0",
     "firebase": "^12.7.0",
     "react": "^19.2.0",
