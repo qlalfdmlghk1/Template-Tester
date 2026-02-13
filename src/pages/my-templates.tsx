@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "@/widgets/Navbar/Navbar";
 import PageHeader from "@/shared/ui/molecules/PageHeader/PageHeader";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
+import AppFallback from "@/shared/ui/molecules/AppFallback/AppFallback";
 import { getUserTemplatesByCategory, deleteUserTemplate } from "@/entities/template/api/template.api";
 import type { Category, Template } from "@/entities/template/model/template.type";
 
@@ -68,12 +69,14 @@ function MyTemplates() {
         {isLoading ? (
           <div className="text-center py-12 text-textSecondary">템플릿을 불러오는 중...</div>
         ) : templates.length === 0 ? (
-          <div className="bg-surface p-12 rounded-lg border border-border text-center">
-            <p className="text-textSecondary mb-4">등록된 템플릿이 없습니다.</p>
-            <AppButton onClick={handleCreateNew} variant="solid">
-              템플릿 등록하기
-            </AppButton>
-          </div>
+          <AppFallback
+            type="empty"
+            title="등록된 템플릿이 없습니다."
+            description="새 템플릿을 등록해보세요."
+            buttonText="템플릿 등록하기"
+            buttonIcon={null}
+            onAction={handleCreateNew}
+          />
         ) : (
           <div className="space-y-4">
             {templates.map((template) => (

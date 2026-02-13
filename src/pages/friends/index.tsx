@@ -4,6 +4,7 @@ import { useAuth } from "@/features/auth/model/useAuth";
 import Navbar from "@/widgets/Navbar/Navbar";
 import PageHeader from "@/shared/ui/molecules/PageHeader/PageHeader";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
+import AppFallback from "@/shared/ui/molecules/AppFallback/AppFallback";
 import {
   getFriendList,
   getReceivedFriendRequests,
@@ -247,13 +248,14 @@ export default function Friends() {
               {isLoading ? (
                 <div className="text-center py-12 text-textSecondary">불러오는 중...</div>
               ) : friends.length === 0 ? (
-                <div className="text-center py-12">
-                  <div className="text-4xl mb-4">👥</div>
-                  <p className="text-textSecondary mb-4">아직 친구가 없습니다.</p>
-                  <AppButton variant="solid" size="md" onClick={() => setActiveTab("add")}>
-                    친구 추가하기
-                  </AppButton>
-                </div>
+                <AppFallback
+                  type="empty"
+                  title="아직 친구가 없습니다."
+                  description="닉네임을 검색해서 친구를 추가해보세요."
+                  buttonText="친구 추가하기"
+                  buttonIcon={null}
+                  onAction={() => setActiveTab("add")}
+                />
               ) : (
                 <div className="space-y-3">
                   {friends.map((friend) => (
@@ -300,9 +302,12 @@ export default function Friends() {
                 {isLoading ? (
                   <div className="text-center py-8 text-textSecondary">불러오는 중...</div>
                 ) : receivedRequests.length === 0 ? (
-                  <div className="text-center py-8 bg-surface border border-border rounded-lg">
-                    <p className="text-textSecondary">받은 친구 요청이 없습니다.</p>
-                  </div>
+                  <AppFallback
+                    type="empty"
+                    title="받은 친구 요청이 없습니다."
+                    description="친구가 요청을 보내면 여기에 표시됩니다."
+                    hideButton
+                  />
                 ) : (
                   <div className="space-y-3">
                     {receivedRequests.map((request) => (
@@ -345,9 +350,12 @@ export default function Friends() {
               <div>
                 <h3 className="text-lg font-semibold text-text mb-3">보낸 요청</h3>
                 {sentRequests.length === 0 ? (
-                  <div className="text-center py-8 bg-surface border border-border rounded-lg">
-                    <p className="text-textSecondary">보낸 친구 요청이 없습니다.</p>
-                  </div>
+                  <AppFallback
+                    type="empty"
+                    title="보낸 친구 요청이 없습니다."
+                    description="친구를 검색해서 요청을 보내보세요."
+                    hideButton
+                  />
                 ) : (
                   <div className="space-y-3">
                     {sentRequests.map((request) => (
@@ -441,14 +449,19 @@ export default function Friends() {
                   ))}
                 </div>
               ) : searchQuery && !isSearching ? (
-                <div className="text-center py-12 bg-surface border border-border rounded-lg">
-                  <p className="text-textSecondary">검색 결과가 없습니다.</p>
-                </div>
+                <AppFallback
+                  type="empty"
+                  title="검색 결과가 없습니다."
+                  description="다른 닉네임으로 다시 검색해보세요."
+                  hideButton
+                />
               ) : (
-                <div className="text-center py-12 bg-surface border border-border rounded-lg">
-                  <div className="text-4xl mb-4">🔍</div>
-                  <p className="text-textSecondary">닉네임을 검색해서 친구를 추가해보세요.</p>
-                </div>
+                <AppFallback
+                  type="empty"
+                  title="닉네임을 검색해서 친구를 추가해보세요."
+                  description="위 검색창에 닉네임 또는 이메일을 입력하세요."
+                  hideButton
+                />
               )}
             </div>
           )}

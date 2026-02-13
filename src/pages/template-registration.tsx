@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import Navbar from "@/widgets/Navbar/Navbar";
 import PageHeader from "@/shared/ui/molecules/PageHeader/PageHeader";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
-import SelectBox from "@/shared/ui/atoms/SelectBox/SelectBox";
+import AppSelect from "@/shared/ui/atoms/AppSelect/AppSelect";
 import CodeEditor from "@/shared/ui/molecules/CodeEditor/CodeEditor";
 import { saveUserTemplate, updateUserTemplate, getUserTemplates } from "@/entities/template/api/template.api";
 import type { Category, TemplateType } from "@/entities/template/model/template.type";
@@ -129,9 +129,9 @@ function TemplateRegistration() {
             <label className="block text-sm font-semibold text-text mb-2">
               카테고리
             </label>
-            <SelectBox
+            <AppSelect
               value={currentCategory}
-              onChange={(e) => setCurrentCategory(e.target.value as Category)}
+              onChange={(value) => setCurrentCategory(value as Category)}
               options={[
                 { value: "algorithm", label: "알고리즘" },
                 { value: "cs", label: "CS" },
