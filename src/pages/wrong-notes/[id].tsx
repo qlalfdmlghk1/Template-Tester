@@ -3,8 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "@/widgets/Navbar/Navbar";
 import PageHeader from "@/shared/ui/molecules/PageHeader/PageHeader";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
-import Chip from "@/shared/ui/atoms/Chip/Chip";
-import SelectBox from "@/shared/ui/atoms/SelectBox/SelectBox";
+import AppChip from "@/shared/ui/atoms/AppChip/AppChip";
+import AppSelect from "@/shared/ui/atoms/AppSelect/AppSelect";
 import ToggleButtonGroup from "@/shared/ui/atoms/ToggleButtonGroup/ToggleButtonGroup";
 import CodeEditor from "@/shared/ui/molecules/CodeEditor/CodeEditor";
 import { getWrongNoteById, deleteWrongNote, updateWrongNote } from "@/entities/wrong-note/api/wrong-note.api";
@@ -214,11 +214,11 @@ export default function WrongNoteDetail() {
                 <label className="block text-sm font-medium text-text mb-2">
                   언어
                 </label>
-                <SelectBox
+                <AppSelect
                   options={languageOptions}
                   value={formData.language}
-                  onChange={(e) =>
-                    handleInputChange("language", e.target.value)
+                  onChange={(value) =>
+                    handleInputChange("language", value as string)
                   }
                   placeholder="언어 선택"
                   fullWidth
@@ -259,11 +259,11 @@ export default function WrongNoteDetail() {
                 <label className="block text-sm font-medium text-text mb-2">
                   알고리즘
                 </label>
-                <SelectBox
+                <AppSelect
                   options={categoryOptions}
                   value={formData.category}
-                  onChange={(e) =>
-                    handleInputChange("category", e.target.value)
+                  onChange={(value) =>
+                    handleInputChange("category", value as string)
                   }
                   placeholder="알고리즘 선택"
                   fullWidth
@@ -273,10 +273,10 @@ export default function WrongNoteDetail() {
                 <label className="block text-sm font-medium text-text mb-2">
                   플랫폼
                 </label>
-                <SelectBox
+                <AppSelect
                   options={platformOptions}
                   value={formData.platform}
-                  onChange={(e) => handlePlatformChange(e.target.value)}
+                  onChange={(value) => handlePlatformChange(value as string)}
                   placeholder="플랫폼 선택"
                   fullWidth
                 />
@@ -285,10 +285,10 @@ export default function WrongNoteDetail() {
                 <label className="block text-sm font-medium text-text mb-2">
                   등급
                 </label>
-                <SelectBox
+                <AppSelect
                   options={getGradeOptions()}
                   value={formData.grade}
-                  onChange={(e) => handleInputChange("grade", e.target.value)}
+                  onChange={(value) => handleInputChange("grade", value as string)}
                   placeholder={
                     formData.platform ? "등급 선택" : "플랫폼을 먼저 선택"
                   }
@@ -413,14 +413,14 @@ export default function WrongNoteDetail() {
           {/* 헤더 */}
           <div className="flex justify-between items-start">
             <div className="flex flex-wrap items-center gap-2">
-              <Chip variant="success">{getCategoryLabel(note.category)}</Chip>
-              <Chip variant="primary">{getPlatformLabel(note.platform)}</Chip>
+              <AppChip variant="success">{getCategoryLabel(note.category)}</AppChip>
+              <AppChip variant="primary">{getPlatformLabel(note.platform)}</AppChip>
               {note.grade && (
-                <Chip variant="secondary">
+                <AppChip variant="secondary">
                   {getGradeLabel(note.platform, note.grade)}
-                </Chip>
+                </AppChip>
               )}
-              <Chip
+              <AppChip
                 variant={
                   note.result === "correct"
                     ? "success"
@@ -430,7 +430,7 @@ export default function WrongNoteDetail() {
                 }
               >
                 {getResultLabel(note.result)}
-              </Chip>
+              </AppChip>
               <span className="text-xs text-textSecondary ml-2">
                 {note.date}
               </span>
@@ -506,7 +506,7 @@ export default function WrongNoteDetail() {
                 <h3 className="text-sm font-medium text-textSecondary mb-1">
                   언어
                 </h3>
-                <Chip variant="purple">{getLanguageLabel(note.language)}</Chip>
+                <AppChip variant="purple">{getLanguageLabel(note.language)}</AppChip>
               </div>
             )}
           </div>

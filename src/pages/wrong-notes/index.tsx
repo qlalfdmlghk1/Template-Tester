@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "@/widgets/Navbar/Navbar";
 import PageHeader from "@/shared/ui/molecules/PageHeader/PageHeader";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
-import Chip from "@/shared/ui/atoms/Chip/Chip";
-import SelectBox from "@/shared/ui/atoms/SelectBox/SelectBox";
+import AppFallback from "@/shared/ui/molecules/AppFallback/AppFallback";
+import AppChip from "@/shared/ui/atoms/AppChip/AppChip";
+import AppSelect from "@/shared/ui/atoms/AppSelect/AppSelect";
 import ToggleButtonGroup from "@/shared/ui/atoms/ToggleButtonGroup/ToggleButtonGroup";
 import CodeEditor from "@/shared/ui/molecules/CodeEditor/CodeEditor";
 import { saveWrongNote, getWrongNotes, deleteWrongNote, getFriendsSharedWrongNotes } from "@/entities/wrong-note/api/wrong-note.api";
@@ -286,40 +287,40 @@ export default function WrongNotes() {
                   </svg>
                 </div>
                 <div className="grid grid-cols-5 gap-3">
-                  <SelectBox
+                  <AppSelect
                     options={platformOptions}
                     value={filters.platform}
-                    onChange={(e) => handleFilterChange("platform", e.target.value)}
+                    onChange={(value) => handleFilterChange("platform", value as string)}
                     placeholder="플랫폼"
-                    selectSize="sm"
+                    size="sm"
                   />
-                  <SelectBox
+                  <AppSelect
                     options={categoryOptions}
                     value={filters.category}
-                    onChange={(e) => handleFilterChange("category", e.target.value)}
+                    onChange={(value) => handleFilterChange("category", value as string)}
                     placeholder="알고리즘"
-                    selectSize="sm"
+                    size="sm"
                   />
-                  <SelectBox
+                  <AppSelect
                     options={languageOptions}
                     value={filters.language}
-                    onChange={(e) => handleFilterChange("language", e.target.value)}
+                    onChange={(value) => handleFilterChange("language", value as string)}
                     placeholder="언어"
-                    selectSize="sm"
+                    size="sm"
                   />
-                  <SelectBox
+                  <AppSelect
                     options={resultOptions}
                     value={filters.result}
-                    onChange={(e) => handleFilterChange("result", e.target.value)}
+                    onChange={(value) => handleFilterChange("result", value as string)}
                     placeholder="결과"
-                    selectSize="sm"
+                    size="sm"
                   />
-                  <SelectBox
+                  <AppSelect
                     options={tagOptions}
                     value={filters.tag}
-                    onChange={(e) => handleFilterChange("tag", e.target.value)}
+                    onChange={(value) => handleFilterChange("tag", value as string)}
                     placeholder="작성 이유"
-                    selectSize="sm"
+                    size="sm"
                   />
                   {hasActiveFilters && (
                     <AppButton variant="ghost" size="sm" onClick={clearFilters}>
@@ -336,20 +337,22 @@ export default function WrongNotes() {
             {isLoading ? (
               <div className="text-center py-12 text-textSecondary">불러오는 중...</div>
             ) : notes.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="text-4xl mb-4">📝</div>
-                <p className="text-textSecondary mb-4">아직 작성한 오답노트가 없습니다.</p>
-                <AppButton variant="solid" onClick={() => setActiveTab("write")}>
-                  첫 오답노트 작성하기
-                </AppButton>
-              </div>
+              <AppFallback
+                type="empty"
+                title="아직 작성한 오답노트가 없습니다."
+                description="오답노트를 작성하고 학습 기록을 관리해보세요."
+                buttonText="첫 오답노트 작성하기"
+                buttonIcon={null}
+                onAction={() => setActiveTab("write")}
+              />
             ) : filteredNotes.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-textSecondary mb-4">필터 조건에 맞는 오답노트가 없습니다.</p>
-                <AppButton variant="ghost" onClick={clearFilters}>
-                  필터 초기화
-                </AppButton>
-              </div>
+              <AppFallback
+                type="empty"
+                title="필터 조건에 맞는 오답노트가 없습니다."
+                description="검색 조건 변경 후 다시 시도해 주세요."
+                buttonText="필터 초기화"
+                onAction={clearFilters}
+              />
             ) : (
               <div className="space-y-4">
                 {filteredNotes.map((note) => (
@@ -361,17 +364,17 @@ export default function WrongNotes() {
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
-                          <Chip variant="success">{getCategoryLabel(note.category)}</Chip>
-                          <Chip variant="primary">{getPlatformLabel(note.platform)}</Chip>
-                          <Chip variant="purple">{getLanguageLabel(note.language)}</Chip>
-                          {note.grade && <Chip variant="secondary">{getGradeLabel(note.platform, note.grade)}</Chip>}
-                          <Chip
+                          <AppChip variant="success">{getCategoryLabel(note.category)}</AppChip>
+                          <AppChip variant="primary">{getPlatformLabel(note.platform)}</AppChip>
+                          <AppChip variant="purple">{getLanguageLabel(note.language)}</AppChip>
+                          {note.grade && <AppChip variant="secondary">{getGradeLabel(note.platform, note.grade)}</AppChip>}
+                          <AppChip
                             variant={
                               note.result === "correct" ? "success" : note.result === "timeout" ? "warning" : "error"
                             }
                           >
                             {getResultLabel(note.result)}
-                          </Chip>
+                          </AppChip>
                         </div>
                         <h3 className="text-text font-medium">{note.title || "제목 없음"}</h3>
                         <a
@@ -451,43 +454,43 @@ export default function WrongNotes() {
                   </svg>
                 </div>
                 <div className="grid grid-cols-5 gap-3">
-                  <SelectBox
+                  <AppSelect
                     options={friendList.map((f) => ({
                       value: f.odUserId,
                       label: f.displayName || f.email || "알 수 없음",
                     }))}
                     value={friendFilter}
-                    onChange={(e) => setFriendFilter(e.target.value)}
+                    onChange={(value) => setFriendFilter(value as string)}
                     placeholder="모든 친구"
-                    selectSize="sm"
+                    size="sm"
                   />
-                  <SelectBox
+                  <AppSelect
                     options={platformOptions}
                     value={filters.platform}
-                    onChange={(e) => handleFilterChange("platform", e.target.value)}
+                    onChange={(value) => handleFilterChange("platform", value as string)}
                     placeholder="플랫폼"
-                    selectSize="sm"
+                    size="sm"
                   />
-                  <SelectBox
+                  <AppSelect
                     options={categoryOptions}
                     value={filters.category}
-                    onChange={(e) => handleFilterChange("category", e.target.value)}
+                    onChange={(value) => handleFilterChange("category", value as string)}
                     placeholder="알고리즘"
-                    selectSize="sm"
+                    size="sm"
                   />
-                  <SelectBox
+                  <AppSelect
                     options={languageOptions}
                     value={filters.language}
-                    onChange={(e) => handleFilterChange("language", e.target.value)}
+                    onChange={(value) => handleFilterChange("language", value as string)}
                     placeholder="언어"
-                    selectSize="sm"
+                    size="sm"
                   />
-                  <SelectBox
+                  <AppSelect
                     options={resultOptions}
                     value={filters.result}
-                    onChange={(e) => handleFilterChange("result", e.target.value)}
+                    onChange={(value) => handleFilterChange("result", value as string)}
                     placeholder="결과"
-                    selectSize="sm"
+                    size="sm"
                   />
                 </div>
                 <div className="flex justify-between items-center">
@@ -518,31 +521,32 @@ export default function WrongNotes() {
             {isFriendNotesLoading ? (
               <div className="text-center py-12 text-textSecondary">불러오는 중...</div>
             ) : friendList.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="text-4xl mb-4">👥</div>
-                <p className="text-textSecondary mb-4">아직 친구가 없습니다.</p>
-                <AppButton variant="solid" onClick={() => navigate("/friends")}>
-                  친구 추가하러 가기
-                </AppButton>
-              </div>
+              <AppFallback
+                type="empty"
+                title="아직 친구가 없습니다."
+                description="친구를 추가하면 공유된 오답노트를 볼 수 있습니다."
+                buttonText="친구 추가하러 가기"
+                buttonIcon={null}
+                onAction={() => navigate("/friends")}
+              />
             ) : friendNotes.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="text-4xl mb-4">📝</div>
-                <p className="text-textSecondary">친구들이 공유한 오답노트가 없습니다.</p>
-              </div>
+              <AppFallback
+                type="empty"
+                title="친구들이 공유한 오답노트가 없습니다."
+                description="친구들이 오답노트를 공유하면 여기에 표시됩니다."
+                hideButton
+              />
             ) : filteredFriendNotes.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-textSecondary mb-4">필터 조건에 맞는 오답노트가 없습니다.</p>
-                <AppButton
-                  variant="ghost"
-                  onClick={() => {
-                    setFriendFilter("");
-                    clearFilters();
-                  }}
-                >
-                  필터 초기화
-                </AppButton>
-              </div>
+              <AppFallback
+                type="empty"
+                title="필터 조건에 맞는 오답노트가 없습니다."
+                description="검색 조건 변경 후 다시 시도해 주세요."
+                buttonText="필터 초기화"
+                onAction={() => {
+                  setFriendFilter("");
+                  clearFilters();
+                }}
+              />
             ) : (
               <div className="space-y-4">
                 {filteredFriendNotes.map((note) => (
@@ -559,17 +563,17 @@ export default function WrongNotes() {
                           <span>님의 오답노트</span>
                         </div>
                         <div className="flex items-center gap-2 mb-2">
-                          <Chip variant="success">{getCategoryLabel(note.category)}</Chip>
-                          <Chip variant="primary">{getPlatformLabel(note.platform)}</Chip>
-                          <Chip variant="purple">{getLanguageLabel(note.language)}</Chip>
-                          {note.grade && <Chip variant="secondary">{getGradeLabel(note.platform, note.grade)}</Chip>}
-                          <Chip
+                          <AppChip variant="success">{getCategoryLabel(note.category)}</AppChip>
+                          <AppChip variant="primary">{getPlatformLabel(note.platform)}</AppChip>
+                          <AppChip variant="purple">{getLanguageLabel(note.language)}</AppChip>
+                          {note.grade && <AppChip variant="secondary">{getGradeLabel(note.platform, note.grade)}</AppChip>}
+                          <AppChip
                             variant={
                               note.result === "correct" ? "success" : note.result === "timeout" ? "warning" : "error"
                             }
                           >
                             {getResultLabel(note.result)}
-                          </Chip>
+                          </AppChip>
                         </div>
                         <h3 className="text-text font-medium">{note.title || "제목 없음"}</h3>
                         <a
@@ -618,10 +622,10 @@ export default function WrongNotes() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-text mb-2">언어</label>
-                <SelectBox
+                <AppSelect
                   options={languageOptions}
                   value={formData.language}
-                  onChange={(e) => handleInputChange("language", e.target.value)}
+                  onChange={(value) => handleInputChange("language", value as string)}
                   placeholder="언어 선택"
                   fullWidth
                 />
@@ -655,30 +659,30 @@ export default function WrongNotes() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-text mb-2">알고리즘</label>
-                <SelectBox
+                <AppSelect
                   options={categoryOptions}
                   value={formData.category}
-                  onChange={(e) => handleInputChange("category", e.target.value)}
+                  onChange={(value) => handleInputChange("category", value as string)}
                   placeholder="알고리즘 선택"
                   fullWidth
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-text mb-2">플랫폼</label>
-                <SelectBox
+                <AppSelect
                   options={platformOptions}
                   value={formData.platform}
-                  onChange={(e) => handlePlatformChange(e.target.value)}
+                  onChange={(value) => handlePlatformChange(value as string)}
                   placeholder="플랫폼 선택"
                   fullWidth
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-text mb-2">등급</label>
-                <SelectBox
+                <AppSelect
                   options={getGradeOptions()}
                   value={formData.grade}
-                  onChange={(e) => handleInputChange("grade", e.target.value)}
+                  onChange={(value) => handleInputChange("grade", value as string)}
                   placeholder={formData.platform ? "등급 선택" : "플랫폼을 먼저 선택"}
                   disabled={!formData.platform}
                   fullWidth
