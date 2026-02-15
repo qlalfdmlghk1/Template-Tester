@@ -99,10 +99,7 @@ export default function WrongNoteDetail() {
     }
   };
 
-  const handleInputChange = (
-    field: keyof FormData,
-    value: string | boolean | string[],
-  ) => {
+  const handleInputChange = (field: keyof FormData, value: string | boolean | string[]) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -159,9 +156,7 @@ export default function WrongNoteDetail() {
       <div className="min-h-screen bg-background">
         <Navbar />
         <div className="max-w-[1400px] mx-auto px-6 py-6">
-          <div className="text-center py-12 text-textSecondary">
-            불러오는 중...
-          </div>
+          <div className="text-center py-12 text-textSecondary">불러오는 중...</div>
         </div>
       </div>
     );
@@ -173,9 +168,7 @@ export default function WrongNoteDetail() {
         <Navbar />
         <div className="max-w-[1400px] mx-auto px-6 py-6">
           <div className="text-center py-12">
-            <p className="text-textSecondary mb-4">
-              오답노트를 찾을 수 없습니다.
-            </p>
+            <p className="text-textSecondary mb-4">오답노트를 찾을 수 없습니다.</p>
             <AppButton variant="solid" onClick={() => navigate("/wrong-notes")}>
               목록으로 돌아가기
             </AppButton>
@@ -198,9 +191,7 @@ export default function WrongNoteDetail() {
             {/* 문제 이름 & 언어 */}
             <div className="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-4">
               <div>
-                <label className="block text-sm font-medium text-text mb-2">
-                  문제 이름
-                </label>
+                <label className="block text-sm font-medium text-text mb-2">문제 이름</label>
                 <input
                   type="text"
                   value={formData.title}
@@ -211,26 +202,21 @@ export default function WrongNoteDetail() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-text mb-2">
-                  언어
-                </label>
+                <label className="block text-sm font-medium text-text mb-2">언어</label>
                 <AppSelect
                   options={languageOptions}
                   value={formData.language}
-                  onChange={(value) =>
-                    handleInputChange("language", value as string)
-                  }
+                  onChange={(value) => handleInputChange("language", value as string)}
                   placeholder="언어 선택"
                   fullWidth
+                  size="sm"
                 />
               </div>
             </div>
 
             {/* 문제 링크 */}
             <div>
-              <label className="block text-sm font-medium text-text mb-2">
-                문제 링크
-              </label>
+              <label className="block text-sm font-medium text-text mb-2">문제 링크</label>
               <input
                 type="url"
                 value={formData.link}
@@ -244,9 +230,7 @@ export default function WrongNoteDetail() {
             {/* 날짜 & 플랫폼 & 등급 */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
-                <label className="block text-sm font-medium text-text mb-2">
-                  날짜
-                </label>
+                <label className="block text-sm font-medium text-text mb-2">날짜</label>
                 <input
                   type="date"
                   value={formData.date}
@@ -256,23 +240,17 @@ export default function WrongNoteDetail() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-text mb-2">
-                  알고리즘
-                </label>
+                <label className="block text-sm font-medium text-text mb-2">알고리즘</label>
                 <AppSelect
                   options={categoryOptions}
                   value={formData.category}
-                  onChange={(value) =>
-                    handleInputChange("category", value as string)
-                  }
+                  onChange={(value) => handleInputChange("category", value as string)}
                   placeholder="알고리즘 선택"
                   fullWidth
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-text mb-2">
-                  플랫폼
-                </label>
+                <label className="block text-sm font-medium text-text mb-2">플랫폼</label>
                 <AppSelect
                   options={platformOptions}
                   value={formData.platform}
@@ -282,16 +260,12 @@ export default function WrongNoteDetail() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-text mb-2">
-                  등급
-                </label>
+                <label className="block text-sm font-medium text-text mb-2">등급</label>
                 <AppSelect
                   options={getGradeOptions()}
                   value={formData.grade}
                   onChange={(value) => handleInputChange("grade", value as string)}
-                  placeholder={
-                    formData.platform ? "등급 선택" : "플랫폼을 먼저 선택"
-                  }
+                  placeholder={formData.platform ? "등급 선택" : "플랫폼을 먼저 선택"}
                   disabled={!formData.platform}
                   fullWidth
                 />
@@ -301,9 +275,7 @@ export default function WrongNoteDetail() {
             {/* 제출 결과 & 작성 이유 */}
             <div className="flex w-full justify-between items-start">
               <div className="w-[50%]">
-                <label className="block text-sm font-medium text-text mb-2">
-                  제출 결과
-                </label>
+                <label className="block text-sm font-medium text-text mb-2">제출 결과</label>
                 <ToggleButtonGroup
                   options={resultOptions}
                   value={formData.result}
@@ -311,9 +283,7 @@ export default function WrongNoteDetail() {
                 />
               </div>
               <div className="w-[50%]">
-                <label className="block text-sm font-medium text-text mb-2">
-                  작성 이유 (복수 선택 가능)
-                </label>
+                <label className="block text-sm font-medium text-text mb-2">작성 이유 (복수 선택 가능)</label>
                 <ToggleButtonGroup
                   options={tagOptions}
                   value={formData.tags}
@@ -324,20 +294,28 @@ export default function WrongNoteDetail() {
             </div>
 
             {/* 코드 */}
-            <CodeEditorGroup
-              isEditMode={true}
-              language={formData.language}
-              myCode={formData.myCode}
-              solution={formData.solution}
-              onChangeMyCode={(value) => handleInputChange("myCode", value)}
-              onChangeSolution={(value) => handleInputChange("solution", value)}
-            />
+            <div className="flex w-full flex-row gap-2">
+              <div className="w-full">
+                <label className="block text-sm font-medium text-text mb-2">내 풀이</label>
+                <CodeEditor
+                  value={formData.myCode}
+                  language={formData.language}
+                  onChange={(value: string) => handleInputChange("myCode", value)}
+                />
+              </div>
+              <div className="w-full">
+                <label className="block text-sm font-medium text-text mb-2">참조한 풀이</label>
+                <CodeEditor
+                  value={formData.solution}
+                  language={formData.language}
+                  onChange={(value: string) => handleInputChange("solution", value)}
+                />
+              </div>
+            </div>
 
             {/* 코멘트 */}
             <div>
-              <label className="block text-sm font-medium text-text mb-2">
-                코멘트
-              </label>
+              <label className="block text-sm font-medium text-text mb-2">코멘트</label>
               <textarea
                 value={formData.comment}
                 onChange={(e) => handleInputChange("comment", e.target.value)}
@@ -357,10 +335,7 @@ export default function WrongNoteDetail() {
                 onChange={(e) => handleInputChange("share", e.target.checked)}
                 className="w-4 h-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
               />
-              <label
-                htmlFor="share"
-                className="text-sm text-text cursor-pointer"
-              >
+              <label htmlFor="share" className="text-sm text-text cursor-pointer">
                 다른 사용자에게 공유하기
               </label>
             </div>
@@ -370,11 +345,7 @@ export default function WrongNoteDetail() {
               <AppButton variant="ghost" onClick={handleCancel}>
                 취소
               </AppButton>
-              <AppButton
-                variant="solid"
-                onClick={handleSave}
-                disabled={isSaving}
-              >
+              <AppButton variant="solid" onClick={handleSave} disabled={isSaving}>
                 {isSaving ? "저장 중..." : "저장"}
               </AppButton>
             </div>
@@ -399,25 +370,13 @@ export default function WrongNoteDetail() {
             <div className="flex flex-wrap items-center gap-2">
               <AppChip variant="success">{getCategoryLabel(note.category)}</AppChip>
               <AppChip variant="primary">{getPlatformLabel(note.platform)}</AppChip>
-              {note.grade && (
-                <AppChip variant="secondary">
-                  {getGradeLabel(note.platform, note.grade)}
-                </AppChip>
-              )}
+              {note.grade && <AppChip variant="secondary">{getGradeLabel(note.platform, note.grade)}</AppChip>}
               <AppChip
-                variant={
-                  note.result === "correct"
-                    ? "success"
-                    : note.result === "timeout"
-                      ? "warning"
-                      : "error"
-                }
+                variant={note.result === "correct" ? "success" : note.result === "timeout" ? "warning" : "error"}
               >
                 {getResultLabel(note.result)}
               </AppChip>
-              <span className="text-xs text-textSecondary ml-2">
-                {note.date}
-              </span>
+              <span className="text-xs text-textSecondary ml-2">{note.date}</span>
             </div>
             {isOwner && (
               <div className="flex items-center gap-1">
@@ -426,12 +385,7 @@ export default function WrongNoteDetail() {
                   className="p-2 text-textSecondary hover:text-primary transition-colors"
                   title="수정"
                 >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -445,12 +399,7 @@ export default function WrongNoteDetail() {
                   className="p-2 text-textSecondary hover:text-error transition-colors"
                   title="삭제"
                 >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -465,17 +414,13 @@ export default function WrongNoteDetail() {
 
           {/* 문제 이름 */}
           <div>
-            <h2 className="text-xl font-semibold text-text">
-              {note.title || "제목 없음"}
-            </h2>
+            <h2 className="text-xl font-semibold text-text">{note.title || "제목 없음"}</h2>
           </div>
 
           {/* 문제 링크 & 언어 */}
           <div className="flex items-start gap-4">
             <div className="flex-1">
-              <h3 className="text-sm font-medium text-textSecondary mb-1">
-                문제 링크
-              </h3>
+              <h3 className="text-sm font-medium text-textSecondary mb-1">문제 링크</h3>
               <a
                 href={note.link}
                 target="_blank"
@@ -487,9 +432,7 @@ export default function WrongNoteDetail() {
             </div>
             {note.language && (
               <div>
-                <h3 className="text-sm font-medium text-textSecondary mb-1">
-                  언어
-                </h3>
+                <h3 className="text-sm font-medium text-textSecondary mb-1">언어</h3>
                 <AppChip variant="purple">{getLanguageLabel(note.language)}</AppChip>
               </div>
             )}
@@ -498,15 +441,10 @@ export default function WrongNoteDetail() {
           {/* 작성 이유 */}
           {note.tags.length > 0 && (
             <div>
-              <h3 className="text-sm font-medium text-textSecondary mb-2">
-                작성 이유
-              </h3>
+              <h3 className="text-sm font-medium text-textSecondary mb-2">작성 이유</h3>
               <div className="flex flex-wrap gap-2">
                 {getTagLabels(note.tags).map((tag, i) => (
-                  <span
-                    key={i}
-                    className="px-3 py-1 text-sm rounded-full bg-blue-50 text-primary"
-                  >
+                  <span key={i} className="px-3 py-1 text-sm rounded-full bg-blue-50 text-primary">
                     {tag}
                   </span>
                 ))}
@@ -517,18 +455,20 @@ export default function WrongNoteDetail() {
           {/* 코멘트 */}
           {note.comment && (
             <div>
-              <h3 className="text-sm font-medium text-textSecondary mb-1">
-                코멘트
-              </h3>
+              <h3 className="text-sm font-medium text-textSecondary mb-1">코멘트</h3>
               <p className="text-text whitespace-pre-wrap">{note.comment}</p>
             </div>
           )}
-          <CodeEditorGroup
-            isEditMode={false}
-            language={note.language}
-            myCode={note.myCode}
-            solution={note.solution}
-          />
+          <div className="flex w-full flex-row gap-2">
+            <div className="w-full">
+              <label className="block text-sm font-medium text-text mb-2">내 풀이</label>
+              <CodeEditor value={note.myCode} language={note.language} onChange={() => {}} readOnly />
+            </div>
+            <div className="w-full">
+              <label className="block text-sm font-medium text-text mb-2">참조한 풀이</label>
+              <CodeEditor value={note.solution} language={note.language} onChange={() => {}} readOnly />
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/widgets/Navbar/Navbar";
 import PageHeader from "@/shared/ui/molecules/PageHeader/PageHeader";
@@ -8,8 +8,14 @@ import AppChip from "@/shared/ui/atoms/AppChip/AppChip";
 import AppSelect from "@/shared/ui/atoms/AppSelect/AppSelect";
 import ToggleButtonGroup from "@/shared/ui/atoms/ToggleButtonGroup/ToggleButtonGroup";
 import CodeEditor from "@/shared/ui/molecules/CodeEditor/CodeEditor";
-import { saveWrongNote, getWrongNotes, deleteWrongNote, getFriendsSharedWrongNotes } from "@/entities/wrong-note/api/wrong-note.api";
-import type { WrongNote, Filters, FormData } from "@/entities/wrong-note/model/wrong-note.type";
+import {
+  saveWrongNote,
+  getWrongNotes,
+  deleteWrongNote,
+  getFriendsSharedWrongNotes,
+} from "@/entities/wrong-note/api/wrong-note.api";
+import type { WrongNote, FormData } from "@/entities/wrong-note/model/wrong-note.type";
+import { useWrongNoteFilter } from "@/entities/wrong-note/model/useWrongNoteFilter";
 import { getFriendList } from "@/entities/friend/api/friend.api";
 import type { FriendInfo } from "@/entities/friend/model/friend.type";
 import {
@@ -20,6 +26,7 @@ import {
   resultOptions,
   tagOptions,
   baekjoonGrades,
+  wrongNoteSortOptions,
   getCategoryLabel,
   getGradeLabel,
   getLanguageLabel,
@@ -29,9 +36,7 @@ import {
 } from "@/shared/lib/options";
 
 export default function WrongNotes() {
-  const [activeTab, setActiveTab] = useState<"write" | "list" | "friends">(
-    "list",
-  );
+  const [activeTab, setActiveTab] = useState<"write" | "list" | "friends">("list");
   const [notes, setNotes] = useState<WrongNote[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -91,23 +96,6 @@ export default function WrongNotes() {
     return true;
   });
 
-  const handleFilterChange = (key: keyof Filters, value: string) => {
-    setFilters((prev) => ({ ...prev, [key]: value }));
-  };
-
-  const clearFilters = () => {
-    setFilters({
-      platform: "",
-      category: "",
-      language: "",
-      result: "",
-      tag: "",
-    });
-    setSearchQuery("");
-  };
-
-  const hasActiveFilters = filters.platform || filters.result || filters.tag || searchQuery;
-
   // 목록 불러오기
   const loadNotes = async () => {
     try {
@@ -125,10 +113,7 @@ export default function WrongNotes() {
   const loadFriendNotes = async () => {
     try {
       setIsFriendNotesLoading(true);
-      const [notes, friends] = await Promise.all([
-        getFriendsSharedWrongNotes(),
-        getFriendList(),
-      ]);
+      const [notes, friends] = await Promise.all([getFriendsSharedWrongNotes(), getFriendList()]);
       setFriendNotes(notes);
       setFriendList(friends);
     } catch (error) {
@@ -159,8 +144,66 @@ export default function WrongNotes() {
     }
   };
 
-  const handleActiveTab = () => {
-    setActiveTab("list");
+  // 작성 탭 상태
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState<FormData>({
+    title: "",
+    link: "",
+    language: "",
+    date: "",
+    platform: "",
+    category: "",
+    grade: "",
+    myCode: "",
+    solution: "",
+    comment: "",
+    share: false,
+    tags: [],
+    result: "",
+  });
+
+  const handleInputChange = (field: keyof FormData, value: string | boolean | string[]) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handlePlatformChange = (value: string) => {
+    setFormData((prev) => ({ ...prev, platform: value, grade: "" }));
+  };
+
+  const getGradeOptions = () => {
+    if (formData.platform === "programmers") return programmersGrades;
+    if (formData.platform === "baekjoon") return baekjoonGrades;
+    return [];
+  };
+
+  const handleSubmit = async () => {
+    if (isSubmitting) return;
+
+    try {
+      setIsSubmitting(true);
+      await saveWrongNote(formData);
+      setFormData({
+        title: "",
+        link: "",
+        language: "",
+        date: "",
+        platform: "",
+        category: "",
+        grade: "",
+        myCode: "",
+        solution: "",
+        comment: "",
+        share: false,
+        tags: [],
+        result: "",
+      });
+      setActiveTab("list");
+    } catch (error) {
+      console.error("저장 실패:", error);
+      alert("저장에 실패했습니다.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -286,18 +329,18 @@ export default function WrongNotes() {
               <span className="text-xs text-textSecondary">
                 {filteredNotes.length}개 / 전체 {notes.length}개
               </span>
-              <SelectBox
+              <AppSelect
                 options={wrongNoteSortOptions}
                 value={sortBy}
-                onChange={(e) => handleSortByChange(e.target.value)}
+                onChange={(value) => handleSortByChange(value as string)}
                 placeholder="정렬순 선택"
+                width="160px"
+                size="sm"
               />
             </div>
 
             {isLoading ? (
-              <div className="text-center py-12 text-textSecondary">
-                불러오는 중...
-              </div>
+              <div className="text-center py-12 text-textSecondary">불러오는 중...</div>
             ) : notes.length === 0 ? (
               <AppFallback
                 type="empty"
@@ -326,27 +369,15 @@ export default function WrongNotes() {
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
-                          <Chip variant="success">
-                            {getCategoryLabel(note.category)}
-                          </Chip>
-                          <Chip variant="primary">
-                            {getPlatformLabel(note.platform)}
-                          </Chip>
-                          <Chip variant="purple">
-                            {getLanguageLabel(note.language)}
-                          </Chip>
+                          <AppChip variant="success">{getCategoryLabel(note.category)}</AppChip>
+                          <AppChip variant="primary">{getPlatformLabel(note.platform)}</AppChip>
+                          <AppChip variant="purple">{getLanguageLabel(note.language)}</AppChip>
                           {note.grade && (
-                            <Chip variant="secondary">
-                              {getGradeLabel(note.platform, note.grade)}
-                            </Chip>
+                            <AppChip variant="secondary">{getGradeLabel(note.platform, note.grade)}</AppChip>
                           )}
-                          <Chip
+                          <AppChip
                             variant={
-                              note.result === "correct"
-                                ? "success"
-                                : note.result === "timeout"
-                                  ? "warning"
-                                  : "error"
+                              note.result === "correct" ? "success" : note.result === "timeout" ? "warning" : "error"
                             }
                           >
                             {getResultLabel(note.result)}
@@ -372,9 +403,7 @@ export default function WrongNotes() {
                           )}
                         </div>
                         {note.comment ? (
-                          <p className="mt-2 text-sm text-textSecondary line-clamp-2">
-                            {note.comment}
-                          </p>
+                          <p className="mt-2 text-sm text-textSecondary line-clamp-2">{note.comment}</p>
                         ) : null}
                       </div>
                       <button
@@ -384,12 +413,7 @@ export default function WrongNotes() {
                         }}
                         className="p-2 text-textSecondary hover:text-error transition-colors"
                       >
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path
                             strokeLinecap="round"
                             strokeLinejoin="round"
@@ -505,18 +529,18 @@ export default function WrongNotes() {
               <span className="text-xs text-textSecondary">
                 {filteredFriendNotes.length}개 / 전체 {friendNotes.length}개
               </span>
-              <SelectBox
+              <AppSelect
                 options={wrongNoteSortOptions}
                 value={sortBy}
-                onChange={(e) => handleSortByChange(e.target.value)}
+                onChange={(value) => handleSortByChange(value as string)}
                 placeholder="정렬순 선택"
+                width="160px"
+                size="sm"
               />
             </div>
 
             {isFriendNotesLoading ? (
-              <div className="text-center py-12 text-textSecondary">
-                불러오는 중...
-              </div>
+              <div className="text-center py-12 text-textSecondary">불러오는 중...</div>
             ) : friendList.length === 0 ? (
               <AppFallback
                 type="empty"
@@ -529,9 +553,7 @@ export default function WrongNotes() {
             ) : friendNotes.length === 0 ? (
               <div className="text-center py-12">
                 <div className="text-4xl mb-4">📝</div>
-                <p className="text-textSecondary">
-                  친구들이 공유한 오답노트가 없습니다.
-                </p>
+                <p className="text-textSecondary">친구들이 공유한 오답노트가 없습니다.</p>
               </div>
             ) : filteredFriendNotes.length === 0 ? (
               <AppFallback
@@ -556,33 +578,19 @@ export default function WrongNotes() {
                       <div className="flex-1">
                         {/* 작성자 정보 */}
                         <div className="flex items-center gap-2 mb-2 text-sm text-textSecondary">
-                          <span className="font-medium text-text">
-                            {getFriendDisplayName(note.userId)}
-                          </span>
+                          <span className="font-medium text-text">{getFriendDisplayName(note.userId)}</span>
                           <span>님의 오답노트</span>
                         </div>
                         <div className="flex items-center gap-2 mb-2">
-                          <Chip variant="success">
-                            {getCategoryLabel(note.category)}
-                          </Chip>
-                          <Chip variant="primary">
-                            {getPlatformLabel(note.platform)}
-                          </Chip>
-                          <Chip variant="purple">
-                            {getLanguageLabel(note.language)}
-                          </Chip>
+                          <AppChip variant="success">{getCategoryLabel(note.category)}</AppChip>
+                          <AppChip variant="primary">{getPlatformLabel(note.platform)}</AppChip>
+                          <AppChip variant="purple">{getLanguageLabel(note.language)}</AppChip>
                           {note.grade && (
-                            <Chip variant="secondary">
-                              {getGradeLabel(note.platform, note.grade)}
-                            </Chip>
+                            <AppChip variant="secondary">{getGradeLabel(note.platform, note.grade)}</AppChip>
                           )}
-                          <Chip
+                          <AppChip
                             variant={
-                              note.result === "correct"
-                                ? "success"
-                                : note.result === "timeout"
-                                  ? "warning"
-                                  : "error"
+                              note.result === "correct" ? "success" : note.result === "timeout" ? "warning" : "error"
                             }
                           >
                             {getResultLabel(note.result)}
@@ -607,11 +615,7 @@ export default function WrongNotes() {
                             </>
                           )}
                         </div>
-                        {note.comment && (
-                          <p className="mt-2 text-sm text-textSecondary line-clamp-2">
-                            {note.comment}
-                          </p>
-                        )}
+                        {note.comment && <p className="mt-2 text-sm text-textSecondary line-clamp-2">{note.comment}</p>}
                       </div>
                     </div>
                   </div>
@@ -645,6 +649,7 @@ export default function WrongNotes() {
                   onChange={(value) => handleInputChange("language", value as string)}
                   placeholder="언어 선택"
                   fullWidth
+                  size="sm"
                 />
               </div>
             </div>
@@ -682,6 +687,7 @@ export default function WrongNotes() {
                   onChange={(value) => handleInputChange("category", value as string)}
                   placeholder="알고리즘 선택"
                   fullWidth
+                  size="sm"
                 />
               </div>
               <div>
@@ -692,6 +698,7 @@ export default function WrongNotes() {
                   onChange={(value) => handlePlatformChange(value as string)}
                   placeholder="플랫폼 선택"
                   fullWidth
+                  size="sm"
                 />
               </div>
               <div>
@@ -703,6 +710,7 @@ export default function WrongNotes() {
                   placeholder={formData.platform ? "등급 선택" : "플랫폼을 먼저 선택"}
                   disabled={!formData.platform}
                   fullWidth
+                  size="sm"
                 />
               </div>
             </div>
