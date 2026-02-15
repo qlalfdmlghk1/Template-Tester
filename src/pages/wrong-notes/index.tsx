@@ -210,7 +210,7 @@ export default function WrongNotes() {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      <div className="max-w-[1400px] mx-auto px-6 py-6">
+      <div className="max-w-[1400px] mx-auto px-4 py-4 sm:px-6 sm:py-6">
         <PageHeader title="오답노트" />
 
         {/* 탭 */}
@@ -252,7 +252,7 @@ export default function WrongNotes() {
           <div className="mt-6">
             {/* 필터 */}
             {notes.length > 0 && (
-              <div className="flex flex-col mb-4 p-4 bg-surface border border-border rounded-lg gap-4">
+              <div className="flex flex-col mb-3 sm:mb-4 p-3 sm:p-4 bg-surface border border-border rounded-lg gap-3 sm:gap-4">
                 {/* 검색 */}
                 <div className="relative">
                   <input
@@ -277,7 +277,7 @@ export default function WrongNotes() {
                     />
                   </svg>
                 </div>
-                <div className="grid grid-cols-5 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3">
                   <AppSelect
                     options={platformOptions}
                     value={filters.platform}
@@ -325,7 +325,7 @@ export default function WrongNotes() {
               </div>
             )}
 
-            <div className="flex flex-row w-full justify-between items-center mb-4">
+            <div className="flex flex-row w-full justify-between items-center mb-3 sm:mb-4">
               <span className="text-xs text-textSecondary">
                 {filteredNotes.length}개 / 전체 {notes.length}개
               </span>
@@ -334,7 +334,8 @@ export default function WrongNotes() {
                 value={sortBy}
                 onChange={(value) => handleSortByChange(value as string)}
                 placeholder="정렬순 선택"
-                width="160px"
+                width="140px"
+                className="sm:!w-[160px]"
                 size="sm"
               />
             </div>
@@ -364,11 +365,11 @@ export default function WrongNotes() {
                   <div
                     key={note.id}
                     onClick={() => navigate(`/wrong-notes/${note.id}`)}
-                    className="p-4 bg-surface border border-border rounded-lg hover:border-primary transition-colors cursor-pointer"
+                    className="p-3 sm:p-4 bg-surface border border-border rounded-lg hover:border-primary transition-colors cursor-pointer"
                   >
                     <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-2">
                           <AppChip variant="success">{getCategoryLabel(note.category)}</AppChip>
                           <AppChip variant="primary">{getPlatformLabel(note.platform)}</AppChip>
                           <AppChip variant="purple">{getLanguageLabel(note.language)}</AppChip>
@@ -383,7 +384,7 @@ export default function WrongNotes() {
                             {getResultLabel(note.result)}
                           </AppChip>
                         </div>
-                        <h3 className="text-text font-medium">{note.title || "제목 없음"}</h3>
+                        <h3 className="text-sm sm:text-base text-text font-medium">{note.title || "제목 없음"}</h3>
                         <a
                           href={note.link}
                           target="_blank"
@@ -435,7 +436,7 @@ export default function WrongNotes() {
           <div className="mt-6">
             {/* 필터 */}
             {friendNotes.length > 0 && (
-              <div className="flex flex-col mb-4 p-4 bg-surface border border-border rounded-lg gap-4">
+              <div className="flex flex-col mb-3 sm:mb-4 p-3 sm:p-4 bg-surface border border-border rounded-lg gap-3 sm:gap-4">
                 {/* 검색 */}
                 <div className="relative">
                   <input
@@ -460,7 +461,7 @@ export default function WrongNotes() {
                     />
                   </svg>
                 </div>
-                <div className="grid grid-cols-5 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3">
                   <AppSelect
                     options={friendList.map((f) => ({
                       value: f.odUserId,
@@ -525,7 +526,7 @@ export default function WrongNotes() {
               </div>
             )}
 
-            <div className="flex flex-row w-full justify-between items-center mb-4">
+            <div className="flex flex-row w-full justify-between items-center mb-3 sm:mb-4">
               <span className="text-xs text-textSecondary">
                 {filteredFriendNotes.length}개 / 전체 {friendNotes.length}개
               </span>
@@ -534,7 +535,8 @@ export default function WrongNotes() {
                 value={sortBy}
                 onChange={(value) => handleSortByChange(value as string)}
                 placeholder="정렬순 선택"
-                width="160px"
+                width="140px"
+                className="sm:!w-[160px]"
                 size="sm"
               />
             </div>
@@ -572,16 +574,16 @@ export default function WrongNotes() {
                   <div
                     key={note.id}
                     onClick={() => navigate(`/wrong-notes/${note.id}`)}
-                    className="p-4 bg-surface border border-border rounded-lg hover:border-primary transition-colors cursor-pointer"
+                    className="p-3 sm:p-4 bg-surface border border-border rounded-lg hover:border-primary transition-colors cursor-pointer"
                   >
                     <div className="flex justify-between items-start">
-                      <div className="flex-1">
+                      <div className="flex-1 min-w-0">
                         {/* 작성자 정보 */}
                         <div className="flex items-center gap-2 mb-2 text-sm text-textSecondary">
                           <span className="font-medium text-text">{getFriendDisplayName(note.userId)}</span>
                           <span>님의 오답노트</span>
                         </div>
-                        <div className="flex items-center gap-2 mb-2">
+                        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-2">
                           <AppChip variant="success">{getCategoryLabel(note.category)}</AppChip>
                           <AppChip variant="primary">{getPlatformLabel(note.platform)}</AppChip>
                           <AppChip variant="purple">{getLanguageLabel(note.language)}</AppChip>
@@ -716,8 +718,8 @@ export default function WrongNotes() {
             </div>
 
             {/* 제출 결과 & 작성 이유 */}
-            <div className="flex w-full justify-between items-start">
-              <div className="w-[50%]">
+            <div className="flex flex-col sm:flex-row w-full gap-4 sm:justify-between sm:items-start">
+              <div className="w-full sm:w-[50%]">
                 <label className="block text-sm font-medium text-text mb-2">제출 결과</label>
                 <ToggleButtonGroup
                   options={resultOptions}
@@ -725,7 +727,7 @@ export default function WrongNotes() {
                   onChange={(value) => handleInputChange("result", value)}
                 />
               </div>
-              <div className="w-[50%]">
+              <div className="w-full sm:w-[50%]">
                 <label className="block text-sm font-medium text-text mb-2">작성 이유 (복수 선택 가능)</label>
                 <ToggleButtonGroup
                   options={tagOptions}
@@ -737,7 +739,7 @@ export default function WrongNotes() {
             </div>
 
             {/* 내 풀이 */}
-            <div className="flex w-full flex-row gap-2">
+            <div className="flex w-full flex-col md:flex-row gap-4 md:gap-2">
               <div className="w-full">
                 <label className="block text-sm font-medium text-text mb-2">내 풀이</label>
                 <CodeEditor
