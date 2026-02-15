@@ -91,12 +91,12 @@ export default function IndexPage() {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      <div className="max-w-[1400px] mx-auto px-6 py-6">
+      <div className="max-w-[1400px] mx-auto px-4 py-4 sm:px-6 sm:py-6">
         {/* 템플릿 선택 영역 */}
         <PageHeader title="템플릿 선택" />
 
-        <div className="bg-surface p-4 rounded-lg border border-border mb-6">
-          <div className="flex items-end gap-4">
+        <div className="bg-surface p-3 sm:p-4 rounded-lg border border-border mb-4 sm:mb-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-4">
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-medium text-textSecondary">카테고리</label>
               <AppSelect
@@ -108,7 +108,8 @@ export default function IndexPage() {
                 }))}
                 placeholder="카테고리 선택"
                 size="sm"
-                width="140px"
+                width="100%"
+                className="sm:!w-[140px]"
               />
             </div>
             <div className="flex flex-col gap-1.5">
@@ -122,11 +123,12 @@ export default function IndexPage() {
                 }))}
                 placeholder="템플릿을 선택하세요"
                 size="sm"
-                width="260px"
+                width="100%"
+                className="sm:!w-[260px]"
               />
             </div>
-            <div className="ml-auto">
-              <AppButton onClick={() => navigate("/template-registration")} variant="outline" size="sm">
+            <div className="sm:ml-auto">
+              <AppButton onClick={() => navigate("/template-registration")} variant="outline" size="sm" className="w-full sm:w-auto">
                 + 템플릿 생성하기
               </AppButton>
             </div>
