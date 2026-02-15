@@ -181,7 +181,7 @@ function SelectOptionItem({
         {label}
       </span>
       {!multiple && selected && (
-        <span className="shrink-0 text-gray-600">
+        <span className="shrink-0 text-blue-500">
           <CheckIcon />
         </span>
       )}
