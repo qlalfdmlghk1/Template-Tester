@@ -1,32 +1,33 @@
-import { useCallback, useEffect, useState } from "react";
-import type { AuthUser } from "@/entities/user/model/user.type";
-import { fetchCurrentUser } from "@/features/auth/api/auth.api";
+import { useEffect, useState } from "react";
+import type { User } from "firebase/auth";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/shared/api/firebase";
+import { syncUserProfile } from "@/entities/user/api/user.api";
 import { AuthContext } from "@/features/auth/model/AuthContext";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function checkAuth() {
-      try {
-        const currentUser = await fetchCurrentUser();
-        setUser(currentUser);
-      } catch {
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    }
-    checkAuth();
-  }, []);
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setUser(user);
+      setLoading(false);
 
-  const login = useCallback((loggedInUser: AuthUser) => {
-    setUser(loggedInUser);
+      if (user) {
+        try {
+          await syncUserProfile();
+        } catch (error) {
+          console.error("사용자 프로필 동기화 실패:", error);
+        }
+      }
+    });
+
+    return unsubscribe;
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login }}>
+    <AuthContext.Provider value={{ user, loading }}>
       {children}
     </AuthContext.Provider>
   );
