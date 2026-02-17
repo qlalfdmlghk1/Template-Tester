@@ -1,14 +1,12 @@
 import { createContext } from "react";
-import type { AuthUser } from "@/entities/user/model/user.type";
+import type { User } from "firebase/auth";
 
 interface AuthContextType {
-  user: AuthUser | null;
+  user: User | null;
   loading: boolean;
-  login: (user: AuthUser) => void;
 }
 
 export const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
-  login: () => {},
 });

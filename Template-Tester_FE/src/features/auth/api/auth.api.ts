@@ -1,81 +1,97 @@
-import { api } from "@/shared/api/client";
-import type { ApiResponse } from "@/shared/api/api.type";
-import type { AuthUser } from "@/entities/user/model/user.type";
-
-interface AuthResponse {
-  accessToken: string;
-  user: AuthUser;
-}
+import {
+  signInWithPopup,
+  signOut,
+  GoogleAuthProvider,
+  GithubAuthProvider,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  updateProfile,
+} from "firebase/auth";
+import { auth } from "@/shared/api/firebase";
 
 export async function signInWithGoogle() {
-  // OAuth 로그인: 팝업 → Google 인증 → 서버에 인가코드 전달 → JWT 발급
-  // TODO: Spring OAuth2 연동 시 구현
-  // 1) Google OAuth 팝업 열기
-  // 2) 인가코드 받기
-  // 3) POST /api/auth/oauth/google { code } → JWT 반환
-  throw new Error("Google OAuth는 Spring 백엔드 연동 후 구현 예정입니다.");
+  const provider = new GoogleAuthProvider();
+  try {
+    const result = await signInWithPopup(auth, provider);
+    return result.user;
+  } catch (error) {
+    console.error("Google 로그인 실패:", error);
+    throw error;
+  }
 }
 
 export async function signInWithGithub() {
-  // TODO: Spring OAuth2 연동 시 구현
-  throw new Error("GitHub OAuth는 Spring 백엔드 연동 후 구현 예정입니다.");
+  const provider = new GithubAuthProvider();
+  try {
+    const result = await signInWithPopup(auth, provider);
+    return result.user;
+  } catch (error) {
+    console.error("GitHub 로그인 실패:", error);
+    throw error;
+  }
+}
+
+export async function logout() {
+  try {
+    await signOut(auth);
+  } catch (error) {
+    console.error("로그아웃 실패:", error);
+    throw error;
+  }
+}
+
+const EMAIL_DOMAIN = "@template-tester.local";
+
+function usernameToEmail(username: string): string {
+  if (username.includes("@")) {
+    return username;
+  }
+  return `${username}${EMAIL_DOMAIN}`;
 }
 
 export async function signUpWithUsername(
   username: string,
   password: string,
   displayName?: string,
-): Promise<AuthUser> {
+) {
   try {
-    const { data } = await api.post<ApiResponse<AuthResponse>>(
-      "/auth/signup",
-      { username, password, displayName: displayName || username },
-    );
-    localStorage.setItem("accessToken", data.data.accessToken);
-    return data.data.user;
-  } catch (error: any) {
-    const message = error.response?.data?.message;
-    if (message) {
-      throw new Error(message);
+    const email = usernameToEmail(username);
+    const result = await createUserWithEmailAndPassword(auth, email, password);
+
+    if (displayName && result.user) {
+      await updateProfile(result.user, {
+        displayName: displayName,
+      });
     }
-    throw new Error("회원가입에 실패했습니다.");
+
+    return result.user;
+  } catch (error: any) {
+    if (error.code === "auth/email-already-in-use") {
+      throw new Error("이미 사용 중인 아이디입니다.");
+    } else if (error.code === "auth/weak-password") {
+      throw new Error("비밀번호는 최소 6자 이상이어야 합니다.");
+    } else if (error.code === "auth/invalid-email") {
+      throw new Error("올바르지 않은 아이디 형식입니다.");
+    }
+    console.error("회원가입 실패:", error);
+    throw error;
   }
 }
 
-export async function signInWithUsername(
-  username: string,
-  password: string,
-): Promise<AuthUser> {
+export async function signInWithUsername(username: string, password: string) {
   try {
-    const { data } = await api.post<ApiResponse<AuthResponse>>(
-      "/auth/login",
-      { username, password },
-    );
-    localStorage.setItem("accessToken", data.data.accessToken);
-    return data.data.user;
+    const email = usernameToEmail(username);
+    const result = await signInWithEmailAndPassword(auth, email, password);
+    return result.user;
   } catch (error: any) {
-    const message = error.response?.data?.message;
-    if (message) {
-      throw new Error(message);
+    if (error.code === "auth/user-not-found") {
+      throw new Error("존재하지 않는 아이디입니다.");
+    } else if (error.code === "auth/wrong-password") {
+      throw new Error("비밀번호가 일치하지 않습니다.");
+    } else if (error.code === "auth/invalid-credential") {
+      throw new Error("아이디 또는 비밀번호가 일치하지 않습니다.");
     }
-    throw new Error("아이디 또는 비밀번호가 일치하지 않습니다.");
-  }
-}
-
-export async function logout() {
-  localStorage.removeItem("accessToken");
-}
-
-/** 저장된 토큰으로 현재 로그인된 사용자 정보 조회 */
-export async function fetchCurrentUser(): Promise<AuthUser | null> {
-  const token = localStorage.getItem("accessToken");
-  if (!token) return null;
-
-  try {
-    const { data } = await api.get<ApiResponse<AuthUser>>("/auth/me");
-    return data.data;
-  } catch {
-    localStorage.removeItem("accessToken");
-    return null;
+    console.error("로그인 실패:", error);
+    throw error;
   }
 }

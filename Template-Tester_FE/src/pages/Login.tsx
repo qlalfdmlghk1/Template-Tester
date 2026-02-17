@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { signInWithGoogle, signInWithGithub, signInWithUsername } from "@/features/auth/api/auth.api";
-import { useAuth } from "@/features/auth/model/useAuth";
 import { useNavigate, Link } from "react-router-dom";
 
 function Login() {
@@ -9,7 +8,6 @@ function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
-  const { login } = useAuth();
 
   const handleGoogleLogin = async () => {
     setLoading(true);
@@ -47,8 +45,7 @@ function Login() {
     setLoading(true);
     setError(null);
     try {
-      const user = await signInWithUsername(username, password);
-      login(user);
+      await signInWithUsername(username, password);
       navigate("/");
     } catch (error) {
       setError(error instanceof Error ? error.message : "로그인에 실패했습니다.");
