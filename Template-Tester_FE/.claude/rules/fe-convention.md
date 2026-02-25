@@ -15,17 +15,17 @@
 ```
 src/
 ├── app/                    # 앱 초기화 (진입점)
-│   ├── plugins/            # 플러그인 (pinia, vue-query 등)
+│   ├── providers/          # Provider 래퍼 (QueryClient, Router 등)
 │   ├── router/             # 라우터 설정
 │   ├── layouts/            # 레이아웃 컴포넌트
-│   └── styles/             # 전역 스타일
-├── pages/                  # 페이지 (file-based routing)
+│   └── styles/             # 전역 스타일 (Tailwind base)
+├── pages/                  # 페이지 컴포넌트
 ├── widgets/                # 복합 UI 블록 (여러 features 조합)
 ├── features/               # 기능 단위 (사용자 행동)
 ├── entities/               # 비즈니스 엔티티
 │   └── {entity}/
 │       ├── api/            # API 함수
-│       ├── model/          # composables, types, store
+│       ├── model/          # hooks, types, store
 │       └── ui/             # 엔티티 관련 UI
 └── shared/                 # 공유 자원
     ├── api/                # API 클라이언트, 공통 타입
@@ -56,28 +56,61 @@ src/
 
 ## 상태 관리
 
-### Pinia (클라이언트 상태)
+### Zustand (클라이언트 상태)
 
 - UI 상태, 사용자 설정, 앱 전역 상태에 사용
-- Composition API stores 사용
 - 파일 위치: `entities/{entity}/model/*.store.ts` 또는 `shared/model/*.store.ts`
 
 ```typescript
 // entities/user/model/user.store.ts
-import { defineStore } from 'pinia'
+import { create } from 'zustand'
+import type { User } from './user.type'
 
-export const useUserStore = defineStore('user', () => {
-  const currentUser = ref<User | null>(null)
+interface UserState {
+  currentUser: User | null
+  setUser: (user: User) => void
+  clearUser: () => void
+}
 
-  function setUser(user: User) {
-    currentUser.value = user
-  }
-
-  return { currentUser, setUser }
-})
+export const useUserStore = create<UserState>((set) => ({
+  currentUser: null,
+  setUser: (user) => set({ currentUser: user }),
+  clearUser: () => set({ currentUser: null }),
+}))
 ```
 
-### Vue Query (서버 상태)
+#### Zustand 미들웨어 활용 (권장)
+
+```typescript
+// persist 미들웨어로 localStorage 자동 동기화
+import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
+
+export const useSettingsStore = create<SettingsState>()(
+  persist(
+    (set) => ({
+      theme: 'light',
+      setTheme: (theme) => set({ theme }),
+    }),
+    { name: 'settings-storage' }
+  )
+)
+```
+
+#### Selector 패턴 (강제)
+
+불필요한 리렌더링을 방지하기 위해 반드시 selector를 사용합니다.
+
+```typescript
+// ✅ 필요한 상태만 구독
+const currentUser = useUserStore((state) => state.currentUser)
+const setUser = useUserStore((state) => state.setUser)
+
+// ❌ 전체 store 구독 금지
+const store = useUserStore()
+```
+
+### TanStack Query (서버 상태)
 
 - API 데이터 캐싱, 자동 리페치, 낙관적 업데이트에 사용
 - 파일 위치: `entities/{entity}/model/use{Entity}Query.ts`
@@ -99,19 +132,19 @@ export const reportKeys = {
 }
 ```
 
-#### 반응형 Query 파라미터 (권장)
+#### Query Hook 패턴 (권장)
 
-필터 조건이 변경되면 자동으로 재조회되도록 `computed`로 파라미터를 전달합니다.
+파라미터가 변경되면 자동으로 재조회됩니다.
 
 ```typescript
 // entities/report/model/useReportQuery.ts
-import { useQuery } from '@tanstack/vue-query'
-import { computed, type Ref, type ComputedRef } from 'vue'
+import { useQuery } from '@tanstack/react-query'
+import { reportApi } from '../api/report.api'
 
-export function useReportListQuery(params: Ref<GetReportsParams> | ComputedRef<GetReportsParams>) {
+export function useReportListQuery(params: GetReportsParams) {
   return useQuery({
-    queryKey: computed(() => reportKeys.list(params.value)),
-    queryFn: () => reportApi.getReportList(params.value),
+    queryKey: reportKeys.list(params),
+    queryFn: () => reportApi.getReportList(params),
     select: (response) => ({
       data: response.data as ReportListItem[],
       total: response.pageInfo?.total ?? 0,
@@ -120,53 +153,52 @@ export function useReportListQuery(params: Ref<GetReportsParams> | ComputedRef<G
 }
 ```
 
-#### Query와 필터 Composable 조합 패턴 (권장)
+#### Query와 필터 Hook 조합 패턴 (권장)
 
-페이지 로직은 필터 상태 관리와 Query를 조합한 Composable로 분리합니다.
+페이지 로직은 필터 상태 관리와 Query를 조합한 커스텀 Hook으로 분리합니다.
 
 ```typescript
 // entities/report/model/useReportList.ts
-import { computed, ref, watch } from 'vue'
-import { watchDebounced } from '@vueuse/core'
+import { useState, useMemo, useEffect } from 'react'
+import { useDebounce } from '@/shared/lib/useDebounce'
 import { useReportListQuery, useReportSummaryQuery, useTeamsQuery } from './useReportQuery'
 
 export function useReportList() {
   // ===== 필터 상태 =====
-  const dateRange = ref<DateRange>({ start: defaultStart, end: defaultEnd })
-  const selectedTeams = ref<string[]>([])
-  const searchKeyword = ref('')
-  const debouncedSearchKeyword = ref('')
-  const currentPage = ref(1)
-  const pageSize = ref(DEFAULT_PAGE_SIZE)
+  const [dateRange, setDateRange] = useState<DateRange>({ start: defaultStart, end: defaultEnd })
+  const [selectedTeams, setSelectedTeams] = useState<string[]>([])
+  const [searchKeyword, setSearchKeyword] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE)
 
   // 디바운스 처리
-  watchDebounced(searchKeyword, (v) => { debouncedSearchKeyword.value = v }, { debounce: 300 })
+  const debouncedSearchKeyword = useDebounce(searchKeyword, 300)
 
-  // ===== Query 파라미터 (computed) =====
-  const listParams = computed<GetReportsParams>(() => ({
-    startDate: formatDateParam(dateRange.value.start),
-    endDate: formatDateParam(dateRange.value.end),
-    teamIds: selectedTeams.value.length > 0 ? selectedTeams.value : undefined,
-    q: debouncedSearchKeyword.value || undefined,
-    page: currentPage.value,
-    pageSize: pageSize.value,
-  }))
+  // ===== Query 파라미터 (memo) =====
+  const listParams = useMemo<GetReportsParams>(() => ({
+    startDate: formatDateParam(dateRange.start),
+    endDate: formatDateParam(dateRange.end),
+    teamIds: selectedTeams.length > 0 ? selectedTeams : undefined,
+    q: debouncedSearchKeyword || undefined,
+    page: currentPage,
+    pageSize,
+  }), [dateRange, selectedTeams, debouncedSearchKeyword, currentPage, pageSize])
 
-  // ===== Vue Query Hooks =====
+  // ===== TanStack Query Hooks =====
   const { data: listData, isLoading, isFetching } = useReportListQuery(listParams)
   const { data: summaryData } = useReportSummaryQuery(summaryParams)
   const { data: teamsData } = useTeamsQuery()
 
-  // ===== Computed 데이터 =====
-  const reportData = computed(() => listData.value?.data ?? [])
-  const totalCount = computed(() => listData.value?.total ?? 0)
+  // ===== 파생 데이터 =====
+  const reportData = listData?.data ?? []
+  const totalCount = listData?.total ?? 0
 
   // 필터 변경 시 페이지 리셋
-  watch([dateRange, selectedTeams, debouncedSearchKeyword], () => {
-    currentPage.value = 1
-  }, { deep: true })
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [dateRange, selectedTeams, debouncedSearchKeyword])
 
-  return { dateRange, selectedTeams, searchKeyword, reportData, totalCount, isLoading, ... }
+  return { dateRange, setDateRange, selectedTeams, setSelectedTeams, searchKeyword, setSearchKeyword, reportData, totalCount, isLoading, ... }
 }
 ```
 
@@ -189,6 +221,8 @@ export function useTeamsQuery() {
 
 ```typescript
 // 생성 mutation
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+
 export function useCreateUserMutation() {
   const queryClient = useQueryClient()
 
@@ -201,17 +235,17 @@ export function useCreateUserMutation() {
 }
 ```
 
-### Pinia vs Vue Query 사용 기준
+### Zustand vs TanStack Query 사용 기준
 
-| 상황                      | 사용 라이브러리     |
-| ------------------------- | ------------------- |
-| API 응답 데이터 캐싱      | Vue Query           |
-| 서버 데이터 실시간 동기화 | Vue Query           |
-| 낙관적 업데이트           | Vue Query           |
-| 폼 상태 관리              | Pinia 또는 로컬 ref |
-| 모달/사이드바 열림 상태   | Pinia 또는 로컬 ref |
-| 사용자 인증 정보          | Pinia               |
-| 테마/언어 설정            | Pinia               |
+| 상황                      | 사용 라이브러리           |
+| ------------------------- | ------------------------- |
+| API 응답 데이터 캐싱      | TanStack Query            |
+| 서버 데이터 실시간 동기화 | TanStack Query            |
+| 낙관적 업데이트           | TanStack Query            |
+| 폼 상태 관리              | Zustand 또는 로컬 useState |
+| 모달/사이드바 열림 상태   | Zustand 또는 로컬 useState |
+| 사용자 인증 정보          | Zustand                   |
+| 테마/언어 설정            | Zustand                   |
 
 ---
 
@@ -226,10 +260,10 @@ export function useCreateUserMutation() {
 
 `shared/ui/` 컴포넌트 수정 시 반드시 함께 수정:
 
-1. **Storybook 스토리 파일** (`*.stories.ts`)
+1. **Storybook 스토리 파일** (`*.stories.tsx`)
    - 새로운 prop 추가 시 → argTypes에 추가, 해당 prop 사용하는 스토리 추가
    - prop 삭제/변경 시 → 기존 스토리 업데이트
-2. **테스트 파일** (`*.spec.ts`, `*.test.ts`)
+2. **테스트 파일** (`*.spec.ts`, `*.test.tsx`)
    - 테스트가 존재하는 경우 → 영향받는 테스트 케이스 수정
    - 새로운 기능 추가 시 → 테스트 케이스 추가 권장
 
@@ -253,139 +287,258 @@ export function useCreateUserMutation() {
 
 ## 스타일링
 
-- design token 변수와 함께 SCSS 사용
-- 적용 가능한 곳에 BEM 네이밍 컨벤션 준수
-- 자동 주입되는 token 변수 활용
-- **중요**: `src/shared/ui/theme/tokens/build/scss/variables.scss`에 존재하는 SCSS 변수만 사용
+- Tailwind CSS를 사용한 유틸리티 퍼스트 스타일링
+- 디자인 토큰은 `tailwind.config.ts`에서 theme으로 관리
+- **중요**: `tailwind.config.ts`에 정의된 커스텀 토큰만 사용
 
-### 사용 가능한 SCSS 변수
+### Tailwind 설정 (Design Tokens)
 
-> **참고**: 실제 변수는 `src/shared/ui/theme/tokens/build/scss/_variables.scss` 파일 참조
+디자인 토큰은 `tailwind.config.ts`의 `theme.extend`에서 관리합니다.
 
-**Colors:**
+```typescript
+// tailwind.config.ts
+import type { Config } from 'tailwindcss'
 
-- Base: `$color-white`, `$color-black`
-- Primary Blue: `$color-primary-blue-100` ~ `$color-primary-blue-900`
-- Primary Purple: `$color-primary-purple-100` ~ `$color-primary-purple-900`
-- Secondary GrayBlue: `$color-secondary-grayblue-100` ~ `$color-secondary-grayblue-900`
-- Gray: `$color-gray-100` ~ `$color-gray-900`
-- Neutral: `$color-neutral-100` ~ `$color-neutral-900`
-- Green: `$color-green-100` ~ `$color-green-900`
-- Yellow: `$color-yellow-100` ~ `$color-yellow-900`
-- Error: `$color-sub-error-100` ~ `$color-sub-error-900`
-- Info: `$color-sub-info-100` ~ `$color-sub-info-900`
+export default {
+  content: ['./src/**/*.{ts,tsx}'],
+  theme: {
+    extend: {
+      colors: {
+        'primary-blue': {
+          100: '#E8F0FE', /* ... */ 900: '#0D2B6B',
+        },
+        'primary-purple': {
+          100: '#F3E8FF', /* ... */ 900: '#3B0764',
+        },
+        // secondary, gray, neutral, green, yellow, error, info ...
+      },
+      fontFamily: {
+        pretendard: ['Pretendard', 'sans-serif'],
+      },
+      fontSize: {
+        12: ['12px', { lineHeight: '140%' }],
+        14: ['14px', { lineHeight: '140%' }],
+        16: ['16px', { lineHeight: '140%' }],
+        18: ['18px', { lineHeight: '140%' }],
+        20: ['20px', { lineHeight: '140%' }],
+        24: ['24px', { lineHeight: '140%' }],
+        28: ['28px', { lineHeight: '140%' }],
+        32: ['32px', { lineHeight: '140%' }],
+      },
+      fontWeight: {
+        regular: '400',
+        semibold: '600',
+        bold: '700',
+      },
+    },
+  },
+} satisfies Config
+```
 
-**Typography (복합 font shorthand):**
+### Tailwind 사용 규칙 (강제)
 
-- Headline: `$headline-h1` (700 32px), `$headline-h2` (600 28px), `$headline-h3` (600 20px), `$headline-h4` (600 18px), `$headline-h5` (600 16px), `$headline-h6` (600 14px/140%)
-- Body: `$body-b24`, `$body-b20`, `$body-b18`, `$body-b16`, `$body-b14`, `$body-b12` (모두 400 weight, 140% line-height)
+```tsx
+// ✅ 디자인 토큰 기반 클래스 사용
+<button className="bg-primary-blue-500 text-white font-semibold text-14 px-4 py-2 rounded">
+  확인
+</button>
 
-**Typography (개별 속성):**
+// ✅ 조건부 스타일링은 clsx/cn 유틸리티 사용
+import { cn } from '@/shared/lib/cn'
 
-- Font family: `$font-family-pretendard`
-- Font weights: `$font-weight-bold` (700), `$font-weight-semibold` (600), `$font-weight-regular` (400)
-- Font sizes: `$font-size-12`, `$font-size-14`, `$font-size-16`, `$font-size-18`, `$font-size-20`, `$font-size-24`, `$font-size-28`, `$font-size-32`
-- Line heights: `$font-line-height-140` (140%), `$font-line-height-auto` (normal)
+<button className={cn(
+  'px-4 py-2 rounded font-semibold text-14',
+  variant === 'primary' && 'bg-primary-blue-500 text-white',
+  variant === 'secondary' && 'bg-gray-100 text-gray-900',
+  disabled && 'opacity-50 cursor-not-allowed'
+)}>
+  {children}
+</button>
+
+// ❌ 인라인 스타일 사용 금지 (예외: 동적 값만 허용)
+<div style={{ color: 'red' }}>금지</div>
+
+// ❌ 임의 값(arbitrary values) 남용 금지
+<div className="w-[137px]">최소화</div>
+```
+
+### cn 유틸리티 (강제)
+
+조건부 클래스 조합을 위해 `clsx` + `tailwind-merge` 기반 `cn` 유틸리티를 사용합니다.
+
+```typescript
+// shared/lib/cn.ts
+import { clsx, type ClassValue } from 'clsx'
+import { twMerge } from 'tailwind-merge'
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
+```
 
 ---
 
 ## Design Token 빌드 프로세스
 
-- `src/shared/ui/theme/tokens/` 하위에 JSON 형식으로 tokens 정의
-- Style Dictionary와 커스텀 transforms로 빌드
-- 모든 stylesheets에 자동 주입되는 SCSS 변수 생성
+- `tailwind.config.ts`의 `theme.extend`에서 디자인 토큰 정의
+- 필요 시 `src/shared/ui/theme/tokens/` 하위에 JSON 형식으로 원본 토큰 관리
+- Style Dictionary로 빌드 후 Tailwind config에 반영
 
 ---
 
 ## 파일 네이밍 컨벤션
 
-- **Components**: PascalCase 디렉토리와 PascalCase.vue 파일
-- **Atoms**: `shared/ui/atoms/{ComponentName}/{ComponentName}.vue`
-- **Molecules**: `shared/ui/molecules/{ComponentName}/{ComponentName}.vue`
+- **Components**: PascalCase 디렉토리와 PascalCase.tsx 파일
+- **Atoms**: `shared/ui/atoms/{ComponentName}/{ComponentName}.tsx`
+- **Molecules**: `shared/ui/molecules/{ComponentName}/{ComponentName}.tsx`
+- **Hooks**: `use*.ts` (커스텀 Hook)
 - **Stores**: `*.store.ts`
 - **Types**: TypeScript 정의용 `*.type.ts`
 - **APIs**: API 레이어 정의용 `*.api.ts`
-- **Queries**: Vue Query hooks용 `use*Query.ts`
+- **Queries**: TanStack Query hooks용 `use*Query.ts`
 
 ---
 
 ## Import 전략
 
 - src root에서 absolute imports를 위해 `@/` alias 사용
-- 페이지 컴포넌트는 file-based routing 활용
 - barrel export (`index.ts`)를 통한 public API 노출
 - 프로젝트 코드는 명시적 import 사용 (FSD 레이어 경계 명확화)
 
-### Auto-import 범위
+### Import 규칙 (강제)
 
-다음은 import 문 없이 사용 가능합니다:
+React에서는 auto-import를 사용하지 않습니다. 모든 의존성을 명시적으로 import합니다.
 
-| 종류 | 대상 | 예시 |
-|------|------|------|
-| Vue API | `vue` 전체 | `ref`, `computed`, `watch`, `onMounted` |
-| Vue Router API | `vue-router` 전체 | `useRouter`, `useRoute` |
-| 컴포넌트 | `shared/ui`, `widgets/**/ui`, `features/**/ui`, `entities/**/ui` | `AppButton`, `AppDialog` |
-| Composables | `src/composables/` | |
-| Utils | `src/utils/` | |
+```typescript
+// ✅ React hooks
+import { useState, useMemo, useEffect, useCallback } from 'react'
 
-**명시적 import 필요**:
-- 타입 (`import type { ... }`)
-- API 함수 (`entities/**/api`, `shared/api`)
-- Model (`entities/**/model`, `features/**/model`)
-- 외부 라이브러리
+// ✅ React Router
+import { useNavigate, useParams, useLocation } from 'react-router-dom'
 
-**Claude 코드 작성 규칙 (강제)**:
-- 위 auto-import 대상은 import 문 생략
-- 그 외는 반드시 명시적 import 작성
+// ✅ 외부 라이브러리
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { create } from 'zustand'
+
+// ✅ 프로젝트 내부 (절대 경로)
+import { AppButton } from '@/shared/ui/atoms/AppButton'
+import { cn } from '@/shared/lib/cn'
+import type { User } from '@/entities/user/model/user.type'
+import { useUserStore } from '@/entities/user/model/user.store'
+```
+
+### Import 정렬 순서 (권장)
+
+```typescript
+// 1. React
+import { useState, useEffect } from 'react'
+
+// 2. 외부 라이브러리
+import { useQuery } from '@tanstack/react-query'
+import { useNavigate } from 'react-router-dom'
+
+// 3. 프로젝트 내부 (shared → entities → features → widgets)
+import { cn } from '@/shared/lib/cn'
+import { AppButton } from '@/shared/ui/atoms/AppButton'
+import type { User } from '@/entities/user/model/user.type'
+
+// 4. 상대 경로 (같은 슬라이스 내부)
+import { useUserForm } from '../model/useUserForm'
+```
 
 ---
 
-## Vue 컨벤션
+## React 컨벤션
 
-### SFC 블록 순서 (강제)
+### 컴포넌트 작성 패턴 (강제)
 
-1. `<script setup lang="ts">`
-2. `<template>`
-3. `<style scoped>`
+```tsx
+// entities/user/ui/UserCard/UserCard.tsx
+
+// 1. Props 인터페이스 정의
+interface UserCardProps {
+  user: User
+  onSelect?: (userId: number) => void
+}
+
+// 2. 함수 선언식 컴포넌트 (export는 named export)
+export function UserCard({ user, onSelect }: UserCardProps) {
+  // 3. 이벤트 핸들러
+  const handleClick = () => {
+    onSelect?.(user.id)
+  }
+
+  // 4. JSX 반환
+  return (
+    <div className="p-4 border rounded-lg" onClick={handleClick}>
+      <h3 className="font-semibold text-16">{user.name}</h3>
+      <p className="text-gray-500 text-14">{user.email}</p>
+    </div>
+  )
+}
+```
 
 ### 비즈니스 로직 분리 (강제)
 
-- `pages/*` 또는 단일 `.vue` 파일에 로직 집중 금지
-- 컴포넌트에는 UI 이벤트 처리만
+- `pages/*` 또는 단일 컴포넌트 파일에 로직 집중 금지
+- 컴포넌트에는 UI 렌더링과 이벤트 핸들러 연결만
 
-| 유형                         | 위치                                                        |
-| ---------------------------- | ----------------------------------------------------------- |
-| Vue 반응성/라이프사이클 결합 | `entities/{entity}/model/` 또는 `features/{feature}/model/` |
-| 순수 로직 (계산, 포맷, 매핑) | `shared/lib/`                                               |
-| 전역 상태                    | `*.store.ts`                                                |
-| 서버 상태                    | `use*Query.ts` (Vue Query)                                  |
+| 유형                                | 위치                                                        |
+| ----------------------------------- | ----------------------------------------------------------- |
+| React hooks (상태/사이드이펙트 결합) | `entities/{entity}/model/` 또는 `features/{feature}/model/` |
+| 순수 로직 (계산, 포맷, 매핑)        | `shared/lib/`                                               |
+| 전역 상태                           | `*.store.ts` (Zustand)                                      |
+| 서버 상태                           | `use*Query.ts` (TanStack Query)                             |
 
 ### 컴포넌트 책임 제한 (강제)
 
-Vue 파일은 다음 역할만 담당:
+컴포넌트 파일은 다음 역할만 담당:
 
-- props/emits 정의
-- UI 렌더링
+- Props 인터페이스 정의
+- UI 렌더링 (JSX)
 - 이벤트 핸들러 연결
 
 **금지 사항:**
 
-- 50줄 이상의 `<script setup>` 로직
+- 50줄 이상의 컴포넌트 로직
 - API 호출 직접 작성
 - 복잡한 데이터 변환/계산
 - 여러 store 조합 로직
 
 **분리 기준:**
 
-- 로직이 길어지면 → `model/` composables로 추출
+- 로직이 길어지면 → `model/` 커스텀 Hook으로 추출
 - 재사용 가능한 계산 → `shared/lib/`로 추출
 - 상태 공유 필요 → `*.store.ts`로 이동
 - 서버 데이터 → `use*Query.ts`로 이동
 
-### Composable 네이밍 (강제)
+### Hook 네이밍 (강제)
 
 - `use` prefix 필수
 - 예: `useUsers`, `useUserDetail`, `useUsersQuery`
+
+### React 성능 최적화 규칙 (권장)
+
+```tsx
+// ✅ 무거운 계산은 useMemo
+const filteredUsers = useMemo(
+  () => users.filter((u) => u.name.includes(keyword)),
+  [users, keyword]
+)
+
+// ✅ 자식에게 전달하는 콜백은 useCallback
+const handleSelect = useCallback((id: number) => {
+  setSelectedId(id)
+}, [])
+
+// ✅ 리스트 렌더링 시 key prop 필수 (index 사용 금지)
+{users.map((user) => (
+  <UserCard key={user.id} user={user} />
+))}
+
+// ❌ 불필요한 useMemo/useCallback 남용 금지
+// 단순한 값이나 컴포넌트 내부에서만 쓰는 함수는 그대로 사용
+```
 
 ---
 
@@ -396,12 +549,25 @@ Vue 파일은 다음 역할만 담당:
 | 위치                       | 권장                 |
 | -------------------------- | -------------------- |
 | `shared/lib/`, `**/model/` | function declaration |
-| component 내부             | arrow function       |
+| 컴포넌트                   | function declaration |
+| 이벤트 핸들러, 콜백        | arrow function       |
 
 ### interface vs type (강제)
 
-- 객체 구조 / 확장 목적 → `interface`
+- 객체 구조 / 확장 목적 / Props → `interface`
 - 유니온 / 튜플 / 조합 타입 → `type`
+
+```typescript
+// ✅ Props는 interface
+interface AppButtonProps {
+  variant: 'primary' | 'secondary' | 'outline'
+  disabled?: boolean
+  children: React.ReactNode
+}
+
+// ✅ 유니온은 type
+type ButtonVariant = 'primary' | 'secondary' | 'outline'
+```
 
 ### any 사용 금지 (강제)
 
@@ -453,20 +619,20 @@ export async function getUserById(userId: number): Promise<ApiResponse<User>> {
 src/
 ├── shared/ui/
 │   └── AppButton/
-│       ├── AppButton.vue
-│       └── AppButton.stories.ts    # ✅ 컴포넌트 옆에 배치
+│       ├── AppButton.tsx
+│       └── AppButton.stories.tsx    # ✅ 컴포넌트 옆에 배치
 ├── entities/user/ui/
 │   └── UserCard/
-│       ├── UserCard.vue
-│       └── UserCard.stories.ts
+│       ├── UserCard.tsx
+│       └── UserCard.stories.tsx
 ├── features/auth/ui/
 │   └── LoginForm/
-│       ├── LoginForm.vue
-│       └── LoginForm.stories.ts
+│       ├── LoginForm.tsx
+│       └── LoginForm.stories.tsx
 └── widgets/
     └── Header/
-        ├── Header.vue
-        └── Header.stories.ts
+        ├── Header.tsx
+        └── Header.stories.tsx
 ```
 
 ### 스토리 네이밍 컨벤션
@@ -496,8 +662,8 @@ title: 'widgets/Header'
 각 스토리에 `parameters.docs.source.code`를 사용하여 실제 사용 예시를 명시합니다.
 
 ```typescript
-import type { Meta, StoryObj } from '@storybook/vue3-vite'
-import AppButton from './AppButton.vue'
+import type { Meta, StoryObj } from '@storybook/react'
+import { AppButton } from './AppButton'
 
 const meta: Meta<typeof AppButton> = {
   title: 'shared/ui/atoms/AppButton',
@@ -522,7 +688,7 @@ type Story = StoryObj<typeof AppButton>
 export const Primary: Story = {
   args: {
     variant: 'primary',
-    default: '확인'
+    children: '확인'
   },
   parameters: {
     docs: {
@@ -536,7 +702,7 @@ export const Primary: Story = {
 export const Secondary: Story = {
   args: {
     variant: 'secondary',
-    default: '취소'
+    children: '취소'
   },
   parameters: {
     docs: {
@@ -551,7 +717,7 @@ export const Disabled: Story = {
   args: {
     variant: 'primary',
     disabled: true,
-    default: '비활성화'
+    children: '비활성화'
   },
   parameters: {
     docs: {
@@ -567,24 +733,18 @@ export const WithIcon: Story = {
   args: {
     variant: 'primary'
   },
-  render: (args) => ({
-    components: { AppButton },
-    setup() {
-      return { args }
-    },
-    template: `
-      <AppButton v-bind="args">
-        <template #icon>🔍</template>
-        검색
-      </AppButton>
-    `
-  }),
+  render: (args) => (
+    <AppButton {...args}>
+      <span>🔍</span>
+      검색
+    </AppButton>
+  ),
   parameters: {
     docs: {
       source: {
         code: `
 <AppButton variant="primary">
-  <template #icon>🔍</template>
+  <span>🔍</span>
   검색
 </AppButton>
         `.trim()
@@ -649,7 +809,7 @@ src/entities/user/model/
 
 **테스트 대상 우선순위**:
 
-1. composables (비즈니스 로직)
+1. 커스텀 Hooks (비즈니스 로직)
 2. store (상태 관리)
 3. utils (유틸리티 함수)
 4. API 함수
@@ -667,22 +827,26 @@ npm run test:coverage  # 커버리지 리포트
 ```typescript
 // entities/user/model/useUsers.spec.ts
 import { describe, it, expect, vi } from 'vitest'
+import { renderHook, act, waitFor } from '@testing-library/react'
 import { useUsers } from './useUsers'
 
 describe('useUsers', () => {
   it('초기 상태에서 users는 빈 배열이어야 한다', () => {
-    const { users } = useUsers()
-    expect(users.value).toEqual([])
+    const { result } = renderHook(() => useUsers())
+    expect(result.current.users).toEqual([])
   })
 
   it('fetchUsers 호출 시 loading이 true가 되어야 한다', async () => {
-    const { loading, fetchUsers } = useUsers()
+    const { result } = renderHook(() => useUsers())
 
-    const fetchPromise = fetchUsers()
-    expect(loading.value).toBe(true)
+    act(() => {
+      result.current.fetchUsers()
+    })
+    expect(result.current.loading).toBe(true)
 
-    await fetchPromise
-    expect(loading.value).toBe(false)
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+    })
   })
 })
 ```
@@ -742,9 +906,9 @@ test.describe('사용자 목록', () => {
 
 ### 테스트 우선순위
 
-| 우선순위 | 대상                                | 도구               |
-| -------- | ----------------------------------- | ------------------ |
-| 1        | 비즈니스 로직 (composables, stores) | Vitest             |
-| 2        | 유틸리티 함수                       | Vitest             |
-| 3        | 핵심 사용자 플로우                  | Playwright         |
-| 4        | 컴포넌트 렌더링/인터랙션            | Storybook + Vitest |
+| 우선순위 | 대상                                    | 도구               |
+| -------- | --------------------------------------- | ------------------ |
+| 1        | 비즈니스 로직 (커스텀 Hooks, stores)    | Vitest             |
+| 2        | 유틸리티 함수                           | Vitest             |
+| 3        | 핵심 사용자 플로우                      | Playwright         |
+| 4        | 컴포넌트 렌더링/인터랙션                | Storybook + Vitest |

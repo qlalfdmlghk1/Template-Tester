@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/features/auth/model/useAuth";
 import { logout } from "@/features/auth/api/auth.api";
-import { getReceivedFriendRequests } from "@/entities/friend/api/friend.api";
+import { usePendingRequestCount } from "@/entities/friend/model/usePendingRequestCount";
 import { useTheme } from "@/shared/lib/useTheme";
 
 const menuItems = [
@@ -17,25 +17,8 @@ export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [pendingRequestCount, setPendingRequestCount] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!user) return;
-
-    const loadPendingRequests = async () => {
-      try {
-        const requests = await getReceivedFriendRequests();
-        setPendingRequestCount(requests.length);
-      } catch (error) {
-        console.error("친구 요청 수 로드 실패:", error);
-      }
-    };
-
-    loadPendingRequests();
-    const interval = setInterval(loadPendingRequests, 30000);
-    return () => clearInterval(interval);
-  }, [user]);
+  const { pendingRequestCount } = usePendingRequestCount(!!user);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
