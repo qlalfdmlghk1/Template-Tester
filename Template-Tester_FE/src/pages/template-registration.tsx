@@ -1,108 +1,33 @@
-import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import Navbar from "@/widgets/Navbar/Navbar";
 import PageHeader from "@/shared/ui/molecules/PageHeader/PageHeader";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
 import AppSelect from "@/shared/ui/atoms/AppSelect/AppSelect";
 import CodeEditor from "@/shared/ui/molecules/CodeEditor/CodeEditor";
-import { saveUserTemplate, updateUserTemplate, getUserTemplates } from "@/entities/template/api/template.api";
+import { useTemplateForm } from "@/entities/template/model/useTemplateForm";
 import type { Category, TemplateType } from "@/entities/template/model/template.type";
 
-function TemplateRegistration() {
-  const navigate = useNavigate();
+export default function TemplateRegistration() {
   const [searchParams] = useSearchParams();
   const templateId = searchParams.get("id");
-  const isEditMode = !!templateId;
 
-  const [currentCategory, setCurrentCategory] = useState<Category>("algorithm");
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [templateType, setTemplateType] = useState<TemplateType>("paragraph");
-  const [answer, setAnswer] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    if (isEditMode && templateId) {
-      loadTemplateData(templateId);
-    }
-  }, [isEditMode, templateId]);
-
-  const loadTemplateData = async (id: string) => {
-    try {
-      setIsLoading(true);
-      const templates = await getUserTemplates();
-      const template = templates.find((t) => t.id === id);
-
-      if (!template) {
-        alert("템플릿을 찾을 수 없습니다.");
-        navigate("/");
-        return;
-      }
-
-      setCurrentCategory(template.category);
-      setTitle(template.title);
-      setDescription(template.description || "");
-      setAnswer(template.answer);
-      setTemplateType(template.type || "paragraph");
-    } catch (error) {
-      console.error("템플릿 로드 실패:", error);
-      alert("템플릿을 불러오는데 실패했습니다.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSubmit = async () => {
-    if (!title.trim()) {
-      alert("템플릿 제목을 입력해주세요.");
-      return;
-    }
-
-    if (!answer.trim()) {
-      alert("정답 내용을 입력해주세요.");
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-
-      if (isEditMode && templateId) {
-        await updateUserTemplate(
-          templateId,
-          currentCategory,
-          title,
-          description,
-          answer,
-          templateType
-        );
-        alert("템플릿이 성공적으로 수정되었습니다!");
-      } else {
-        await saveUserTemplate(
-          currentCategory,
-          title,
-          description,
-          answer,
-          templateType
-        );
-        alert("템플릿이 성공적으로 등록되었습니다!");
-      }
-
-      navigate("/my-templates");
-    } catch (error: any) {
-      console.error("템플릿 저장 실패:", error);
-      alert(error.message || "템플릿 저장에 실패했습니다.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleReset = () => {
-    setTitle("");
-    setDescription("");
-    setAnswer("");
-    setTemplateType("paragraph");
-  };
+  const {
+    currentCategory,
+    setCurrentCategory,
+    title,
+    setTitle,
+    description,
+    setDescription,
+    templateType,
+    setTemplateType,
+    answer,
+    setAnswer,
+    isSubmitting,
+    isLoading,
+    isEditMode,
+    handleSubmit,
+    handleReset,
+  } = useTemplateForm(templateId);
 
   if (isLoading) {
     return (
@@ -122,13 +47,9 @@ function TemplateRegistration() {
           description={isEditMode ? "등록한 템플릿을 수정합니다." : "나만의 템플릿을 등록하고 연습해보세요."}
         />
 
-        {/* 템플릿 정보 입력 */}
         <div className="bg-surface p-6 rounded-lg border border-border mb-6">
-          {/* 카테고리 선택 */}
           <div className="mb-6">
-            <label className="block text-sm font-semibold text-text mb-2">
-              카테고리
-            </label>
+            <label className="block text-sm font-semibold text-text mb-2">카테고리</label>
             <AppSelect
               value={currentCategory}
               onChange={(value) => setCurrentCategory(value as Category)}
@@ -142,11 +63,8 @@ function TemplateRegistration() {
             />
           </div>
 
-          {/* 템플릿 제목 */}
           <div className="mb-6">
-            <label className="block text-sm font-semibold text-text mb-2">
-              템플릿 제목
-            </label>
+            <label className="block text-sm font-semibold text-text mb-2">템플릿 제목</label>
             <input
               type="text"
               value={title}
@@ -156,11 +74,8 @@ function TemplateRegistration() {
             />
           </div>
 
-          {/* 템플릿 설명 */}
           <div className="mb-6">
-            <label className="block text-sm font-semibold text-text mb-2">
-              템플릿 설명
-            </label>
+            <label className="block text-sm font-semibold text-text mb-2">템플릿 설명</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -170,11 +85,8 @@ function TemplateRegistration() {
             />
           </div>
 
-          {/* 템플릿 형태 선택 */}
           <div className="mb-6">
-            <label className="block text-sm font-semibold text-text mb-3">
-              템플릿 형태
-            </label>
+            <label className="block text-sm font-semibold text-text mb-3">템플릿 형태</label>
             <div className="flex gap-6">
               <label className="flex items-center cursor-pointer">
                 <input
@@ -207,7 +119,6 @@ function TemplateRegistration() {
           </div>
         </div>
 
-        {/* 정답 입력 영역 */}
         <div className="mb-6">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold text-text m-0">정답 입력</h3>
@@ -225,7 +136,6 @@ function TemplateRegistration() {
           <CodeEditor value={answer} onChange={setAnswer} language="python" />
         </div>
 
-        {/* 안내 메시지 */}
         <div className="bg-surface p-4 rounded-lg border border-border">
           <h4 className="text-sm font-semibold text-text mb-2">입력 가이드</h4>
           <ul className="text-xs text-textSecondary space-y-1 list-disc list-inside">
@@ -239,5 +149,3 @@ function TemplateRegistration() {
     </div>
   );
 }
-
-export default TemplateRegistration;
