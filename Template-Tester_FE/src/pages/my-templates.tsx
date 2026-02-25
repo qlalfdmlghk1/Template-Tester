@@ -1,52 +1,21 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/widgets/Navbar/Navbar";
 import PageHeader from "@/shared/ui/molecules/PageHeader/PageHeader";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
 import AppFallback from "@/shared/ui/molecules/AppFallback/AppFallback";
-import { getUserTemplatesByCategory, deleteUserTemplate } from "@/entities/template/api/template.api";
-import type { Category, Template } from "@/entities/template/model/template.type";
+import { useMyTemplates } from "@/entities/template/model/useMyTemplates";
 
-function MyTemplates() {
+export default function MyTemplates() {
   const navigate = useNavigate();
-  const [currentCategory] = useState<Category>("algorithm");
-  const [templates, setTemplates] = useState<Template[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { templates, isLoading, loadTemplates, handleDelete } = useMyTemplates();
 
   useEffect(() => {
     loadTemplates();
-  }, [currentCategory]);
-
-  const loadTemplates = async () => {
-    try {
-      setIsLoading(true);
-      const data = await getUserTemplatesByCategory(currentCategory);
-      setTemplates(data);
-    } catch (error) {
-      console.error("템플릿 로드 실패:", error);
-      alert("템플릿을 불러오는데 실패했습니다.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, []);
 
   const handleEdit = (templateId: string) => {
     navigate(`/template-registration?id=${templateId}`);
-  };
-
-  const handleDelete = async (templateId: string, title: string) => {
-    if (!confirm(`"${title}" 템플릿을 삭제하시겠습니까?`)) {
-      return;
-    }
-
-    try {
-      await deleteUserTemplate(templateId);
-      alert("템플릿이 삭제되었습니다.");
-      loadTemplates();
-    } catch (error) {
-      console.error("템플릿 삭제 실패:", error);
-      alert("템플릿 삭제에 실패했습니다.");
-    }
   };
 
   const handleCreateNew = () => {
@@ -115,5 +84,3 @@ function MyTemplates() {
     </div>
   );
 }
-
-export default MyTemplates;

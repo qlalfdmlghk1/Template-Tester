@@ -1,5 +1,4 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import Navbar from "@/widgets/Navbar/Navbar";
 import PageHeader from "@/shared/ui/molecules/PageHeader/PageHeader";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
@@ -7,16 +6,14 @@ import AppChip from "@/shared/ui/atoms/AppChip/AppChip";
 import AppSelect from "@/shared/ui/atoms/AppSelect/AppSelect";
 import ToggleButtonGroup from "@/shared/ui/atoms/ToggleButtonGroup/ToggleButtonGroup";
 import CodeEditor from "@/shared/ui/molecules/CodeEditor/CodeEditor";
-import { getWrongNoteById, deleteWrongNote, updateWrongNote } from "@/entities/wrong-note/api/wrong-note.api";
-import type { WrongNote, FormData } from "@/entities/wrong-note/model/wrong-note.type";
+import { useWrongNoteDetail } from "@/entities/wrong-note/model/useWrongNoteDetail";
+import { useWrongNoteForm } from "@/entities/wrong-note/model/useWrongNoteForm";
 import {
   categoryOptions,
   languageOptions,
   platformOptions,
-  programmersGrades,
   resultOptions,
   tagOptions,
-  baekjoonGrades,
   getCategoryLabel,
   getGradeLabel,
   getLanguageLabel,
@@ -27,129 +24,37 @@ import {
 
 export default function WrongNoteDetail() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const [note, setNote] = useState<WrongNote | null>(null);
-  const [isOwner, setIsOwner] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [formData, setFormData] = useState<FormData>({
-    title: "",
-    link: "",
-    language: "",
-    date: "",
-    platform: "",
-    grade: "",
-    myCode: "",
-    category: "",
-    solution: "",
-    comment: "",
-    share: false,
-    tags: [],
-    result: "",
+
+  const {
+    note,
+    isOwner,
+    isLoading,
+    isEditMode,
+    setIsEditMode,
+    handleDelete,
+    handleCancel,
+    handleSaveSuccess,
+    noteToFormData,
+  } = useWrongNoteDetail(id);
+
+  const {
+    formData,
+    isSubmitting,
+    handleInputChange,
+    handlePlatformChange,
+    getGradeOptions,
+    handleSubmit,
+    setInitialData,
+  } = useWrongNoteForm({
+    initialData: note ? noteToFormData(note) : undefined,
+    noteId: note?.id,
+    onSuccess: handleSaveSuccess,
   });
 
-  useEffect(() => {
-    const loadNote = async () => {
-      if (!id) {
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        const { note: found, isOwner: owner } = await getWrongNoteById(id);
-        setNote(found);
-        setIsOwner(owner);
-        if (found) {
-          setFormData({
-            title: found.title || "",
-            link: found.link,
-            language: found.language || "",
-            date: found.date,
-            platform: found.platform,
-            grade: found.grade,
-            category: found.category,
-            myCode: found.myCode,
-            solution: found.solution,
-            comment: found.comment,
-            share: found.share,
-            tags: found.tags,
-            result: found.result,
-          });
-        }
-      } catch (error) {
-        console.error("조회 실패:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadNote();
-  }, [id]);
-
-  const handleDelete = async () => {
-    if (!note?.id || !confirm("정말 삭제하시겠습니까?")) return;
-
-    try {
-      await deleteWrongNote(note.id);
-      navigate("/wrong-notes");
-    } catch (error) {
-      console.error("삭제 실패:", error);
-      alert("삭제에 실패했습니다.");
-    }
-  };
-
-  const handleInputChange = (field: keyof FormData, value: string | boolean | string[]) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handlePlatformChange = (value: string) => {
-    setFormData((prev) => ({ ...prev, platform: value, grade: "" }));
-  };
-
-  const getGradeOptions = () => {
-    if (formData.platform === "programmers") return programmersGrades;
-    if (formData.platform === "baekjoon") return baekjoonGrades;
-    return [];
-  };
-
-  const handleSave = async () => {
-    if (!note?.id || isSaving) return;
-
-    try {
-      setIsSaving(true);
-      await updateWrongNote(note.id, formData);
-      setNote({ ...note, ...formData });
-      setIsEditMode(false);
-      alert("수정되었습니다.");
-    } catch (error) {
-      console.error("수정 실패:", error);
-      alert("수정에 실패했습니다.");
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleCancel = () => {
-    if (note) {
-      setFormData({
-        title: note.title || "",
-        link: note.link,
-        language: note.language || "",
-        date: note.date,
-        platform: note.platform,
-        category: note.category,
-        grade: note.grade,
-        myCode: note.myCode,
-        solution: note.solution,
-        comment: note.comment,
-        share: note.share,
-        tags: note.tags,
-        result: note.result,
-      });
-    }
-    setIsEditMode(false);
-  };
+  // note가 로드된 후 formData 동기화
+  if (note && formData.title === "" && note.title !== "") {
+    setInitialData(noteToFormData(note));
+  }
 
   if (isLoading) {
     return (
@@ -169,7 +74,7 @@ export default function WrongNoteDetail() {
         <div className="max-w-[1400px] mx-auto px-6 py-6">
           <div className="text-center py-12">
             <p className="text-textSecondary mb-4">오답노트를 찾을 수 없습니다.</p>
-            <AppButton variant="solid" onClick={() => navigate("/wrong-notes")}>
+            <AppButton variant="solid" onClick={() => window.history.back()}>
               목록으로 돌아가기
             </AppButton>
           </div>
@@ -178,7 +83,6 @@ export default function WrongNoteDetail() {
     );
   }
 
-  // 수정 모드
   if (isEditMode) {
     return (
       <div className="min-h-screen bg-background">
@@ -188,7 +92,6 @@ export default function WrongNoteDetail() {
           <PageHeader title="오답노트 수정" />
 
           <div className="mt-6 space-y-6">
-            {/* 문제 이름 & 언어 */}
             <div className="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-4">
               <div>
                 <label className="block text-sm font-medium text-text mb-2">문제 이름</label>
@@ -214,7 +117,6 @@ export default function WrongNoteDetail() {
               </div>
             </div>
 
-            {/* 문제 링크 */}
             <div>
               <label className="block text-sm font-medium text-text mb-2">문제 링크</label>
               <input
@@ -227,7 +129,6 @@ export default function WrongNoteDetail() {
               />
             </div>
 
-            {/* 날짜 & 플랫폼 & 등급 */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
                 <label className="block text-sm font-medium text-text mb-2">날짜</label>
@@ -272,7 +173,6 @@ export default function WrongNoteDetail() {
               </div>
             </div>
 
-            {/* 제출 결과 & 작성 이유 */}
             <div className="flex w-full justify-between items-start">
               <div className="w-[50%]">
                 <label className="block text-sm font-medium text-text mb-2">제출 결과</label>
@@ -293,7 +193,6 @@ export default function WrongNoteDetail() {
               </div>
             </div>
 
-            {/* 코드 */}
             <div className="flex w-full flex-row gap-2">
               <div className="w-full">
                 <label className="block text-sm font-medium text-text mb-2">내 풀이</label>
@@ -313,7 +212,6 @@ export default function WrongNoteDetail() {
               </div>
             </div>
 
-            {/* 코멘트 */}
             <div>
               <label className="block text-sm font-medium text-text mb-2">코멘트</label>
               <textarea
@@ -326,7 +224,6 @@ export default function WrongNoteDetail() {
               />
             </div>
 
-            {/* 공유하기 */}
             <div className="flex items-center gap-3">
               <input
                 type="checkbox"
@@ -340,13 +237,18 @@ export default function WrongNoteDetail() {
               </label>
             </div>
 
-            {/* 버튼 */}
             <div className="flex justify-end gap-3 pt-4">
-              <AppButton variant="ghost" onClick={handleCancel}>
+              <AppButton
+                variant="ghost"
+                onClick={() => {
+                  setInitialData(noteToFormData(note));
+                  handleCancel();
+                }}
+              >
                 취소
               </AppButton>
-              <AppButton variant="solid" onClick={handleSave} disabled={isSaving}>
-                {isSaving ? "저장 중..." : "저장"}
+              <AppButton variant="solid" onClick={handleSubmit} disabled={isSubmitting}>
+                {isSubmitting ? "저장 중..." : "저장"}
               </AppButton>
             </div>
           </div>
@@ -363,9 +265,7 @@ export default function WrongNoteDetail() {
       <div className="max-w-[1400px] mx-auto px-6 py-6">
         <PageHeader title="오답노트" />
 
-        {/* 상세 내용 */}
         <div className="mt-6 p-6 bg-surface border border-border rounded-lg space-y-6">
-          {/* 헤더 */}
           <div className="flex justify-between items-start">
             <div className="flex flex-wrap items-center gap-2">
               <AppChip variant="success">{getCategoryLabel(note.category)}</AppChip>
@@ -412,12 +312,10 @@ export default function WrongNoteDetail() {
             )}
           </div>
 
-          {/* 문제 이름 */}
           <div>
             <h2 className="text-xl font-semibold text-text">{note.title || "제목 없음"}</h2>
           </div>
 
-          {/* 문제 링크 & 언어 */}
           <div className="flex items-start gap-4">
             <div className="flex-1">
               <h3 className="text-sm font-medium text-textSecondary mb-1">문제 링크</h3>
@@ -438,7 +336,6 @@ export default function WrongNoteDetail() {
             )}
           </div>
 
-          {/* 작성 이유 */}
           {note.tags.length > 0 && (
             <div>
               <h3 className="text-sm font-medium text-textSecondary mb-2">작성 이유</h3>
@@ -452,7 +349,6 @@ export default function WrongNoteDetail() {
             </div>
           )}
 
-          {/* 코멘트 */}
           {note.comment && (
             <div>
               <h3 className="text-sm font-medium text-textSecondary mb-1">코멘트</h3>
