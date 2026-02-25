@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/widgets/Navbar/Navbar";
 import PageHeader from "@/shared/ui/molecules/PageHeader/PageHeader";
@@ -6,12 +5,8 @@ import CodeEditor from "@/shared/ui/molecules/CodeEditor/CodeEditor";
 import GradingResult from "@/features/grading/ui/GradingResult";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
 import AppSelect from "@/shared/ui/atoms/AppSelect/AppSelect";
-
-import type { Category, Template } from "@/entities/template/model/template.type";
-import type { GradingResult as GradingResultType } from "@/entities/submission/model/submission.type";
-import { gradeAnswer } from "@/features/grading/model/grading";
-import { saveSubmission } from "@/entities/submission/api/submission.api";
-import { getUserTemplatesByCategory } from "@/entities/template/api/template.api";
+import { useGrading } from "@/features/grading/model/useGrading";
+import type { Category } from "@/entities/template/model/template.type";
 
 const categories: { value: Category; label: string }[] = [
   { value: "algorithm", label: "알고리즘" },
@@ -22,77 +17,25 @@ const categories: { value: Category; label: string }[] = [
 
 export default function IndexPage() {
   const navigate = useNavigate();
-  const [currentCategory, setCurrentCategory] = useState<Category>("algorithm");
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
-  const [userCode, setUserCode] = useState<string>("");
-  const [gradingResult, setGradingResult] = useState<GradingResultType | null>(null);
-  const [templates, setTemplates] = useState<Template[]>([]);
-  const selectedTemplate = templates.find((t) => t.id === selectedTemplateId);
-
-  // 사용자 템플릿 불러오기
-  useEffect(() => {
-    const loadTemplates = async () => {
-      try {
-        const userTemplates = await getUserTemplatesByCategory(currentCategory);
-        setTemplates(userTemplates);
-      } catch (error) {
-        console.error("템플릿 로드 실패:", error);
-      }
-    };
-    loadTemplates();
-  }, [currentCategory]);
-
-  const handleCategoryChange = (category: Category) => {
-    setCurrentCategory(category);
-    setSelectedTemplateId("");
-    setUserCode("");
-    setGradingResult(null);
-  };
-
-  const handleTemplateChange = (templateId: string) => {
-    setSelectedTemplateId(templateId);
-    setUserCode("");
-    setGradingResult(null);
-  };
-
-  const handleGrade = async () => {
-    if (!selectedTemplate) {
-      alert("템플릿을 먼저 선택해주세요.");
-      return;
-    }
-
-    const result = gradeAnswer(selectedTemplate.answer, userCode);
-    setGradingResult(result);
-
-    // Firebase에 제출 기록 저장
-    try {
-      await saveSubmission(selectedTemplate.id, selectedTemplate.title, currentCategory, userCode, result);
-      console.log("✅ 제출 기록이 Firebase에 저장되었습니다!");
-    } catch (error) {
-      console.error("❌ Firebase 저장 실패:", error);
-      // 저장 실패해도 채점 결과는 보여줌
-    }
-
-    // 채점 결과 영역으로 스크롤
-    setTimeout(() => {
-      const resultElement = document.getElementById("grading-result");
-      if (resultElement) {
-        resultElement.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-    }, 100);
-  };
-
-  const handleReset = () => {
-    setUserCode("");
-    setGradingResult(null);
-  };
+  const {
+    currentCategory,
+    templates,
+    selectedTemplateId,
+    selectedTemplate,
+    userCode,
+    setUserCode,
+    gradingResult,
+    handleCategoryChange,
+    handleTemplateChange,
+    handleGrade,
+    handleReset,
+  } = useGrading();
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
 
       <div className="max-w-[1400px] mx-auto px-4 py-4 sm:px-6 sm:py-6">
-        {/* 템플릿 선택 영역 */}
         <PageHeader title="템플릿 선택" />
 
         <div className="bg-surface p-3 sm:p-4 rounded-lg border border-border mb-4 sm:mb-6">
@@ -144,7 +87,6 @@ export default function IndexPage() {
           </div>
         )}
 
-        {/* 코드 입력 영역 */}
         {selectedTemplate && (
           <>
             <div className="mb-6">
@@ -162,12 +104,10 @@ export default function IndexPage() {
               <CodeEditor value={userCode} onChange={setUserCode} language="python" />
             </div>
 
-            {/* 채점 결과 영역 */}
             {gradingResult && <GradingResult result={gradingResult} />}
           </>
         )}
 
-        {/* 템플릿 미선택 상태 */}
         {!selectedTemplate && (
           <div className="text-center px-6 py-8 mt-[100px]">
             <div className="text-6xl mb-4">📝</div>
