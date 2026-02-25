@@ -5,46 +5,44 @@ import Navbar from "@/widgets/Navbar/Navbar";
 import PageHeader from "@/shared/ui/molecules/PageHeader/PageHeader";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
 import AppFallback from "@/shared/ui/molecules/AppFallback/AppFallback";
-import {
-  getFriendList,
-  getReceivedFriendRequests,
-  getSentFriendRequests,
-  acceptFriendRequest,
-  rejectFriendRequest,
-  deleteFriendship,
-  sendFriendRequest,
-  getFriendshipStatus,
-} from "@/entities/friend/api/friend.api";
-import { searchUserByDisplayName } from "@/entities/user/api/user.api";
-import type { FriendInfo, Friendship } from "@/entities/friend/model/friend.type";
-import type { UserProfile } from "@/entities/user/model/user.type";
+import { useFriendList } from "@/entities/friend/model/useFriendList";
+import { useFriendRequests } from "@/entities/friend/model/useFriendRequests";
+import { useFriendSearch } from "@/entities/friend/model/useFriendSearch";
 
 type TabType = "list" | "requests" | "add";
 
 export default function Friends() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
-
   const [activeTab, setActiveTab] = useState<TabType>("list");
-  const [friends, setFriends] = useState<FriendInfo[]>([]);
-  const [receivedRequests, setReceivedRequests] = useState<Friendship[]>([]);
-  const [sentRequests, setSentRequests] = useState<Friendship[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
 
-  // 친구 추가 탭 상태
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [searchedUserStatuses, setSearchedUserStatuses] = useState<Record<string, Friendship | null>>({});
+  const { friends, isLoading: isListLoading, loadFriendList, handleDeleteFriend } = useFriendList();
+  const {
+    receivedRequests,
+    sentRequests,
+    isLoading: isRequestsLoading,
+    loadRequests,
+    handleAccept,
+    handleReject,
+    handleCancelRequest,
+  } = useFriendRequests();
+  const {
+    searchQuery,
+    setSearchQuery,
+    searchResults,
+    isSearching,
+    handleSearch,
+    handleSendRequest,
+    getRequestButtonText,
+    isRequestDisabled,
+  } = useFriendSearch(user?.uid);
 
-  // 로그인 체크
   useEffect(() => {
     if (!loading && !user) {
       navigate("/login");
     }
   }, [user, loading, navigate]);
 
-  // 탭 변경 시 데이터 로드
   useEffect(() => {
     if (!user) return;
 
@@ -54,137 +52,6 @@ export default function Friends() {
       loadRequests();
     }
   }, [activeTab, user]);
-
-  const loadFriendList = async () => {
-    setIsLoading(true);
-    try {
-      const data = await getFriendList();
-      setFriends(data);
-    } catch (error) {
-      console.error("친구 목록 로드 실패:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const loadRequests = async () => {
-    setIsLoading(true);
-    try {
-      const [received, sent] = await Promise.all([getReceivedFriendRequests(), getSentFriendRequests()]);
-      setReceivedRequests(received);
-      setSentRequests(sent);
-    } catch (error) {
-      console.error("친구 요청 로드 실패:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleAccept = async (friendshipId: string) => {
-    try {
-      await acceptFriendRequest(friendshipId);
-      alert("친구 요청을 수락했습니다.");
-      loadRequests();
-    } catch (error) {
-      console.error("친구 수락 실패:", error);
-      alert("친구 요청 수락에 실패했습니다.");
-    }
-  };
-
-  const handleReject = async (friendshipId: string) => {
-    try {
-      await rejectFriendRequest(friendshipId);
-      alert("친구 요청을 거절했습니다.");
-      loadRequests();
-    } catch (error) {
-      console.error("친구 거절 실패:", error);
-      alert("친구 요청 거절에 실패했습니다.");
-    }
-  };
-
-  const handleCancelRequest = async (friendshipId: string) => {
-    try {
-      await deleteFriendship(friendshipId);
-      alert("친구 요청을 취소했습니다.");
-      loadRequests();
-    } catch (error) {
-      console.error("요청 취소 실패:", error);
-      alert("친구 요청 취소에 실패했습니다.");
-    }
-  };
-
-  const handleDeleteFriend = async (friendUserId: string) => {
-    if (!confirm("정말 이 친구를 삭제하시겠습니까?")) return;
-
-    try {
-      // 친구 관계 ID 찾기
-      const status = await getFriendshipStatus(friendUserId);
-      if (status?.id) {
-        await deleteFriendship(status.id);
-        alert("친구를 삭제했습니다.");
-        loadFriendList();
-      }
-    } catch (error) {
-      console.error("친구 삭제 실패:", error);
-      alert("친구 삭제에 실패했습니다.");
-    }
-  };
-
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) return;
-
-    setIsSearching(true);
-    try {
-      const results = await searchUserByDisplayName(searchQuery.trim());
-      setSearchResults(results);
-
-      // 각 사용자의 친구 관계 상태 확인
-      const statuses: Record<string, Friendship | null> = {};
-      for (const user of results) {
-        const status = await getFriendshipStatus(user.uid);
-        statuses[user.uid] = status;
-      }
-      setSearchedUserStatuses(statuses);
-    } catch (error) {
-      console.error("사용자 검색 실패:", error);
-      alert("사용자 검색에 실패했습니다.");
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
-  const handleSendRequest = async (receiverUserId: string) => {
-    try {
-      await sendFriendRequest(receiverUserId);
-      alert("친구 요청을 보냈습니다.");
-      // 상태 업데이트
-      const status = await getFriendshipStatus(receiverUserId);
-      setSearchedUserStatuses((prev) => ({
-        ...prev,
-        [receiverUserId]: status,
-      }));
-    } catch (error: any) {
-      console.error("친구 요청 실패:", error);
-      alert(error.message || "친구 요청에 실패했습니다.");
-    }
-  };
-
-  const getRequestButtonText = (userId: string): string => {
-    const status = searchedUserStatuses[userId];
-    if (!status) return "친구 요청";
-    if (status.status === "accepted") return "이미 친구";
-    if (status.status === "pending") {
-      if (status.requesterId === user?.uid) return "요청 보냄";
-      return "요청 받음";
-    }
-    return "친구 요청";
-  };
-
-  const isRequestDisabled = (userId: string): boolean => {
-    const status = searchedUserStatuses[userId];
-    if (!status) return false;
-    return status.status === "accepted" || status.status === "pending";
-  };
 
   if (loading) {
     return (
@@ -245,7 +112,7 @@ export default function Friends() {
           {/* 친구 목록 탭 */}
           {activeTab === "list" && (
             <div>
-              {isLoading ? (
+              {isListLoading ? (
                 <div className="text-center py-12 text-textSecondary">불러오는 중...</div>
               ) : friends.length === 0 ? (
                 <AppFallback
@@ -296,10 +163,9 @@ export default function Friends() {
           {/* 요청 관리 탭 */}
           {activeTab === "requests" && (
             <div className="space-y-6">
-              {/* 받은 요청 */}
               <div>
                 <h3 className="text-lg font-semibold text-text mb-3">받은 요청</h3>
-                {isLoading ? (
+                {isRequestsLoading ? (
                   <div className="text-center py-8 text-textSecondary">불러오는 중...</div>
                 ) : receivedRequests.length === 0 ? (
                   <AppFallback
@@ -346,7 +212,6 @@ export default function Friends() {
                 )}
               </div>
 
-              {/* 보낸 요청 */}
               <div>
                 <h3 className="text-lg font-semibold text-text mb-3">보낸 요청</h3>
                 {sentRequests.length === 0 ? (
@@ -411,7 +276,6 @@ export default function Friends() {
                 </div>
               </div>
 
-              {/* 검색 결과 */}
               {searchResults.length > 0 ? (
                 <div className="space-y-3">
                   <h3 className="text-sm font-medium text-textSecondary">검색 결과 ({searchResults.length}명)</h3>

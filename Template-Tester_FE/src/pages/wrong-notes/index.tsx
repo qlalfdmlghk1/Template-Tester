@@ -8,24 +8,16 @@ import AppChip from "@/shared/ui/atoms/AppChip/AppChip";
 import AppSelect from "@/shared/ui/atoms/AppSelect/AppSelect";
 import ToggleButtonGroup from "@/shared/ui/atoms/ToggleButtonGroup/ToggleButtonGroup";
 import CodeEditor from "@/shared/ui/molecules/CodeEditor/CodeEditor";
-import {
-  saveWrongNote,
-  getWrongNotes,
-  deleteWrongNote,
-  getFriendsSharedWrongNotes,
-} from "@/entities/wrong-note/api/wrong-note.api";
-import type { WrongNote, FormData } from "@/entities/wrong-note/model/wrong-note.type";
 import { useWrongNoteFilter } from "@/entities/wrong-note/model/useWrongNoteFilter";
-import { getFriendList } from "@/entities/friend/api/friend.api";
-import type { FriendInfo } from "@/entities/friend/model/friend.type";
+import { useWrongNoteList } from "@/entities/wrong-note/model/useWrongNoteList";
+import { useFriendWrongNotes } from "@/entities/wrong-note/model/useFriendWrongNotes";
+import { useWrongNoteForm } from "@/entities/wrong-note/model/useWrongNoteForm";
 import {
   categoryOptions,
   languageOptions,
   platformOptions,
-  programmersGrades,
   resultOptions,
   tagOptions,
-  baekjoonGrades,
   wrongNoteSortOptions,
   getCategoryLabel,
   getGradeLabel,
@@ -37,8 +29,7 @@ import {
 
 export default function WrongNotes() {
   const [activeTab, setActiveTab] = useState<"write" | "list" | "friends">("list");
-  const [notes, setNotes] = useState<WrongNote[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const {
     filters,
@@ -50,78 +41,36 @@ export default function WrongNotes() {
     clearFilters,
     hasActiveFilters,
   } = useWrongNoteFilter();
-  const navigate = useNavigate();
 
-  // 친구 오답노트 관련 state
-  const [friendNotes, setFriendNotes] = useState<WrongNote[]>([]);
-  const [friendList, setFriendList] = useState<FriendInfo[]>([]);
-  const [isFriendNotesLoading, setIsFriendNotesLoading] = useState(false);
-  const [friendFilter, setFriendFilter] = useState<string>("");
+  const { notes, isLoading, loadNotes, handleDelete, getFilteredNotes } = useWrongNoteList();
+  const {
+    friendNotes,
+    friendList,
+    friendFilter,
+    setFriendFilter,
+    isFriendNotesLoading,
+    loadFriendNotes,
+    getFriendDisplayName,
+    getFilteredFriendNotes,
+  } = useFriendWrongNotes();
 
-  // 친구별 필터링된 노트
-  const filteredFriendNotes = friendNotes.filter((note) => {
-    if (friendFilter && note.userId !== friendFilter) return false;
-    if (filters.platform && note.platform !== filters.platform) return false;
-    if (filters.category && note.category !== filters.category) return false;
-    if (filters.result && note.result !== filters.result) return false;
-    if (filters.language && note.language !== filters.language) return false;
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      const matchesTitle = note.title?.toLowerCase().includes(query);
-      const matchesLink = note.link?.toLowerCase().includes(query);
-      if (!matchesTitle && !matchesLink) return false;
-    }
-    return true;
+  const {
+    formData,
+    isSubmitting,
+    handleInputChange,
+    handlePlatformChange,
+    getGradeOptions,
+    handleSubmit,
+    resetForm,
+  } = useWrongNoteForm({
+    onSuccess: () => {
+      resetForm();
+      setActiveTab("list");
+    },
   });
 
-  // 친구 이름 가져오기 helper
-  const getFriendDisplayName = (userId: string): string => {
-    const friend = friendList.find((f) => f.odUserId === userId);
-    return friend?.displayName || friend?.email || "알 수 없음";
-  };
-
-  // 필터링된 노트
-  const filteredNotes = notes.filter((note) => {
-    if (filters.platform && note.platform !== filters.platform) return false;
-    if (filters.category && note.category !== filters.category) return false;
-    if (filters.result && note.result !== filters.result) return false;
-    if (filters.language && note.language !== filters.language) return false;
-    if (filters.tag && !note.tags.includes(filters.tag)) return false;
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      const matchesTitle = note.title?.toLowerCase().includes(query);
-      const matchesLink = note.link?.toLowerCase().includes(query);
-      if (!matchesTitle && !matchesLink) return false;
-    }
-    return true;
-  });
-
-  // 목록 불러오기
-  const loadNotes = async () => {
-    try {
-      setIsLoading(true);
-      const data = await getWrongNotes();
-      setNotes(data);
-    } catch (error) {
-      console.error("조회 실패:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // 친구 오답노트 불러오기
-  const loadFriendNotes = async () => {
-    try {
-      setIsFriendNotesLoading(true);
-      const [notes, friends] = await Promise.all([getFriendsSharedWrongNotes(), getFriendList()]);
-      setFriendNotes(notes);
-      setFriendList(friends);
-    } catch (error) {
-      console.error("친구 오답노트 조회 실패:", error);
-    } finally {
-      setIsFriendNotesLoading(false);
-    }
-  };
+  const filteredNotes = getFilteredNotes(filters, searchQuery);
+  const filteredFriendNotes = getFilteredFriendNotes(filters, searchQuery);
 
   useEffect(() => {
     if (activeTab === "list") {
@@ -131,80 +80,6 @@ export default function WrongNotes() {
     }
     clearFilters();
   }, [activeTab]);
-
-  const handleDelete = async (noteId: string) => {
-    if (!confirm("정말 삭제하시겠습니까?")) return;
-
-    try {
-      await deleteWrongNote(noteId);
-      setNotes((prev) => prev.filter((n) => n.id !== noteId));
-    } catch (error) {
-      console.error("삭제 실패:", error);
-      alert("삭제에 실패했습니다.");
-    }
-  };
-
-  // 작성 탭 상태
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState<FormData>({
-    title: "",
-    link: "",
-    language: "",
-    date: "",
-    platform: "",
-    category: "",
-    grade: "",
-    myCode: "",
-    solution: "",
-    comment: "",
-    share: false,
-    tags: [],
-    result: "",
-  });
-
-  const handleInputChange = (field: keyof FormData, value: string | boolean | string[]) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handlePlatformChange = (value: string) => {
-    setFormData((prev) => ({ ...prev, platform: value, grade: "" }));
-  };
-
-  const getGradeOptions = () => {
-    if (formData.platform === "programmers") return programmersGrades;
-    if (formData.platform === "baekjoon") return baekjoonGrades;
-    return [];
-  };
-
-  const handleSubmit = async () => {
-    if (isSubmitting) return;
-
-    try {
-      setIsSubmitting(true);
-      await saveWrongNote(formData);
-      setFormData({
-        title: "",
-        link: "",
-        language: "",
-        date: "",
-        platform: "",
-        category: "",
-        grade: "",
-        myCode: "",
-        solution: "",
-        comment: "",
-        share: false,
-        tags: [],
-        result: "",
-      });
-      setActiveTab("list");
-    } catch (error) {
-      console.error("저장 실패:", error);
-      alert("저장에 실패했습니다.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -250,10 +125,8 @@ export default function WrongNotes() {
         {/* 목록 탭 */}
         {activeTab === "list" && (
           <div className="mt-6">
-            {/* 필터 */}
             {notes.length > 0 && (
               <div className="flex flex-col mb-3 sm:mb-4 p-3 sm:p-4 bg-surface border border-border rounded-lg gap-3 sm:gap-4">
-                {/* 검색 */}
                 <div className="relative">
                   <input
                     type="text"
@@ -434,10 +307,8 @@ export default function WrongNotes() {
         {/* 친구 오답노트 탭 */}
         {activeTab === "friends" && (
           <div className="mt-6">
-            {/* 필터 */}
             {friendNotes.length > 0 && (
               <div className="flex flex-col mb-3 sm:mb-4 p-3 sm:p-4 bg-surface border border-border rounded-lg gap-3 sm:gap-4">
-                {/* 검색 */}
                 <div className="relative">
                   <input
                     type="text"
@@ -578,7 +449,6 @@ export default function WrongNotes() {
                   >
                     <div className="flex justify-between items-start">
                       <div className="flex-1 min-w-0">
-                        {/* 작성자 정보 */}
                         <div className="flex items-center gap-2 mb-2 text-sm text-textSecondary">
                           <span className="font-medium text-text">{getFriendDisplayName(note.userId)}</span>
                           <span>님의 오답노트</span>
@@ -630,7 +500,6 @@ export default function WrongNotes() {
         {/* 작성 탭 */}
         {activeTab === "write" && (
           <div className="mt-6 space-y-6">
-            {/* 문제 이름 & 언어 */}
             <div className="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-4">
               <div>
                 <label className="block text-sm font-medium text-text mb-2">문제 이름</label>
@@ -656,7 +525,6 @@ export default function WrongNotes() {
               </div>
             </div>
 
-            {/* 문제 링크 */}
             <div>
               <label className="block text-sm font-medium text-text mb-2">문제 링크</label>
               <input
@@ -669,7 +537,6 @@ export default function WrongNotes() {
               />
             </div>
 
-            {/* 날짜 & 플랫폼 & 등급 */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
                 <label className="block text-sm font-medium text-text mb-2">날짜</label>
@@ -717,7 +584,6 @@ export default function WrongNotes() {
               </div>
             </div>
 
-            {/* 제출 결과 & 작성 이유 */}
             <div className="flex flex-col sm:flex-row w-full gap-4 sm:justify-between sm:items-start">
               <div className="w-full sm:w-[50%]">
                 <label className="block text-sm font-medium text-text mb-2">제출 결과</label>
@@ -738,7 +604,6 @@ export default function WrongNotes() {
               </div>
             </div>
 
-            {/* 내 풀이 */}
             <div className="flex w-full flex-col md:flex-row gap-4 md:gap-2">
               <div className="w-full">
                 <label className="block text-sm font-medium text-text mb-2">내 풀이</label>
@@ -748,8 +613,6 @@ export default function WrongNotes() {
                   onChange={(value) => handleInputChange("myCode", value)}
                 />
               </div>
-
-              {/* 참조한 풀이 */}
               <div className="w-full">
                 <label className="block text-sm font-medium text-text mb-2">참조한 풀이</label>
                 <CodeEditor
@@ -760,7 +623,6 @@ export default function WrongNotes() {
               </div>
             </div>
 
-            {/* 코멘트 */}
             <div>
               <label className="block text-sm font-medium text-text mb-2">코멘트</label>
               <textarea
@@ -773,7 +635,6 @@ export default function WrongNotes() {
               />
             </div>
 
-            {/* 공유하기 */}
             <div className="flex items-center gap-3">
               <input
                 type="checkbox"
@@ -787,7 +648,6 @@ export default function WrongNotes() {
               </label>
             </div>
 
-            {/* 제출 버튼 */}
             <div className="flex justify-end pt-4">
               <AppButton variant="solid" size="lg" onClick={handleSubmit} disabled={isSubmitting}>
                 {isSubmitting ? "저장 중..." : "오답노트 저장"}
