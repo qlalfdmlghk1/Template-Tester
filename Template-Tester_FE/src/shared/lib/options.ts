@@ -71,6 +71,9 @@ export const categoryOptions = [
   { value: "full_search", label: "완전 탐색" },
   { value: "divide_conquer", label: "분할 정복" },
   { value: "priority_queue", label: "우선순위 큐" },
+  { value: "union_find", label: "유니온 파인드" },
+  { value: "kruskal", label: "크루스칼" },
+  { value: "dijkstra", label: "다익스트라" },
   { value: "etc", label: "기타" },
 ];
 
