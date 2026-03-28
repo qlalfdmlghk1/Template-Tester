@@ -68,6 +68,9 @@ export default function MyTemplates() {
                   </div>
 
                   <div className="flex">
+                    <AppButton onClick={() => navigate(`/study/${template.id}`)} variant="ghost" size="sm" color="blue">
+                      학습하기
+                    </AppButton>
                     <AppButton onClick={() => handleEdit(template.id)} variant="ghost" size="sm">
                       수정
                     </AppButton>
