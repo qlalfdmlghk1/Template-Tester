@@ -3,8 +3,10 @@ import {
   saveWrongNote,
   updateWrongNote,
 } from "../api/wrong-note.api";
-import type { FormData } from "./wrong-note.type";
+import type { FormData, SolutionItem } from "./wrong-note.type";
 import { programmersGrades, baekjoonGrades } from "@/shared/lib/options";
+
+const MAX_SOLUTIONS = 3;
 
 const INITIAL_FORM_DATA: FormData = {
   title: "",
@@ -15,7 +17,8 @@ const INITIAL_FORM_DATA: FormData = {
   category: "",
   grade: "",
   myCode: "",
-  solution: "",
+  myCodeLabel: "",
+  solutions: [{ label: "", code: "" }],
   comment: "",
   share: false,
   tags: [],
@@ -30,7 +33,7 @@ interface UseWrongNoteFormOptions {
 
 export function useWrongNoteForm(options?: UseWrongNoteFormOptions) {
   const [formData, setFormData] = useState<FormData>(
-    options?.initialData ?? { ...INITIAL_FORM_DATA },
+    options?.initialData ?? { ...INITIAL_FORM_DATA, solutions: [{ label: "", code: "" }] },
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -48,8 +51,36 @@ export function useWrongNoteForm(options?: UseWrongNoteFormOptions) {
     return [];
   };
 
+  // === solutions 배열 관리 ===
+  const canAddSolution = formData.solutions.length < MAX_SOLUTIONS;
+
+  const addSolution = () => {
+    if (!canAddSolution) return;
+    setFormData((prev) => ({
+      ...prev,
+      solutions: [...prev.solutions, { label: "", code: "" }],
+    }));
+  };
+
+  const removeSolution = (index: number) => {
+    if (formData.solutions.length <= 1) return;
+    setFormData((prev) => ({
+      ...prev,
+      solutions: prev.solutions.filter((_, i) => i !== index),
+    }));
+  };
+
+  const updateSolution = (index: number, field: keyof SolutionItem, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      solutions: prev.solutions.map((s, i) =>
+        i === index ? { ...s, [field]: value } : s,
+      ),
+    }));
+  };
+
   const resetForm = () => {
-    setFormData(options?.initialData ?? { ...INITIAL_FORM_DATA });
+    setFormData(options?.initialData ?? { ...INITIAL_FORM_DATA, solutions: [{ label: "", code: "" }] });
   };
 
   const setInitialData = (data: FormData) => {
@@ -86,5 +117,9 @@ export function useWrongNoteForm(options?: UseWrongNoteFormOptions) {
     handleSubmit,
     resetForm,
     setInitialData,
+    canAddSolution,
+    addSolution,
+    removeSolution,
+    updateSolution,
   };
 }
