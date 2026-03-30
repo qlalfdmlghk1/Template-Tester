@@ -10,8 +10,19 @@ import {
   deleteDoc,
 } from "firebase/firestore";
 import { db, auth } from "@/shared/api/firebase";
-import type { WrongNote } from "../model/wrong-note.type";
+import type { WrongNote, SolutionItem } from "../model/wrong-note.type";
 import { getFriendList } from "@/entities/friend/api/friend.api";
+
+/** 기존 solution(string) → solutions(SolutionItem[]) 호환 변환 */
+function migrateSolutions(data: Record<string, unknown>): SolutionItem[] {
+  if (Array.isArray(data.solutions) && data.solutions.length > 0) {
+    return data.solutions as SolutionItem[];
+  }
+  if (typeof data.solution === "string" && data.solution) {
+    return [{ label: "", code: data.solution }];
+  }
+  return [];
+}
 
 export async function saveWrongNote(
   data: Omit<WrongNote, "id" | "userId" | "userEmail" | "createdAt">,
@@ -69,7 +80,8 @@ export async function getWrongNotes(): Promise<WrongNote[]> {
         category: data.category,
         grade: data.grade,
         myCode: data.myCode,
-        solution: data.solution,
+        myCodeLabel: data.myCodeLabel || "",
+        solutions: migrateSolutions(data),
         comment: data.comment,
         share: data.share,
         tags: data.tags,
@@ -172,7 +184,8 @@ export async function getFriendsSharedWrongNotes(): Promise<WrongNote[]> {
           category: data.category,
           grade: data.grade,
           myCode: data.myCode,
-          solution: data.solution,
+          myCodeLabel: data.myCodeLabel || "",
+          solutions: migrateSolutions(data),
           comment: data.comment,
           share: data.share,
           tags: data.tags,
@@ -237,7 +250,8 @@ export async function getWrongNoteById(
       category: data.category,
       grade: data.grade,
       myCode: data.myCode,
-      solution: data.solution,
+      myCodeLabel: data.myCodeLabel || "",
+      solutions: migrateSolutions(data),
       comment: data.comment,
       share: data.share,
       tags: data.tags,
@@ -286,7 +300,8 @@ export async function getFriendSharedWrongNotes(
         category: data.category,
         grade: data.grade,
         myCode: data.myCode,
-        solution: data.solution,
+        myCodeLabel: data.myCodeLabel || "",
+        solutions: migrateSolutions(data),
         comment: data.comment,
         share: data.share,
         tags: data.tags,
