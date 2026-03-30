@@ -62,6 +62,10 @@ export default function WrongNotes() {
     getGradeOptions,
     handleSubmit,
     resetForm,
+    canAddSolution,
+    addSolution,
+    removeSolution,
+    updateSolution,
   } = useWrongNoteForm({
     onSuccess: () => {
       resetForm();
@@ -502,7 +506,7 @@ export default function WrongNotes() {
           <div className="mt-6 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-4">
               <div>
-                <label className="block text-sm font-medium text-text mb-2">문제 이름</label>
+                <label className="block text-sm font-medium text-text leading-[30px] mb-2">문제 이름</label>
                 <input
                   type="text"
                   value={formData.title}
@@ -513,7 +517,7 @@ export default function WrongNotes() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-text mb-2">언어</label>
+                <label className="block text-sm font-medium text-text leading-[30px] mb-2">언어</label>
                 <AppSelect
                   options={languageOptions}
                   value={formData.language}
@@ -526,7 +530,7 @@ export default function WrongNotes() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-text mb-2">문제 링크</label>
+              <label className="block text-sm font-medium text-text leading-[30px] mb-2">문제 링크</label>
               <input
                 type="url"
                 value={formData.link}
@@ -539,7 +543,7 @@ export default function WrongNotes() {
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
-                <label className="block text-sm font-medium text-text mb-2">날짜</label>
+                <label className="block text-sm font-medium text-text leading-[30px] mb-2">날짜</label>
                 <input
                   type="date"
                   value={formData.date}
@@ -549,7 +553,7 @@ export default function WrongNotes() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-text mb-2">알고리즘</label>
+                <label className="block text-sm font-medium text-text leading-[30px] mb-2">알고리즘</label>
                 <AppSelect
                   options={categoryOptions}
                   value={formData.category}
@@ -560,7 +564,7 @@ export default function WrongNotes() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-text mb-2">플랫폼</label>
+                <label className="block text-sm font-medium text-text leading-[30px] mb-2">플랫폼</label>
                 <AppSelect
                   options={platformOptions}
                   value={formData.platform}
@@ -571,7 +575,7 @@ export default function WrongNotes() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-text mb-2">등급</label>
+                <label className="block text-sm font-medium text-text leading-[30px] mb-2">등급</label>
                 <AppSelect
                   options={getGradeOptions()}
                   value={formData.grade}
@@ -586,7 +590,7 @@ export default function WrongNotes() {
 
             <div className="flex flex-col sm:flex-row w-full gap-4 sm:justify-between sm:items-start">
               <div className="w-full sm:w-[50%]">
-                <label className="block text-sm font-medium text-text mb-2">제출 결과</label>
+                <label className="block text-sm font-medium text-text leading-[30px] mb-2">제출 결과</label>
                 <ToggleButtonGroup
                   options={resultOptions}
                   value={formData.result}
@@ -594,7 +598,7 @@ export default function WrongNotes() {
                 />
               </div>
               <div className="w-full sm:w-[50%]">
-                <label className="block text-sm font-medium text-text mb-2">작성 이유 (복수 선택 가능)</label>
+                <label className="block text-sm font-medium text-text leading-[30px] mb-2">작성 이유 (복수 선택 가능)</label>
                 <ToggleButtonGroup
                   options={tagOptions}
                   value={formData.tags}
@@ -605,26 +609,83 @@ export default function WrongNotes() {
             </div>
 
             <div className="flex w-full flex-col md:flex-row gap-4 md:gap-2">
-              <div className="w-full">
-                <label className="block text-sm font-medium text-text mb-2">내 풀이</label>
-                <CodeEditor
-                  value={formData.myCode}
-                  language={formData.language}
-                  onChange={(value) => handleInputChange("myCode", value)}
-                />
+              <div className="w-full space-y-3">
+                <label className="block text-sm font-medium text-text leading-[30px]">내 풀이</label>
+                <div className="border border-border rounded-lg p-3 bg-surface">
+                  <div className="mb-2">
+                    <input
+                      type="text"
+                      value={formData.myCodeLabel}
+                      onChange={(e) => handleInputChange("myCodeLabel", e.target.value)}
+                      placeholder="라벨 (예: 브루트포스, 1차 시도 등)"
+                      className="w-full px-3 py-1.5 text-xs outline outline-1 outline-border rounded-md bg-background text-text
+                        hover:outline-primary focus:outline-primary focus:ring-2 focus:ring-blue-200 transition-all"
+                    />
+                  </div>
+                  <CodeEditor
+                    value={formData.myCode}
+                    language={formData.language}
+                    onChange={(value) => handleInputChange("myCode", value)}
+                  />
+                </div>
               </div>
-              <div className="w-full">
-                <label className="block text-sm font-medium text-text mb-2">참조한 풀이</label>
-                <CodeEditor
-                  value={formData.solution}
-                  language={formData.language}
-                  onChange={(value) => handleInputChange("solution", value)}
-                />
+              <div className="w-full space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="block text-sm font-medium text-text leading-[30px]">참조한 풀이</label>
+                  {canAddSolution && (
+                    <button
+                      type="button"
+                      onClick={addSolution}
+                      className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-primary border border-primary rounded-md hover:bg-primary hover:text-white transition-colors"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                      풀이 추가 ({formData.solutions.length}/3)
+                    </button>
+                  )}
+                </div>
+                {formData.solutions.map((solution, index) => (
+                  <div key={index} className="relative border border-border rounded-lg p-3 bg-surface">
+                    <div className="flex items-center gap-2 mb-2">
+                      <input
+                        type="text"
+                        value={solution.label}
+                        onChange={(e) => updateSolution(index, "label", e.target.value)}
+                        placeholder={`풀이 ${index + 1} 라벨 (예: BFS, DP 등)`}
+                        className="flex-1 px-3 py-1.5 text-xs outline outline-1 outline-border rounded-md bg-background text-text
+                          hover:outline-primary focus:outline-primary focus:ring-2 focus:ring-blue-200 transition-all"
+                      />
+                      {formData.solutions.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeSolution(index)}
+                          className="p-1.5 text-textSecondary hover:text-error transition-colors"
+                          title="풀이 삭제"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                            />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                    <CodeEditor
+                      value={solution.code}
+                      language={formData.language}
+                      onChange={(value: string) => updateSolution(index, "code", value)}
+                    />
+                  </div>
+                ))}
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-text mb-2">코멘트</label>
+              <label className="block text-sm font-medium text-text leading-[30px] mb-2">코멘트</label>
               <textarea
                 value={formData.comment}
                 onChange={(e) => handleInputChange("comment", e.target.value)}

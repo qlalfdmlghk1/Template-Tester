@@ -52,17 +52,18 @@ export function useWrongNoteDetail(id: string | undefined) {
     grade: n.grade,
     category: n.category,
     myCode: n.myCode,
-    solution: n.solution,
+    myCodeLabel: n.myCodeLabel || "",
+    solutions: n.solutions.length > 0 ? n.solutions : [{ label: "", code: "" }],
     comment: n.comment,
     share: n.share,
     tags: n.tags,
     result: n.result,
   });
 
-  const handleSaveSuccess = () => {
-    if (note) {
-      const updatedNote = { ...note };
-      setNote(updatedNote);
+  const handleSaveSuccess = async () => {
+    if (id) {
+      const { note: refreshed } = await getWrongNoteById(id);
+      setNote(refreshed);
     }
     setIsEditMode(false);
     alert("수정되었습니다.");
