@@ -15,11 +15,11 @@ export default function MyTemplates() {
   }, []);
 
   const handleEdit = (templateId: string) => {
-    navigate(`/template-registration?id=${templateId}`);
+    navigate(`/templates/register?id=${templateId}`);
   };
 
   const handleCreateNew = () => {
-    navigate("/template-registration");
+    navigate("/templates/register");
   };
 
   return (

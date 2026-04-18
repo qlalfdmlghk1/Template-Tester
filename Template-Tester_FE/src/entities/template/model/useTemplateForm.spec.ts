@@ -223,7 +223,7 @@ describe("useTemplateForm", () => {
       expect(mockAlert).toHaveBeenCalledWith(
         "템플릿이 성공적으로 등록되었습니다!",
       );
-      expect(mockNavigate).toHaveBeenCalledWith("/my-templates");
+      expect(mockNavigate).toHaveBeenCalledWith("/templates/my");
     });
 
     it("편집 모드에서 updateUserTemplate을 호출해야 한다", async () => {
@@ -264,7 +264,7 @@ describe("useTemplateForm", () => {
       expect(mockAlert).toHaveBeenCalledWith(
         "템플릿이 성공적으로 수정되었습니다!",
       );
-      expect(mockNavigate).toHaveBeenCalledWith("/my-templates");
+      expect(mockNavigate).toHaveBeenCalledWith("/templates/my");
     });
 
     it("저장 실패 시 에러 메시지를 alert으로 표시해야 한다", async () => {
@@ -284,7 +284,7 @@ describe("useTemplateForm", () => {
       });
 
       expect(mockAlert).toHaveBeenCalledWith("저장 중 오류 발생");
-      expect(mockNavigate).not.toHaveBeenCalledWith("/my-templates");
+      expect(mockNavigate).not.toHaveBeenCalledWith("/templates/my");
     });
 
     it("제출 중 isSubmitting이 true였다가 완료 후 false가 되어야 한다", async () => {

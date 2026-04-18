@@ -43,7 +43,7 @@ export default function StudyPage() {
         <div className="max-w-[1400px] mx-auto px-6 py-6">
           <div className="text-center py-12">
             <p className="text-textSecondary mb-4">템플릿을 찾을 수 없습니다.</p>
-            <AppButton variant="solid" onClick={() => navigate("/my-templates")}>
+            <AppButton variant="solid" onClick={() => navigate("/templates/my")}>
               내 템플릿으로 돌아가기
             </AppButton>
           </div>
@@ -59,7 +59,7 @@ export default function StudyPage() {
       <div className="max-w-[1400px] mx-auto px-4 py-4 sm:px-6 sm:py-6">
         <div className="flex items-center justify-between mb-4">
           <PageHeader title="코드 학습" description="등록한 코드를 보면서 학습할 수 있습니다." />
-          <AppButton variant="ghost" size="sm" onClick={() => navigate("/my-templates")}>
+          <AppButton variant="ghost" size="sm" onClick={() => navigate("/templates/my")}>
             목록으로
           </AppButton>
         </div>
