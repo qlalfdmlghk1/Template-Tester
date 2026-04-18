@@ -60,13 +60,9 @@ export function useWrongNoteDetail(id: string | undefined) {
     result: n.result,
   });
 
-  const handleSaveSuccess = async () => {
-    if (id) {
-      const { note: refreshed } = await getWrongNoteById(id);
-      setNote(refreshed);
-    }
-    setIsEditMode(false);
+  const handleSaveSuccess = () => {
     alert("수정되었습니다.");
+    navigate("/wrong-notes");
   };
 
   const handleCancel = () => {
