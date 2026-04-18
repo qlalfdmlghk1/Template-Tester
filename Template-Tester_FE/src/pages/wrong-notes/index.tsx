@@ -93,7 +93,7 @@ export default function WrongNotes() {
         <PageHeader title="오답노트" />
 
         {/* 탭 */}
-        <div className="flex gap-2 mt-6 border-b border-border">
+        <div className="flex items-end gap-2 mt-6 border-b border-border">
           <button
             onClick={() => setActiveTab("list")}
             className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
@@ -114,16 +114,15 @@ export default function WrongNotes() {
           >
             친구 오답노트
           </button>
-          <button
-            onClick={() => setActiveTab("write")}
-            className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
-              activeTab === "write"
-                ? "text-primary border-primary"
-                : "text-textSecondary border-transparent hover:text-text"
-            }`}
-          >
-            작성
-          </button>
+          <div className="ml-auto pb-2">
+            <AppButton
+              variant={activeTab === "write" ? "solid" : "outline"}
+              size="sm"
+              onClick={() => setActiveTab("write")}
+            >
+              + 작성
+            </AppButton>
+          </div>
         </div>
 
         {/* 목록 탭 */}

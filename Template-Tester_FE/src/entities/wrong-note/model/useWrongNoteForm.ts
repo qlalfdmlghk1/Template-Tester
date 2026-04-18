@@ -8,22 +8,28 @@ import { programmersGrades, baekjoonGrades } from "@/shared/lib/options";
 
 const MAX_SOLUTIONS = 3;
 
-const INITIAL_FORM_DATA: FormData = {
-  title: "",
-  link: "",
-  language: "",
-  date: "",
-  platform: "",
-  category: "",
-  grade: "",
-  myCode: "",
-  myCodeLabel: "",
-  solutions: [{ label: "", code: "" }],
-  comment: "",
-  share: false,
-  tags: [],
-  result: "",
-};
+function getTodayDate(): string {
+  return new Date().toISOString().split("T")[0];
+}
+
+function createInitialFormData(): FormData {
+  return {
+    title: "",
+    link: "",
+    language: "",
+    date: getTodayDate(),
+    platform: "",
+    category: "",
+    grade: "",
+    myCode: "",
+    myCodeLabel: "",
+    solutions: [{ label: "", code: "" }],
+    comment: "",
+    share: true,
+    tags: [],
+    result: "",
+  };
+}
 
 interface UseWrongNoteFormOptions {
   initialData?: FormData;
@@ -33,7 +39,7 @@ interface UseWrongNoteFormOptions {
 
 export function useWrongNoteForm(options?: UseWrongNoteFormOptions) {
   const [formData, setFormData] = useState<FormData>(
-    options?.initialData ?? { ...INITIAL_FORM_DATA, solutions: [{ label: "", code: "" }] },
+    options?.initialData ?? createInitialFormData(),
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -80,7 +86,7 @@ export function useWrongNoteForm(options?: UseWrongNoteFormOptions) {
   };
 
   const resetForm = () => {
-    setFormData(options?.initialData ?? { ...INITIAL_FORM_DATA, solutions: [{ label: "", code: "" }] });
+    setFormData(options?.initialData ?? createInitialFormData());
   };
 
   const setInitialData = (data: FormData) => {
