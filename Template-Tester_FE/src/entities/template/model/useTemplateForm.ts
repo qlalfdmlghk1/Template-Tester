@@ -85,7 +85,7 @@ export function useTemplateForm(templateId?: string | null) {
         alert("템플릿이 성공적으로 등록되었습니다!");
       }
 
-      navigate("/my-templates");
+      navigate("/templates/my");
     } catch (error: unknown) {
       console.error("템플릿 저장 실패:", error);
       const message = error instanceof Error ? error.message : "템플릿 저장에 실패했습니다.";
