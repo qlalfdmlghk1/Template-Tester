@@ -6,7 +6,7 @@ import { usePendingRequestCount } from "@/entities/friend/model/usePendingReques
 import { useTheme } from "@/shared/lib/useTheme";
 
 const menuItems = [
-  { path: "/", label: "템플릿" },
+  { path: "/templates", label: "템플릿" },
   { path: "/wrong-notes", label: "오답노트" },
   { path: "/friends", label: "친구" },
 ];
@@ -47,7 +47,7 @@ export default function Navbar() {
   };
 
   const handleMyTemplates = () => {
-    navigate("/my-templates");
+    navigate("/templates/my");
     setIsDropdownOpen(false);
   };
 
