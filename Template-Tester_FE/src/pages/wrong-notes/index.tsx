@@ -6,8 +6,10 @@ import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
 import AppFallback from "@/shared/ui/molecules/AppFallback/AppFallback";
 import AppChip from "@/shared/ui/atoms/AppChip/AppChip";
 import AppSelect from "@/shared/ui/atoms/AppSelect/AppSelect";
+import AppPagination from "@/shared/ui/molecules/AppPagination/AppPagination";
 import ToggleButtonGroup from "@/shared/ui/atoms/ToggleButtonGroup/ToggleButtonGroup";
 import CodeEditor from "@/shared/ui/molecules/CodeEditor/CodeEditor";
+import { usePagination } from "@/shared/lib/usePagination";
 import { useWrongNoteFilter } from "@/entities/wrong-note/model/useWrongNoteFilter";
 import { useWrongNoteList } from "@/entities/wrong-note/model/useWrongNoteList";
 import { useFriendWrongNotes } from "@/entities/wrong-note/model/useFriendWrongNotes";
@@ -76,6 +78,22 @@ export default function WrongNotes() {
   const filteredNotes = getFilteredNotes(filters, searchQuery);
   const filteredFriendNotes = getFilteredFriendNotes(filters, searchQuery);
 
+  const {
+    currentPage: listPage,
+    pageSize: listPageSize,
+    totalPages: listTotalPages,
+    paginatedItems: paginatedNotes,
+    setCurrentPage: setListPage,
+  } = usePagination(filteredNotes, { initialPageSize: 10 });
+
+  const {
+    currentPage: friendPage,
+    pageSize: friendPageSize,
+    totalPages: friendTotalPages,
+    paginatedItems: paginatedFriendNotes,
+    setCurrentPage: setFriendPage,
+  } = usePagination(filteredFriendNotes, { initialPageSize: 10 });
+
   useEffect(() => {
     if (activeTab === "list") {
       loadNotes();
@@ -84,6 +102,14 @@ export default function WrongNotes() {
     }
     clearFilters();
   }, [activeTab]);
+
+  useEffect(() => {
+    setListPage(1);
+  }, [filters, searchQuery, sortBy, setListPage]);
+
+  useEffect(() => {
+    setFriendPage(1);
+  }, [filters, searchQuery, sortBy, friendFilter, setFriendPage]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -236,73 +262,81 @@ export default function WrongNotes() {
                 onAction={clearFilters}
               />
             ) : (
-              <div className="space-y-4">
-                {filteredNotes.map((note) => (
-                  <div
-                    key={note.id}
-                    onClick={() => navigate(`/wrong-notes/${note.id}`)}
-                    className="p-3 sm:p-4 bg-surface border border-border rounded-lg hover:border-primary transition-colors cursor-pointer"
-                  >
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-2">
-                          <AppChip variant="success">{getCategoryLabel(note.category)}</AppChip>
-                          <AppChip variant="primary">{getPlatformLabel(note.platform)}</AppChip>
-                          <AppChip variant="purple">{getLanguageLabel(note.language)}</AppChip>
-                          {note.grade && (
-                            <AppChip variant="secondary">{getGradeLabel(note.platform, note.grade)}</AppChip>
-                          )}
-                          <AppChip
-                            variant={
-                              note.result === "correct" ? "success" : note.result === "timeout" ? "warning" : "error"
-                            }
+              <>
+                <div className="space-y-4">
+                  {paginatedNotes.map((note) => (
+                    <div
+                      key={note.id}
+                      onClick={() => navigate(`/wrong-notes/${note.id}`)}
+                      className="p-3 sm:p-4 bg-surface border border-border rounded-lg hover:border-primary transition-colors cursor-pointer"
+                    >
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-2">
+                            <AppChip variant="success">{getCategoryLabel(note.category)}</AppChip>
+                            <AppChip variant="primary">{getPlatformLabel(note.platform)}</AppChip>
+                            <AppChip variant="purple">{getLanguageLabel(note.language)}</AppChip>
+                            {note.grade && (
+                              <AppChip variant="secondary">{getGradeLabel(note.platform, note.grade)}</AppChip>
+                            )}
+                            <AppChip
+                              variant={
+                                note.result === "correct" ? "success" : note.result === "timeout" ? "warning" : "error"
+                              }
+                            >
+                              {getResultLabel(note.result)}
+                            </AppChip>
+                          </div>
+                          <h3 className="text-sm sm:text-base text-text font-medium">{note.title || "제목 없음"}</h3>
+                          <a
+                            href={note.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="text-sm text-textSecondary hover:text-primary transition-colors truncate block"
                           >
-                            {getResultLabel(note.result)}
-                          </AppChip>
+                            {note.link}
+                          </a>
+                          <div className="flex items-center gap-2 mt-2 text-xs text-textSecondary">
+                            <span>{note.date}</span>
+                            {note.tags.length > 0 && (
+                              <>
+                                <span>·</span>
+                                <span>{getTagLabels(note.tags).join(", ")}</span>
+                              </>
+                            )}
+                          </div>
+                          {note.comment ? (
+                            <p className="mt-2 text-sm text-textSecondary line-clamp-2">{note.comment}</p>
+                          ) : null}
                         </div>
-                        <h3 className="text-sm sm:text-base text-text font-medium">{note.title || "제목 없음"}</h3>
-                        <a
-                          href={note.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="text-sm text-textSecondary hover:text-primary transition-colors truncate block"
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (note.id) handleDelete(note.id);
+                          }}
+                          className="p-2 text-textSecondary hover:text-error transition-colors"
                         >
-                          {note.link}
-                        </a>
-                        <div className="flex items-center gap-2 mt-2 text-xs text-textSecondary">
-                          <span>{note.date}</span>
-                          {note.tags.length > 0 && (
-                            <>
-                              <span>·</span>
-                              <span>{getTagLabels(note.tags).join(", ")}</span>
-                            </>
-                          )}
-                        </div>
-                        {note.comment ? (
-                          <p className="mt-2 text-sm text-textSecondary line-clamp-2">{note.comment}</p>
-                        ) : null}
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                            />
+                          </svg>
+                        </button>
                       </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (note.id) handleDelete(note.id);
-                        }}
-                        className="p-2 text-textSecondary hover:text-error transition-colors"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                          />
-                        </svg>
-                      </button>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+                <AppPagination
+                  currentPage={listPage}
+                  totalPages={listTotalPages}
+                  pageSize={listPageSize}
+                  onPageChange={setListPage}
+                />
+              </>
             )}
           </div>
         )}
@@ -443,59 +477,67 @@ export default function WrongNotes() {
                 }}
               />
             ) : (
-              <div className="space-y-4">
-                {filteredFriendNotes.map((note) => (
-                  <div
-                    key={note.id}
-                    onClick={() => navigate(`/wrong-notes/${note.id}`)}
-                    className="p-3 sm:p-4 bg-surface border border-border rounded-lg hover:border-primary transition-colors cursor-pointer"
-                  >
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-2 text-sm text-textSecondary">
-                          <span className="font-medium text-text">{getFriendDisplayName(note.userId)}</span>
-                          <span>님의 오답노트</span>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-2">
-                          <AppChip variant="success">{getCategoryLabel(note.category)}</AppChip>
-                          <AppChip variant="primary">{getPlatformLabel(note.platform)}</AppChip>
-                          <AppChip variant="purple">{getLanguageLabel(note.language)}</AppChip>
-                          {note.grade && (
-                            <AppChip variant="secondary">{getGradeLabel(note.platform, note.grade)}</AppChip>
-                          )}
-                          <AppChip
-                            variant={
-                              note.result === "correct" ? "success" : note.result === "timeout" ? "warning" : "error"
-                            }
+              <>
+                <div className="space-y-4">
+                  {paginatedFriendNotes.map((note) => (
+                    <div
+                      key={note.id}
+                      onClick={() => navigate(`/wrong-notes/${note.id}`)}
+                      className="p-3 sm:p-4 bg-surface border border-border rounded-lg hover:border-primary transition-colors cursor-pointer"
+                    >
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-2 text-sm text-textSecondary">
+                            <span className="font-medium text-text">{getFriendDisplayName(note.userId)}</span>
+                            <span>님의 오답노트</span>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-2">
+                            <AppChip variant="success">{getCategoryLabel(note.category)}</AppChip>
+                            <AppChip variant="primary">{getPlatformLabel(note.platform)}</AppChip>
+                            <AppChip variant="purple">{getLanguageLabel(note.language)}</AppChip>
+                            {note.grade && (
+                              <AppChip variant="secondary">{getGradeLabel(note.platform, note.grade)}</AppChip>
+                            )}
+                            <AppChip
+                              variant={
+                                note.result === "correct" ? "success" : note.result === "timeout" ? "warning" : "error"
+                              }
+                            >
+                              {getResultLabel(note.result)}
+                            </AppChip>
+                          </div>
+                          <h3 className="text-text font-medium">{note.title || "제목 없음"}</h3>
+                          <a
+                            href={note.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="text-sm text-textSecondary hover:text-primary transition-colors truncate block"
                           >
-                            {getResultLabel(note.result)}
-                          </AppChip>
+                            {note.link}
+                          </a>
+                          <div className="flex items-center gap-2 mt-2 text-xs text-textSecondary">
+                            <span>{note.date}</span>
+                            {note.tags.length > 0 && (
+                              <>
+                                <span>·</span>
+                                <span>{getTagLabels(note.tags).join(", ")}</span>
+                              </>
+                            )}
+                          </div>
+                          {note.comment && <p className="mt-2 text-sm text-textSecondary line-clamp-2">{note.comment}</p>}
                         </div>
-                        <h3 className="text-text font-medium">{note.title || "제목 없음"}</h3>
-                        <a
-                          href={note.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="text-sm text-textSecondary hover:text-primary transition-colors truncate block"
-                        >
-                          {note.link}
-                        </a>
-                        <div className="flex items-center gap-2 mt-2 text-xs text-textSecondary">
-                          <span>{note.date}</span>
-                          {note.tags.length > 0 && (
-                            <>
-                              <span>·</span>
-                              <span>{getTagLabels(note.tags).join(", ")}</span>
-                            </>
-                          )}
-                        </div>
-                        {note.comment && <p className="mt-2 text-sm text-textSecondary line-clamp-2">{note.comment}</p>}
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+                <AppPagination
+                  currentPage={friendPage}
+                  totalPages={friendTotalPages}
+                  pageSize={friendPageSize}
+                  onPageChange={setFriendPage}
+                />
+              </>
             )}
           </div>
         )}
