@@ -37,11 +37,12 @@ describe("useWrongNoteForm", () => {
     it("기본 초기값으로 폼이 생성되어야 한다", () => {
       const { result } = renderHook(() => useWrongNoteForm());
 
+      const today = new Date().toISOString().split("T")[0];
       expect(result.current.formData).toEqual({
         title: "",
         link: "",
         language: "",
-        date: "",
+        date: today,
         platform: "",
         category: "",
         grade: "",
@@ -49,7 +50,7 @@ describe("useWrongNoteForm", () => {
         myCodeLabel: "",
         solutions: [{ label: "", code: "" }],
         comment: "",
-        share: false,
+        share: true,
         tags: [],
         result: "",
       });
@@ -171,7 +172,7 @@ describe("useWrongNoteForm", () => {
 
       act(() => {
         result.current.handleInputChange("title", "입력된 제목");
-        result.current.handleInputChange("share", true);
+        result.current.handleInputChange("share", false);
       });
 
       act(() => {
@@ -179,7 +180,7 @@ describe("useWrongNoteForm", () => {
       });
 
       expect(result.current.formData.title).toBe("");
-      expect(result.current.formData.share).toBe(false);
+      expect(result.current.formData.share).toBe(true);
     });
 
     it("initialData가 있으면 해당 값으로 리셋해야 한다", () => {

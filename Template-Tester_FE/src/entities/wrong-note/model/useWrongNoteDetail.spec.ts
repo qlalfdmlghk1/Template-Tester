@@ -246,7 +246,7 @@ describe("useWrongNoteDetail", () => {
       expect(result.current.isEditMode).toBe(false);
     });
 
-    it("handleSaveSuccess로 편집 모드를 종료하고 alert을 표시해야 한다", async () => {
+    it("handleSaveSuccess로 alert 표시 후 목록 페이지로 이동해야 한다", async () => {
       mockGetWrongNoteById.mockResolvedValue({
         note: mockNote,
         isOwner: true,
@@ -266,8 +266,8 @@ describe("useWrongNoteDetail", () => {
         result.current.handleSaveSuccess();
       });
 
-      expect(result.current.isEditMode).toBe(false);
       expect(mockAlert).toHaveBeenCalledWith("수정되었습니다.");
+      expect(mockNavigate).toHaveBeenCalledWith("/wrong-notes");
     });
   });
 });
