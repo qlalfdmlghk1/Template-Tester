@@ -1,0 +1,6 @@
+node_modules/
+lib/
+.secret.local
+.env
+.env.local
+*.log
