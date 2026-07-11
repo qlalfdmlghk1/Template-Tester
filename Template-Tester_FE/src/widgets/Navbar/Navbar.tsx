@@ -8,6 +8,7 @@ import { useTheme } from "@/shared/lib/useTheme";
 const menuItems = [
   { path: "/templates", label: "템플릿" },
   { path: "/wrong-notes", label: "오답노트" },
+  { path: "/daily", label: "데일리 학습" },
   { path: "/friends", label: "친구" },
 ];
 
