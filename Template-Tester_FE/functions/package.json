@@ -1,0 +1,23 @@
+{
+  "name": "functions",
+  "description": "Cloud Functions for Template-Tester Daily 학습 (AI 프록시)",
+  "main": "lib/index.js",
+  "private": true,
+  "engines": {
+    "node": "20"
+  },
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "deploy": "firebase deploy --only functions"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": ">=0.40.0",
+    "firebase-functions": "^6.0.0"
+  },
+  "devDependencies": {
+    "firebase-tools": "^15.23.0",
+    "typescript": "^5.9.3"
+  }
+}
