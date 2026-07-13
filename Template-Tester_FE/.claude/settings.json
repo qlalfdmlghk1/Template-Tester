@@ -1,0 +1,119 @@
+{
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": [
+      "Bash(cd:*)",
+      "Bash(git:*)",
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(npm:*)",
+      "Bash(npx eslint:*)",
+      "Bash(npx playwright:*)",
+      "Bash(npx prettier:*)",
+      "Bash(npx vue-tsc:*)",
+      "Bash(./gradlew:*)",
+      "Bash(gradle:*)",
+      "Bash(ktlint:*)",
+      "Bash(xcodebuild:*)",
+      "Bash(swift:*)",
+      "Bash(swiftlint:*)",
+      "Bash(swiftformat:*)",
+      "Bash(gh:*)",
+      "Skill(commit)",
+      "Skill(commit *)",
+      "Skill(note)",
+      "Skill(note *)",
+      "Skill(pr)",
+      "Skill(pr *)",
+      "Skill(start)",
+      "Skill(start *)",
+      "Skill(plan-review)",
+      "Skill(plan-review *)",
+      "Skill(review)",
+      "Skill(review *)",
+      "Skill(review-converge)",
+      "Skill(review-converge *)",
+      "Skill(secure-review)",
+      "Skill(secure-review *)",
+      "Skill(tech-doc)",
+      "Skill(tech-doc *)",
+      "Skill(organize-imports)",
+      "Skill(organize-imports *)",
+      "Skill(e2e)",
+      "Skill(e2e *)",
+      "WebFetch",
+      "mcp__figma__get_variable_defs",
+      "mcp__figma__get_screenshot",
+      "mcp__playwright__*",
+      "mcp__atlassian__*"
+    ],
+    "deny": [
+      "Bash(npm exec:*)",
+      "Bash(npm x:*)",
+      "Bash(npm explore:*)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/check-commit-typecheck.js",
+            "timeout": 300
+          },
+          {
+            "type": "command",
+            "command": "node .claude/hooks/warn-changelog-on-pr.js"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/notify-sensitive-edit.js"
+          },
+          {
+            "type": "command",
+            "command": "node .claude/hooks/warn-e2e-antipattern.js"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/format-edited.js"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/pilot-session-metrics.mjs"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/pilot-session-metrics.mjs"
+          }
+        ]
+      }
+    ]
+  }
+}
