@@ -1,218 +1,69 @@
-# AD-Connect 도메인 가이드
+# CLAUDE.md
 
-> 이 문서는 프로젝트의 도메인 지식을 정리합니다.
-> Claude와 대화 중 도메인 관련 내용이 나오면 이 문서에 반영됩니다.
+이 파일은 프로젝트에서 Claude Code가 항상 먼저 읽는 팀 표준 진입점입니다.
 
----
+## 사용 전 설정
 
-## 1. 프로젝트 개요
+새 프로젝트에 `.claude`를 적용한 뒤, 먼저 아래 파일을 프로젝트 상황에 맞게 채웁니다.
 
-**AD-Connect**는 인크로스의 내부 광고 솔루션을 통합하여 사용할 수 있는 통합 플랫폼입니다.
+1. `.claude/project.config.md`
+2. `.claude/CLAUDE.md`의 프로젝트 개요
+3. 필요한 기술 스택 rule
 
-### 통합 방식
+`project.config.md`가 없다면 `.claude/project.config.example.md`를 복사해서 만듭니다.
 
-| 서비스 | 통합 방식 | 상태 |
-|--------|----------|------|
-| 리포트 자동화 | 직접 구현 | 구현 예정 |
-| 애드포지션(AdPosition) | iframe → 직접 구현 | 통합 예정 |
-| Buddy (캠페인 모니터링) | iframe | 연동 완료 |
-| iScreen (게재 보고) | iframe | 연동 완료 |
-| iReachBoard (효율 예측) | iframe | 연동 완료 |
-| MediaArchive (매체자료) | iframe | 연동 완료 |
-| Superset (대시보드) | iframe | 연동 완료 |
+## 프로젝트 개요
 
----
+- 프로젝트명: `Template-Tester` (모노레포: `Template-Tester_FE` / `Template-Tester_BE`, 이 설정은 **FE 전용**)
+- 설명: `{PROJECT_DESCRIPTION}` — 미정, 채워주세요
+- 주요 스택: `React 19 + Vite + TypeScript + Tailwind CSS` (Storybook, Vitest, Playwright, Firebase)
+- 기본 브랜치: `dev`
+- Jira 프로젝트 키: `{JIRA_PROJECT_KEY}` — 미정 (Jira 미사용이면 비워둠)
+- GitHub 기본 reviewer: `{DEFAULT_REVIEWER}` — 미정
+- Confluence 기술 문서 위치: `{CONFLUENCE_SPACE}` / `{TECH_DOC_PARENT_PAGE_ID}` — 미정
 
-## 2. 도메인 용어 (Glossary)
+### 이 프로젝트의 현재 구조
 
-| 용어 | 영문 | 설명 |
-|------|------|------|
-| 매체 | media | 광고를 게재하는 플랫폼 (예: 네이버, 구글, 메타 등) |
-| 상품 | product | 매체에서 제공하는 광고 상품 (하나의 매체에 여러 상품 존재) |
-| 애드포지션 | ad position | 광고가 노출되는 위치/지면 |
-| 권한 그룹 | role group | 사용자 권한을 그룹 단위로 관리하는 체계 |
-| 권한 레벨 | level | 권한의 계층 (1=최고 관리자, 4=제한된 사용자) |
-| 2FA | two-factor auth | 2단계 인증 (OTP 기반) |
-| 세션 터치 | touch session | 사용자 활동 시 세션 만료 시간 연장 |
+- FE는 **FSD(Feature-Sliced Design) + Atomic Design** 구조를 이미 사용 중입니다. 상세 컨벤션은 `.claude/rules/fe-convention.md`(프로젝트 고유)를 우선 따르고, 표준 rule `.claude/rules/fe/react-vite.md`는 보완적으로 참고합니다.
+- BE(`Template-Tester_BE`)는 Spring Boot(Java 17/Gradle)이며 팀 표준에 해당 rule이 아직 없습니다. 이 설정의 적용 범위 밖입니다.
 
----
+## 기본 작업 원칙
 
-## 3. 핵심 엔티티
+- 의미 있는 변경은 Plan → Code → Review 순서로 진행합니다.
+- `/start`를 사용하면 plan.md 합의 후 Jira, GitHub Issue, branch, progress.md를 생성합니다.
+- 개발 중 결정은 `progress.md` 또는 `/note`로 남깁니다.
+- **커밋·PR·리뷰·기록 요청은 반드시 해당 스킬로 처리합니다.** 사용자가 "커밋해줘"·"PR 올려줘"·"리뷰해줘"·"기록해줘"처럼 자연어로 말해도 — 슬래시 커맨드가 아니어도 — `git commit`·`gh pr create` 등을 **직접 실행하지 말고** `/commit`·`/pr`·`/review`(또는 `/review-converge`)·`/note` 스킬을 호출합니다. 스킬이 커밋 컨벤션·이슈 연결·리뷰 등록 등 팀 표준 절차를 보장하므로, 직접 처리하면 그 절차가 누락됩니다.
+- 프로젝트별 예외는 `.claude/project.config.md`에 명시하고, skill 본문을 직접 고치기 전에 팀 표준 반영 여부를 검토합니다.
 
-### 3.1 사용자 (User)
+## 필수 사전 준비
 
-| 필드 | 설명 |
-|------|------|
-| email | 로그인 ID (고유) |
-| name | 사용자 이름 |
-| org | 소속 조직 |
-| department | 부서 |
-| roleGroupId | 권한 그룹 ID |
-| level | 권한 레벨 (1~4) |
-| status | 상태 (ACTIVE/INACTIVE) |
+- Atlassian MCP: Jira/Confluence 자동화에 필요
+- Figma MCP: 디자인 분석이 필요한 UI 작업에 필요
+- `gh` CLI: GitHub Issue, PR 생성, PR 코멘트 등록에 필요
+- Playwright MCP: `/e2e` 테스트 저작에 필요 (선택)
+- Node.js/npm: hooks와 type-check 실행에 필요
 
-### 3.2 권한 그룹 (Role)
+## 기술 스택별 rule
 
-| 필드 | 설명 |
-|------|------|
-| name | 권한 그룹명 |
-| level | 권한 레벨 |
-| memberCount | 소속 사용자 수 |
-| menuPermissions | 메뉴별 권한 설정 |
+이 프로젝트(FE)에 적용되는 rule입니다. 다른 스택 rule은 이 프로젝트에 배치하지 않았습니다.
 
-### 3.3 매체 (Media)
+- React / Vite (SPA) — 팀 표준: `.claude/rules/fe/react-vite.md`
+- FE 컨벤션 (FSD·Atomic·Tailwind·테스트) — 프로젝트 고유: `.claude/rules/fe-convention.md`
+- 공통 팀 원칙: `.claude/rules/team.md`, `.claude/rules/project.md`
+- 보안/ISMS-P 정본: `.claude/rules/security-compliance.md`
+- API 가이드 참조(`/e2e`): `.claude/rules/api-guide-reference.md`
+- 도메인 문서 갱신 — 프로젝트 고유: `.claude/rules/domain-update.md`
 
-| 필드 | 설명 |
-|------|------|
-| name | 매체명 |
-| mediaTypes | 매체 유형 목록 |
-| status | 상태 (ACTIVE/INACTIVE) |
+커밋·PR 규칙은 프로젝트 rule이 아니라 팀 표준 스킬(`/commit`·`/pr`)을 따릅니다.
 
-### 3.4 상품 (Product)
+## 도메인 언어
 
-| 필드 | 설명 |
-|------|------|
-| name | 상품명 |
-| mediaName | 소속 매체명 |
-| productTypes | 상품 유형 목록 |
-| registered | 애드포지션 등록 여부 |
-| status | 상태 (ACTIVE/INACTIVE) |
+프로젝트 유비쿼터스 언어는 `.claude/DOMAIN.md`(인덱스)와 `.claude/domain/{domain}.md`(정의 본문)에 둡니다.
 
----
+해당 도메인 작업(코드·주석·테스트 제목·커밋·UI 문구) 시 관련 도메인 파일을 먼저 읽고 용어를 따릅니다. 새 도메인은 `.claude/domain/_TEMPLATE.md`를 복사해 작성합니다.
 
-## 4. 비즈니스 규칙
+## 진행 문서
 
-### 4.1 사용자 관리
+진행 중 기능의 컨텍스트는 `docs/features/{feature}/plan.md`와 `docs/features/{feature}/progress.md`에 누적합니다.
 
-- 이메일은 고유해야 함 (등록 전 중복 확인 필수)
-- 본인 계정은 삭제 불가
-- 낮은 권한(높은 level) 사용자는 높은 권한(낮은 level) 사용자를 삭제 불가
-- Level 4 사용자는 사용자 삭제 권한 없음
-
-### 4.2 권한 체계
-
-```
-권한 레벨 계층:
-Level 1 (최고) > Level 2 > Level 3 > Level 4 (최저)
-```
-
-- 권한은 `대메뉴 > 소메뉴 > 화면` 구조로 세분화
-- 화면별로 CRUD + Download 권한 개별 설정 가능
-
-### 4.3 인벤토리 관리
-
-- 매체 : 상품 = 1 : N 관계
-- 매체가 비활성화되면 해당 상품도 관리 불가
-- 상품의 애드포지션 등록 상태 추적 필수
-
-### 4.4 인증/세션
-
-- 2FA 필수 (최초 로그인 시 등록)
-- 비활동 시 세션 자동 만료
-- iframe에서 `tokenRefresh` 메시지 수신 시 세션 연장
-- 다른 기기 로그인 시 기존 세션 종료 가능
-
----
-
-## 5. 상태 흐름
-
-### 5.1 로그인 흐름
-
-```
-이메일/비밀번호 입력
-    ↓
-1차 인증 (POST /auth/login)
-    ↓
-[임시 비밀번호?] → 비밀번호 변경 화면
-    ↓
-[비밀번호 만료?] → 비밀번호 변경 화면
-    ↓
-[2FA 미등록?] → QR 코드 등록 화면
-    ↓
-2FA 인증 (POST /auth/2fa/authenticate)
-    ↓
-메인 페이지 (권한에 따른 첫 메뉴)
-```
-
-### 5.2 iframe 인증 흐름
-
-```
-Parent Window              iframe
-     |                       |
-     |←-- handshake ---------|
-     |--- auth (token) ----->|
-     |                       |
-     |←-- tokenRefresh ------|  (사용자 활동 시)
-     |--- touchSession() --->|
-     |                       |
-     |←-- authExpired -------|  (토큰 만료 시)
-     |--- logout() --------->|
-```
-
----
-
-## 6. 외부 시스템 연동
-
-| 시스템 | 용도 | 연동 방식 | 비고 |
-|--------|------|----------|------|
-| Buddy | 캠페인 상태/효율 모니터링 | iframe | `/ai-buddy/campaign-alert` |
-| iScreen | 게재 현황 자동 리포트 | iframe | `/screenshot/#/screenshot` |
-| iReachBoard | 효율 예측 시뮬레이션 | iframe | `/irb/#/reachSimulation` |
-| AdPosition | 애드포지션 관리 | iframe | 직접 통합 예정 |
-| MediaArchive | 매체 소개서 다운로드 | iframe | `/adposition/media-archive` |
-| Superset | 매체 성과 대시보드 | iframe (게스트 토큰) | 별도 토큰 발급 |
-
-### 환경별 Base URL
-
-| 환경 | URL |
-|------|-----|
-| 개발 (로컬) | `http://localhost:5174` |
-| 개발 (서버) | `https://dev.i-flow.kr` |
-| 운영 | `https://i-flow.kr` |
-
----
-
-## 7. 메뉴 구조
-
-### 7.1 메인 메뉴
-
-```
-미디어 플래닝
-  ├── 애드포지션 (/ad-position)
-  ├── 매체자료 (/media-archive)
-  └── 효율 예측 (/ireachboard)
-
-캠페인 운영
-  ├── 캠페인 리포트 (리포트 자동화 - 구현 예정)
-  ├── 캠페인 모니터링 (/buddy)
-  └── 게재 보고 (/iscreen)
-
-관리
-  ├── 사용자 관리 (/management/user)
-  ├── 권한 그룹 관리 (/management/role)
-  └── 매체/상품 관리 (/management/inventory)
-```
-
-### 7.2 메인 페이지 진입 우선순위
-
-사용자가 접근 가능한 첫 번째 메뉴로 자동 리다이렉트:
-1. 미디어 플래닝 > 애드포지션
-2. 미디어 플래닝 > 매체자료
-3. 미디어 플래닝 > 효율 예측
-4. 캠페인 운영 > 캠페인 리포트
-5. 캠페인 운영 > 캠페인 모니터링
-6. 캠페인 운영 > 게재 보고
-
----
-
-## 8. 관련 링크
-
-- **Confluence 문서**: [AD 개발 문서](https://incross-platform.atlassian.net/wiki/spaces/AD/folder/48824376)
-
----
-
-## 변경 이력
-
-| 날짜 | 변경 내용 |
-|------|-----------|
-| 2026-01-20 | 초기 도메인 가이드 작성 (프로젝트 개요, 용어, 엔티티, 비즈니스 규칙, 상태 흐름, 외부 연동, 메뉴 구조) |
+세션을 이어갈 때는 먼저 해당 feature의 `progress.md`를 확인합니다.
