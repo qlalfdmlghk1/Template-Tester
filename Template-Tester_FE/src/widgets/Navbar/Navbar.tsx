@@ -9,7 +9,6 @@ const menuItems = [
   { path: "/templates", label: "템플릿" },
   { path: "/wrong-notes", label: "오답노트" },
   { path: "/daily", label: "데일리 학습" },
-  { path: "/friends", label: "친구" },
 ];
 
 export default function Navbar() {
@@ -52,38 +51,47 @@ export default function Navbar() {
     setIsDropdownOpen(false);
   };
 
+  const handleFriends = () => {
+    navigate("/friends");
+    setIsDropdownOpen(false);
+  };
+
   return (
     <nav className="bg-surface border-b border-border sticky top-0 z-[1000]">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
         <div className="flex w-full justify-between items-center gap-6">
-          <span
-            onClick={() => navigate("/")}
-            className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-primary whitespace-nowrap cursor-pointer"
-          >
-            템플릿 테스터
-          </span>
-          <div className="flex gap-1 sm:gap-2 mr-2 sm:mr-4">
+          <div onClick={() => navigate("/")} className="flex items-center gap-2 shrink-0 cursor-pointer">
+            <img
+              src="/template-tester.svg"
+              alt="템플릿 테스터 로고"
+              className="w-7 h-7 sm:w-8 sm:h-8 shrink-0"
+              style={{ filter: isDark ? "invert(1)" : undefined }}
+            />
+            <span className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-primary leading-tight">
+              <span className="hidden sm:inline whitespace-nowrap">템플릿 테스터</span>
+              <span className="sm:hidden flex flex-col">
+                <span>템플릿</span>
+                <span>테스터</span>
+              </span>
+            </span>
+          </div>
+          <div className="flex flex-nowrap shrink-0 gap-1 sm:gap-2 mr-2 sm:mr-4">
             {menuItems.map((item) => (
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                className={`px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 border-none bg-transparent text-xs sm:text-sm md:text-base font-medium cursor-pointer rounded-md transition-all duration-200 relative ${
+                className={`px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 border-none bg-transparent text-xs sm:text-sm md:text-base font-medium cursor-pointer rounded-md transition-all duration-200 relative whitespace-nowrap ${
                   location.pathname === item.path || (item.path !== "/" && location.pathname.startsWith(item.path))
                     ? "bg-blue-50 text-primary"
                     : "text-textSecondary hover:bg-blue-50"
                 }`}
               >
                 {item.label}
-                {item.path === "/friends" && pendingRequestCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs min-w-[18px] h-[18px] flex items-center justify-center rounded-full">
-                    {pendingRequestCount}
-                  </span>
-                )}
               </button>
             ))}
           </div>
         </div>
-        <div className="flex items-center gap-3 sm:gap-4">
+        <div className="flex items-center gap-0 sm:gap-4">
           <button
             onClick={toggleTheme}
             className="p-2 rounded-md text-textSecondary hover:bg-blue-50 transition-colors"
@@ -112,7 +120,7 @@ export default function Navbar() {
           {user && (
             <div className="flex items-center pl-2 sm:pl-4 border-l border-border relative" ref={dropdownRef}>
               <div
-                className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+                className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity relative"
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               >
                 {user.photoURL && (
@@ -121,6 +129,11 @@ export default function Navbar() {
                     alt={user.displayName || "User"}
                     className="w-6 h-6 sm:w-7 sm:h-7 rounded-full"
                   />
+                )}
+                {!isDropdownOpen && pendingRequestCount > 0 && (
+                  <span className="absolute -top-1 -left-1 bg-red-500 text-white text-xs min-w-[18px] h-[18px] flex items-center justify-center rounded-full">
+                    {pendingRequestCount}
+                  </span>
                 )}
                 <span className="hidden sm:block text-xs sm:text-sm text-textSecondary max-w-[100px] truncate">
                   {user.displayName || user.email}
@@ -131,12 +144,23 @@ export default function Navbar() {
               </div>
 
               {isDropdownOpen && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-surface rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)] border border-border py-1 px-2 z-50 min-w-[120px]">
+                <div className="absolute top-full right-0 mt-2 bg-surface rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)] border border-border py-1 px-2 z-50 min-w-[120px] whitespace-nowrap">
                   <button
                     onClick={handleMyTemplates}
                     className="w-full px-3 py-2.5 text-left text-sm text-text hover:bg-blue-50 transition-colors rounded-md"
                   >
                     내 템플릿
+                  </button>
+                  <button
+                    onClick={handleFriends}
+                    className="w-full px-3 py-2.5 text-left text-sm text-text hover:bg-blue-50 transition-colors rounded-md flex items-center justify-between gap-2"
+                  >
+                    <span>친구</span>
+                    {pendingRequestCount > 0 && (
+                      <span className="bg-red-500 text-white text-xs min-w-[18px] h-[18px] flex items-center justify-center rounded-full px-1">
+                        {pendingRequestCount}
+                      </span>
+                    )}
                   </button>
                   <button
                     onClick={handleLogout}
