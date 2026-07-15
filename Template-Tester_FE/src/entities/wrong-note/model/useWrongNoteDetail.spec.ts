@@ -212,6 +212,7 @@ describe("useWrongNoteDetail", () => {
         grade: "lv2",
         category: "dp",
         myCode: "print('hello')",
+        myCodeLabel: "",
         solutions: [{ label: "", code: "print('world')" }],
         comment: "메모",
         share: false,
