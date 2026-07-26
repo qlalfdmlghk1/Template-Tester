@@ -15,12 +15,12 @@
 ## 프로젝트 개요
 
 - 프로젝트명: `Template-Tester` (모노레포: `Template-Tester_FE` / `Template-Tester_BE`, 이 설정은 **FE 전용**)
-- 설명: `{PROJECT_DESCRIPTION}` — 미정, 채워주세요
+- 설명: 코딩테스트 템플릿·오답노트와 이론 개념 학습·데일리 적응형 출제를 제공하는 취업 준비 학습 웹 서비스
 - 주요 스택: `React 19 + Vite + TypeScript + Tailwind CSS` (Storybook, Vitest, Playwright, Firebase)
 - 기본 브랜치: `dev`
-- Jira 프로젝트 키: `{JIRA_PROJECT_KEY}` — 미정 (Jira 미사용이면 비워둠)
-- GitHub 기본 reviewer: `{DEFAULT_REVIEWER}` — 미정
-- Confluence 기술 문서 위치: `{CONFLUENCE_SPACE}` / `{TECH_DOC_PARENT_PAGE_ID}` — 미정
+- Jira: **미사용** — 이슈는 GitHub Issue로만 관리합니다.
+- GitHub 기본 reviewer: 미지정 — `/pr`이 리뷰어를 자동 지정하지 않습니다.
+- Confluence: **미사용** — `/tech-doc` 발행 대상 없음. 기술 문서는 `docs/` 하위에 둡니다.
 
 ### 이 프로젝트의 현재 구조
 

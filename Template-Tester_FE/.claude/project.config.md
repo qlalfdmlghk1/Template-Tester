@@ -6,34 +6,40 @@
 ## Project
 
 - PROJECT_NAME: Template-Tester
-- PROJECT_DESCRIPTION: # 미정 — 한 줄로 채워주세요
+- PROJECT_DESCRIPTION: 코딩테스트 템플릿·오답노트와 이론 개념 학습·데일리 적응형 출제를 제공하는 취업 준비 학습 웹 서비스
 - PROJECT_STACK: React 19, Vite, TypeScript, Tailwind CSS, Storybook, Vitest, Playwright, Firebase
 - BASE_BRANCH: dev # 작업 분기 기준 브랜치 (/start Stage 4) — 보통 GitHub의 DEFAULT_TARGET_BRANCH와 동일 값으로 유지 (다르면 분기 base와 PR/리뷰 base가 어긋남)
 
 ## Jira
 
-- JIRA_PROJECT_KEY:
-- JIRA_DEFAULT_ISSUE_TYPE:
-- JIRA_DEFAULT_ASSIGNEE_EMAIL:
-- JIRA_SITE_URL: https://incross-platform.atlassian.net
+**이 프로젝트는 Jira를 사용하지 않습니다.** 이슈는 GitHub Issue로만 관리하므로 아래 키는 모두 비워 둡니다.
+`/start`는 Jira 단계를 건너뛰고 GitHub Issue만 생성합니다 — 값이 비어 있다고 다시 묻지 마세요.
+
+- JIRA_PROJECT_KEY: # 미사용
+- JIRA_DEFAULT_ISSUE_TYPE: # 미사용
+- JIRA_DEFAULT_ASSIGNEE_EMAIL: # 미사용
+- JIRA_SITE_URL: # 미사용 (팀 기본값이던 incross-platform.atlassian.net 은 이 프로젝트와 무관하여 제거)
 - JIRA_LABELS: # 쉼표 구분, 각 라벨은 공백 불가(하이픈·언더스코어 사용). /start가 이슈 생성 시 적용. 라벨 트리거로 하위 업무를 자동 생성하는 Jira 자동화를 쓰면 그 라벨을 반드시 등록 (누락 시 하위 업무 수동 생성 필요)
-- JIRA_REVIEW_TRANSITION: # /pr 6단계에서 리뷰 후 전이할 목표 상태 이름 (예: 진행 중, In Review). 미설정 시 가능한 전이를 조회해 사용자에게 확인
+- JIRA_REVIEW_TRANSITION: # 미사용. (원 설명) /pr 6단계에서 리뷰 후 전이할 목표 상태 이름 (예: 진행 중, In Review). 미설정 시 가능한 전이를 조회해 사용자에게 확인
 
 ## GitHub
 
 - GITHUB_REPO_URL: https://github.com/qlalfdmlghk1/Template-Tester
 - GITHUB_HOST: # github.com이므로 비워둠
 - GITHUB_USERNAME: qlalfdmlghk1 # remote owner 기준 — gh 인증 후 실제 계정과 다르면 수정
-- DEFAULT_REVIEWER: # 미정
+- DEFAULT_REVIEWER: # 의도적으로 비움 — /pr 이 리뷰어를 자동 지정하지 않음 (collaborator: qlalfdmlghk1, shhyunn)
 - DEFAULT_TARGET_BRANCH: dev # PR 대상·리뷰 비교 브랜치 (/pr·/review) — 보통 BASE_BRANCH와 동일 값으로 유지
 - STAGING_BRANCH: staging
 - PRODUCTION_BRANCH: product
 
 ## Confluence
 
-- CONFLUENCE_SPACE:
-- TECH_DOC_PARENT_PAGE_ID:
-- TEAM_GUIDE_PAGE_URL:
+**이 프로젝트는 Confluence를 사용하지 않습니다.** `/tech-doc`은 발행 대상이 없으므로
+Confluence 발행 단계를 건너뛰고 `docs/` 하위 초안까지만 생성합니다 — 값이 비어 있다고 다시 묻지 마세요.
+
+- CONFLUENCE_SPACE: # 미사용
+- TECH_DOC_PARENT_PAGE_ID: # 미사용
+- TEAM_GUIDE_PAGE_URL: # 미사용
 
 ## API / Design References
 
