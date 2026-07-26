@@ -25,3 +25,7 @@ storybook-static
 *.sw?
 
 settings.local.json
+
+# Claude Code 파일럿 세션 측정 로그 (.claude/hooks/pilot-session-metrics.mjs 생성)
+# 개인 사용량 통계 + git user.name 이 담기므로 커밋하지 않는다
+**/docs/pilot-metrics/
