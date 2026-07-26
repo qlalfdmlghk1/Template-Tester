@@ -1,21 +1,15 @@
 import { useState, useRef, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/features/auth/model/useAuth";
 import { logout } from "@/features/auth/api/auth.api";
 import { usePendingRequestCount } from "@/entities/friend/model/usePendingRequestCount";
 import { useTheme } from "@/shared/lib/useTheme";
-
-const menuItems = [
-  { path: "/templates", label: "템플릿" },
-  { path: "/wrong-notes", label: "오답노트" },
-  { path: "/daily", label: "데일리 학습" },
-];
+import NavMenu from "./NavMenu";
 
 export default function Navbar() {
   const { user } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
-  const location = useLocation();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { pendingRequestCount } = usePendingRequestCount(!!user);
@@ -75,21 +69,7 @@ export default function Navbar() {
               </span>
             </span>
           </div>
-          <div className="flex flex-nowrap shrink-0 gap-1 sm:gap-2 mr-2 sm:mr-4">
-            {menuItems.map((item) => (
-              <button
-                key={item.path}
-                onClick={() => navigate(item.path)}
-                className={`px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 border-none bg-transparent text-xs sm:text-sm md:text-base font-medium cursor-pointer rounded-md transition-all duration-200 relative whitespace-nowrap ${
-                  location.pathname === item.path || (item.path !== "/" && location.pathname.startsWith(item.path))
-                    ? "bg-blue-50 text-primary"
-                    : "text-textSecondary hover:bg-blue-50"
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
+          <NavMenu />
         </div>
         <div className="flex items-center gap-0 sm:gap-4">
           <button
