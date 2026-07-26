@@ -86,3 +86,29 @@
 
 - 브라우저 수동 확인 후 PR 생성 (target `dev`)
 - `isPathActive`/`isEntryActive` 단위 테스트 추가 검토
+
+---
+
+### Commit — 2026-07-27 00:29
+
+- Message: `Fix:#64 헤더 메뉴의 터치·키보드 개폐 동작 수정`
+- Issue: `#64`
+- Jira: 미사용
+
+**변경 요약**
+
+- PR #65에 `/review-converge` 3라운드 실행. 리뷰에서 나온 Blocker 1건과 그 수정이 만든 회귀 1건을 반영
+- 호버 개폐를 `pointerType === "mouse"` 로 제한하고, 그룹 트리거 클릭은 입력 수단별로 분기
+- 바깥 닫기 리스너를 `mousedown` → `pointerdown` 으로 교체
+
+**결정 로그**
+
+- **[Blocker]** 터치에서 탭 1회 시 `pointerenter` 로 열린 직후 `click` 토글이 도로 닫아 메뉴가 열리지 않았음. `/templates`·`/daily` 는 이 메뉴가 유일한 진입 경로라 모바일에서 접근 불가 상태였음. 호버 개폐를 마우스로 한정해 해결
+- **[회귀]** 위 수정 직후, 키보드 Enter 는 `pointerdown` 이 없어 `pointerTypeRef` 가 기본값 `"mouse"` 로 남아 열기만 반복되고 닫히지 않았음(`aria-expanded` 도 true 고정). 키보드 유래 click 은 `detail === 0` 이라는 점을 이용해 입력 수단과 무관하게 토글하도록 수정
+- `cancelScheduledClose()` 를 클릭 핸들러 진입부로 옮겨, 닫힘 타이머가 예약된 상태에서 연 메뉴가 120ms 뒤 닫히는 레이스를 제거
+- iOS Safari 는 핸들러 없는 영역 탭에 호환 마우스 이벤트를 쏘지 않아 "바깥 탭으로 닫기" 가 불발됨. `pointerdown` 으로 교체
+
+**다음 작업**
+
+- 실기기(안드로이드 Chrome / iOS Safari) 터치 동작 확인
+- 리뷰에서 남긴 항목(a11y `role="menu"`, 모바일 가로 오버플로, 다크모드 hover 대비, 단위 테스트 부재) 후속 처리 판단
