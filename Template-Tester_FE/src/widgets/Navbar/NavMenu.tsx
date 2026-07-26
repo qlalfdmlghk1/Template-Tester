@@ -22,11 +22,15 @@ export default function NavMenu() {
   const containerRef = useRef<HTMLDivElement>(null);
   const triggerRowRef = useRef<HTMLDivElement>(null);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** 직전 입력 수단. 키보드(Enter)로 눌린 경우 pointerdown 이 없어 기본값 mouse 를 유지한다. */
+  const pointerTypeRef = useRef<string>("mouse");
 
   useEffect(() => {
     if (!isExpanded) return;
 
-    const handleClickOutside = (event: MouseEvent) => {
+    // mousedown 이 아니라 pointerdown 을 듣는다. iOS Safari 는 핸들러 없는 영역을
+    // 탭할 때 호환 마우스 이벤트를 쏘지 않아, 터치에서 "바깥 탭으로 닫기"가 불발된다.
+    const handlePointerDownOutside = (event: PointerEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setIsExpanded(false);
       }
@@ -37,10 +41,10 @@ export default function NavMenu() {
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("pointerdown", handlePointerDownOutside);
     document.addEventListener("keydown", handleKeyDown);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("pointerdown", handlePointerDownOutside);
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [isExpanded]);
@@ -82,16 +86,40 @@ export default function NavMenu() {
     }
   };
 
-  const handleMouseEnter = () => {
+  // 호버 개폐는 마우스에만 적용한다. 터치 브라우저는 탭 한 번에
+  // pointerenter → click 을 연달아 쏘므로, 터치까지 호버로 열면
+  // 열자마자 click 이 도로 닫아 메뉴가 안 열린 것처럼 보인다.
+  const handlePointerEnter = (event: React.PointerEvent) => {
+    if (event.pointerType !== "mouse") return;
     cancelScheduledClose();
     setIsExpanded(true);
   };
 
   // 트리거 행과 패널 사이에는 <nav> 하단 테두리가 있어, 그 위를 지나는 순간
-  // mouseleave 가 뜰 수 있다. 짧은 유예를 두어 이동 중 닫히지 않게 한다.
-  const handleMouseLeave = () => {
+  // pointerleave 가 뜰 수 있다. 짧은 유예를 두어 이동 중 닫히지 않게 한다.
+  const handlePointerLeave = (event: React.PointerEvent) => {
+    if (event.pointerType !== "mouse") return;
     cancelScheduledClose();
     closeTimerRef.current = setTimeout(() => setIsExpanded(false), 120);
+  };
+
+  const handleTriggerPointerDown = (event: React.PointerEvent) => {
+    pointerTypeRef.current = event.pointerType || "mouse";
+  };
+
+  const handleGroupTriggerClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    cancelScheduledClose();
+
+    // 키보드(Enter/Space)로 발생한 click 은 detail === 0 이고 pointerdown 이 없다.
+    // 직전 포인터 종류와 무관하게 토글해야 키보드만으로도 닫을 수 있다.
+    // 터치·펜도 호버가 없으므로 탭으로 토글한다.
+    if (event.detail === 0 || pointerTypeRef.current !== "mouse") {
+      setIsExpanded((prev) => !prev);
+      return;
+    }
+
+    // 마우스는 호버로 이미 열려 있으므로 클릭이 닫지 않게 한다(눌러도 반응 없어 보이는 문제).
+    setIsExpanded(true);
   };
 
   const handleNavigate = (path: string) => {
@@ -108,8 +136,8 @@ export default function NavMenu() {
       // py/-my 로 히트 영역을 헤더 세로 패딩만큼 넓혀 <nav> 하단까지 닿게 한다.
       // (그 패딩은 부모 것이라, 없으면 트리거 → 패널로 내려가는 도중 닫힌다)
       className="shrink-0 mr-2 sm:mr-4 py-3 -my-3 sm:py-4 sm:-my-4"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+      onPointerEnter={handlePointerEnter}
+      onPointerLeave={handlePointerLeave}
     >
       <div ref={triggerRowRef} className="flex flex-nowrap gap-1 sm:gap-2">
         {navMenu.map((entry) => {
@@ -122,7 +150,8 @@ export default function NavMenu() {
               type="button"
               aria-haspopup={isGroup ? "menu" : undefined}
               aria-expanded={isGroup ? isExpanded : undefined}
-              onClick={() => (isGroup ? setIsExpanded((prev) => !prev) : handleNavigate(entry.path))}
+              onPointerDown={handleTriggerPointerDown}
+              onClick={(event) => (isGroup ? handleGroupTriggerClick(event) : handleNavigate(entry.path))}
               className={cn(TRIGGER_CLASS, isActive ? "text-primary" : "text-textSecondary")}
             >
               {entry.label}
