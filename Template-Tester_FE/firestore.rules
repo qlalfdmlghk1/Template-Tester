@@ -1,0 +1,114 @@
+rules_version = '2';
+
+// Template-Tester Firestore 보안 규칙
+//
+// 이 앱은 브라우저에서 Firestore로 직접 접근하므로, 이 파일이 유일한 접근 통제 지점이다.
+// 규칙은 필터가 아니라 검증이다 — 쿼리 결과에 규칙을 통과하지 못하는 문서가 하나라도 있으면
+// 쿼리 전체가 거부된다. 따라서 각 컬렉션 규칙은 코드의 실제 쿼리 형태와 짝이 맞아야 한다.
+// 컬렉션을 추가할 때 이 파일도 같은 PR에서 갱신한다.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /** 기존 문서의 소유자인가 (read/update/delete 판정용) */
+    function isOwner() {
+      return isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    /** 새로 쓰는 문서가 자기 것으로 기록되는가 (create 판정용) */
+    function isCreatingOwn() {
+      return isSignedIn() && request.resource.data.userId == request.auth.uid;
+    }
+
+    // ── users ────────────────────────────────────────────────────────────
+    // 문서 ID = uid. 프로필 동기화(syncUserProfile)와 친구 검색에 쓰인다.
+    //
+    // read 를 로그인 사용자 전체에 허용하는 이유: searchUserByDisplayName 이
+    // `query(collection(db, "users"))` 로 조건 없이 전체를 훑어 클라이언트에서 필터링한다.
+    // 규칙을 좁히면 친구 검색이 통째로 깨진다.
+    //
+    // ⚠️ 다만 이 문서에는 email 이 들어 있어, 로그인한 사용자가 전체 이메일 목록을
+    //    받아갈 수 있다. 이는 검색 방식 자체를 서버 측 조회로 바꿔야 해결되므로
+    //    별도 이슈로 분리한다. (이 파일만으로는 막을 수 없음)
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && request.auth.uid == userId;
+      allow delete: if false;
+    }
+
+    // ── submissions ──────────────────────────────────────────────────────
+    // 템플릿 채점 제출 기록. 조회는 항상 where("userId", "==", uid) 로 걸린다.
+    // 코드에 수정·삭제 경로가 없으므로 막아 둔다.
+    match /submissions/{submissionId} {
+      allow read: if isOwner();
+      allow create: if isCreatingOwn();
+      allow update, delete: if false;
+    }
+
+    // ── userTemplates ────────────────────────────────────────────────────
+    // 사용자가 직접 등록한 템플릿. 본인 것만 조회·수정·삭제한다.
+    match /userTemplates/{templateId} {
+      allow read: if isOwner();
+      allow create: if isCreatingOwn();
+      allow update, delete: if isOwner();
+    }
+
+    // ── wrongNotes ───────────────────────────────────────────────────────
+    // 오답노트. 본인 것 전체 + 남의 것 중 share == true 를 읽는다.
+    // (getFriendsSharedWrongNotes 는 where("userId","in",...) + where("share","==",true) 로 조회)
+    //
+    // ⚠️ 친구 여부까지 규칙에서 검증하지는 못한다. friendships 문서 ID 가 자동 생성이라
+    //    규칙 안에서 관계를 조회할 수 없기 때문이다(규칙은 get(경로)만 가능, 쿼리 불가).
+    //    따라서 "공유로 설정한 노트는 로그인 사용자에게 열린다"가 현재 경계이고,
+    //    친구 필터링은 클라이언트가 담당한다. 이를 좁히려면 friendships 문서 ID 를
+    //    결정적 키({uidA}_{uidB})로 바꿔야 하므로 별도 이슈로 분리한다.
+    match /wrongNotes/{noteId} {
+      allow read: if isOwner() || (isSignedIn() && resource.data.share == true);
+      allow create: if isCreatingOwn();
+      allow update, delete: if isOwner();
+    }
+
+    // ── friendships ──────────────────────────────────────────────────────
+    // 친구 요청·관계. 조회는 requesterId 또는 receiverId 가 본인인 조건으로 걸린다.
+    // 당사자가 아닌 제3자는 읽기·수정·삭제 모두 불가.
+    match /friendships/{friendshipId} {
+      allow read: if isSignedIn() && (
+        resource.data.requesterId == request.auth.uid ||
+        resource.data.receiverId == request.auth.uid
+      );
+      allow create: if isSignedIn() &&
+        request.resource.data.requesterId == request.auth.uid &&
+        request.resource.data.receiverId != request.auth.uid;
+      allow update, delete: if isSignedIn() && (
+        resource.data.requesterId == request.auth.uid ||
+        resource.data.receiverId == request.auth.uid
+      );
+    }
+
+    // ── solveLogs (코테 달력) ─────────────────────────────────────────────
+    // BaekjoonHub 커밋 동기화 결과 + 수동 기록. 본인 것만 접근한다.
+    // 문서 ID 는 {uid}__{platform}__{problemNo}__{YYYYMMDD} 결정적 키로,
+    // 재동기화 시 중복 생성 대신 덮어쓰기가 되도록 create/update 를 모두 허용한다.
+    match /solveLogs/{logId} {
+      allow read: if isOwner();
+      allow create: if isCreatingOwn();
+      allow update, delete: if isOwner() && isCreatingOwn();
+    }
+
+    // ── calendarSettings (코테 달력) ──────────────────────────────────────
+    // 문서 ID = uid. 연동한 GitHub 저장소 경로와 마지막 동기화 시각.
+    match /calendarSettings/{userId} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    // ── 그 외 ────────────────────────────────────────────────────────────
+    // 명시하지 않은 경로는 전부 차단. 새 컬렉션을 만들면 위에 규칙을 추가해야 한다.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
