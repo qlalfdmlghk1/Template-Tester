@@ -1,0 +1,162 @@
+// GitHub 공개 API 호출 — 인증 없이 공개 저장소만 읽는다.
+//
+// Cloud Functions를 경유하지 않고 브라우저에서 직접 호출한다.
+// api.github.com은 CORS를 허용하고, 비인증 rate limit(60회/시간)이 서버 IP 하나가 아닌
+// 사용자 IP 기준으로 걸리기 때문에 오히려 직접 호출이 유리하다.
+// (실측: 전체 백필에 커밋 3페이지 + 트리 1회 = 4요청)
+
+const GITHUB_API = "https://api.github.com";
+const PER_PAGE = 100;
+/** 폭주 방지 상한 — 100 × 30 = 커밋 3000개 */
+const MAX_PAGES = 30;
+
+/** 커밋 목록에서 필요한 최소 정보 */
+export interface GithubCommit {
+  sha: string;
+  message: string;
+  /** 커밋 시각 (UTC ISO 문자열) */
+  committedAt: string;
+}
+
+export interface RepoRef {
+  owner: string;
+  repo: string;
+}
+
+export interface FetchCommitsResult {
+  commits: GithubCommit[];
+  /** MAX_PAGES 상한에 걸려 오래된 커밋을 다 읽지 못했는가 */
+  truncated: boolean;
+}
+
+/** rate limit 초과처럼 사용자에게 그대로 보여줘야 하는 실패 */
+export class GithubApiError extends Error {
+  readonly status: number;
+  /** rate limit 해제 시각 (해당하는 경우) */
+  readonly resetAt: Date | null;
+
+  constructor(message: string, status: number, resetAt: Date | null = null) {
+    super(message);
+    this.name = "GithubApiError";
+    this.status = status;
+    this.resetAt = resetAt;
+  }
+}
+
+async function requestGithub(path: string): Promise<Response> {
+  const response = await fetch(`${GITHUB_API}${path}`, {
+    headers: { Accept: "application/vnd.github+json" },
+  });
+
+  if (response.ok) return response;
+
+  if (response.status === 404) {
+    throw new GithubApiError(
+      "저장소를 찾을 수 없습니다. 공개 저장소인지, 경로가 맞는지 확인해주세요.",
+      404,
+    );
+  }
+
+  // 커밋이 하나도 없는 저장소는 존재 확인(/repos)은 통과하고 커밋 조회에서 409로 떨어진다.
+  // "찾을 수 없다"고 안내하면 방금 확인된 경로를 계속 고쳐 입력하게 된다.
+  if (response.status === 409) {
+    throw new GithubApiError(
+      "아직 커밋이 없는 저장소입니다. BaekjoonHub가 첫 풀이를 올린 뒤 다시 시도해주세요.",
+      409,
+    );
+  }
+
+  // 비인증 한도(60회/시간)를 넘기면 403 또는 429로 떨어지고 remaining이 0이 된다
+  const remaining = response.headers.get("x-ratelimit-remaining");
+  if ((response.status === 403 || response.status === 429) && remaining === "0") {
+    const resetHeader = response.headers.get("x-ratelimit-reset");
+    const resetAt = resetHeader ? new Date(Number(resetHeader) * 1000) : null;
+    throw new GithubApiError(
+      "GitHub 요청 한도를 초과했습니다. 잠시 후 다시 시도해주세요.",
+      response.status,
+      resetAt,
+    );
+  }
+
+  throw new GithubApiError(`GitHub 요청에 실패했습니다. (${response.status})`, response.status);
+}
+
+/** 저장소 존재·공개 여부 확인 (설정 저장 전 검증용) */
+export async function verifyRepo({ owner, repo }: RepoRef): Promise<void> {
+  await requestGithub(`/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`);
+}
+
+/**
+ * 커밋 목록 조회.
+ *
+ * @param since 이 시각 이후 커밋만 (증분 동기화). 없으면 전체 히스토리.
+ */
+export async function fetchCommits(
+  { owner, repo }: RepoRef,
+  since?: Date | null,
+): Promise<FetchCommitsResult> {
+  const commits: GithubCommit[] = [];
+  const basePath = `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/commits`;
+  const sinceParam = since ? `&since=${encodeURIComponent(since.toISOString())}` : "";
+  let truncated = false;
+
+  for (let page = 1; page <= MAX_PAGES; page++) {
+    const response = await requestGithub(`${basePath}?per_page=${PER_PAGE}&page=${page}${sinceParam}`);
+    const body = (await response.json()) as Array<{
+      sha: string;
+      commit: { message: string; author: { date: string } | null; committer: { date: string } | null };
+    }>;
+
+    for (const item of body) {
+      // author.date는 원 작성 시각, committer.date는 저장소 반영 시각.
+      // BaekjoonHub는 채점 직후 커밋하므로 author.date가 실제 푼 시각에 가깝다.
+      const date = item.commit.author?.date ?? item.commit.committer?.date;
+      if (!date) continue;
+
+      commits.push({ sha: item.sha, message: item.commit.message, committedAt: date });
+    }
+
+    if (body.length < PER_PAGE) break;
+
+    // 상한에 걸려 끝난 경우. 커밋 목록은 최신순이라 잘리는 쪽이 오래된 이력이고,
+    // 증분 동기화로는 다시 오지 않으므로 조용히 넘기지 않고 호출부에 알린다.
+    if (page === MAX_PAGES) truncated = true;
+  }
+
+  return { commits, truncated };
+}
+
+/**
+ * 저장소 전체 파일 경로 조회 (재귀).
+ *
+ * 커밋마다 상세 API를 부르는 대신 이 한 번의 호출로 "제목 → 문제번호" 색인을 만든다.
+ */
+export async function fetchRepoTree({ owner, repo }: RepoRef): Promise<string[]> {
+  let response: Response;
+
+  try {
+    response = await requestGithub(
+      `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/git/trees/HEAD?recursive=1`,
+    );
+  } catch (cause) {
+    // 커밋이 없는 저장소는 HEAD가 없어 404다. 이때는 색인만 비우고 진행한다 —
+    // 같은 동기화의 커밋 조회가 409로 떨어져 사용자에게 정확한 안내가 나간다.
+    if (cause instanceof GithubApiError && cause.status === 404) {
+      console.warn("저장소 트리를 읽지 못했습니다. 문제 번호 매핑 없이 진행합니다.");
+      return [];
+    }
+    throw cause;
+  }
+
+  const body = (await response.json()) as {
+    tree: Array<{ path: string; type: string }>;
+    truncated?: boolean;
+  };
+
+  if (body.truncated) {
+    // 파일이 매우 많은 저장소에서 발생. 색인이 불완전해져 일부 문제 링크가 비게 된다.
+    console.warn("GitHub 트리 응답이 잘렸습니다. 일부 문제 번호를 찾지 못할 수 있습니다.");
+  }
+
+  return body.tree.filter((item) => item.type === "blob").map((item) => item.path);
+}
