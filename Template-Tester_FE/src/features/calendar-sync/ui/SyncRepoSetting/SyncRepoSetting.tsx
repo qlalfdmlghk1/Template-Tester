@@ -1,5 +1,6 @@
 import { useState } from "react";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
+import SyncHelp from "../SyncHelp/SyncHelp";
 import type { CalendarSettings } from "@/entities/solve-log/model/solve-log.type";
 import type { SyncResult } from "../../model/useCalendarSync";
 
@@ -135,6 +136,16 @@ export default function SyncRepoSetting({
           커밋 {lastResult.scanned}개를 확인해 풀이 기록 {lastResult.saved}건을 반영했습니다.
         </p>
       )}
+
+      {/*
+        연동 후에도 "이건 왜 안 잡히지?" 질문이 남으므로 두 상태 모두에서 열어둔다.
+        음수 마진으로 카드 패딩을 상쇄해 구분선을 카드 폭 끝까지 빼고, 위아래 여백을
+        py-3 으로 같게 맞춘다. 카드 하단 패딩(16/20px)을 그대로 두면 아래쪽만 넓어
+        줄이 떠 보인다.
+      */}
+      <div className="mt-4 -mx-4 sm:-mx-5 -mb-4 sm:-mb-5 px-4 sm:px-5 py-3 border-t border-border">
+        <SyncHelp />
+      </div>
     </section>
   );
 }
