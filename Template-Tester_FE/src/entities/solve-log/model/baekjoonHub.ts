@@ -85,6 +85,11 @@ export function parseBaekjoonHubMessage(message: string): ParsedCommitMessage | 
   if (!match) return null;
 
   const [, badge, title, runtime, memory, score] = match;
+
+  // 제목이 비면(`Title: , Time: ...`) 결정적 문서 ID가 `t-`로 퇴화해
+  // 같은 날 제목 없는 기록이 전부 한 건으로 합쳐진다. 파싱 실패로 취급한다.
+  if (!title.trim()) return null;
+
   const levelMatch = badge.trim().match(PROGRAMMERS_LEVEL_PATTERN);
 
   return {

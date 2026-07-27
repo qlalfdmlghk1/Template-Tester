@@ -17,7 +17,15 @@ import {
 import { db, auth } from "@/shared/api/firebase";
 import { toKstDateKey } from "@/shared/lib/date";
 import { buildProblemUrl } from "../model/baekjoonHub";
-import { readCache, writeCache, patchCache, clearCache, dedupe } from "./solveLogCache";
+import {
+  readCache,
+  writeCache,
+  patchCache,
+  clearCache,
+  dedupe,
+  currentGeneration,
+  isCurrentGeneration,
+} from "./solveLogCache";
 import type { SolveLog, SolvePlatform } from "../model/solve-log.type";
 
 const COLLECTION = "solveLogs";
@@ -83,17 +91,27 @@ export async function getSolveLogs({ refresh = false } = {}): Promise<SolveLog[]
     if (cached) return cached;
   }
 
-  return dedupe(async () => {
-    const snapshot = await getDocs(
-      query(collection(db, COLLECTION), where("userId", "==", user.uid)),
-    );
+  return dedupe(
+    async () => {
+      // 이 조회가 시작된 세대. 도중에 동기화가 캐시를 비웠다면 결과를 캐시에 쓰지 않는다.
+      const startedAt = currentGeneration();
 
-    const logs = snapshot.docs.map((docSnapshot) =>
-      toSolveLog(docSnapshot.id, docSnapshot.data()),
-    );
-    writeCache(user.uid, logs);
-    return logs;
-  });
+      const snapshot = await getDocs(
+        query(collection(db, COLLECTION), where("userId", "==", user.uid)),
+      );
+
+      const logs = snapshot.docs.map((docSnapshot) =>
+        toSolveLog(docSnapshot.id, docSnapshot.data()),
+      );
+
+      if (isCurrentGeneration(startedAt)) {
+        writeCache(user.uid, logs);
+      }
+      return logs;
+    },
+    // 강제 새로고침은 진행 중인(=동기화 이전 스냅샷일 수 있는) 조회에 합류하지 않는다
+    { bypass: refresh },
+  );
 }
 
 /** 로그아웃·계정 전환 시 캐시를 비운다 */

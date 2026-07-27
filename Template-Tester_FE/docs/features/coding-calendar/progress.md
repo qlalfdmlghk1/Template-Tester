@@ -159,3 +159,36 @@
 **다음 작업**
 
 - 브라우저 실동작 확인 (연동 → 백필 → 달력 표시)
+
+### Commit — 2026-07-28 00:25
+
+- Message: `Fix:#67 리뷰 지적 사항 반영 — 삭제 규칙·동기화 누락·에러 무음 처리`
+- Issue: `#67`
+- Jira: (미사용)
+
+**변경 요약**
+
+- **[Blocker] `firestore.rules` solveLogs 삭제 불능 수정** — `allow update, delete: if isOwner() && isCreatingOwn()`에서 delete 시 `request.resource`가 null이라 평가 오류 → 삭제가 100% 거부되던 문제. update/delete를 분리. create에 문서 ID 접두사 검증도 추가(남의 uid로 시작하는 ID 선점 시 피해자 batch 전체가 실패하는 벡터 차단)
+- 쓰기 실패 무음 처리 수정 — `useSolveLogs.error` 추가, `DayDetailPanel`·`useManualLogForm`에 catch와 `role="alert"` 메시지
+- 증분 동기화 기준 시각을 fetch 완료 시각 → **시작 전 시각 - 1시간 여유**로 변경. 완료 시각으로 찍으면 fetch 도중 올라온 커밋이 영구 누락
+- 캐시 세대(generation) 도입 — 동기화로 캐시를 비운 뒤 뒤늦게 끝난 조회가 낡은 목록으로 캐시를 되살리던 문제. `dedupe`에 `bypass` 추가해 강제 새로고침이 낡은 요청에 합류하지 않게 함
+- FSD 위반 수정 — `features/calendar-sync` → `features/auth` 동일 레이어 import 제거, `auth.currentUser` 직접 사용
+- 파서가 빈 제목을 통과시켜 문서 ID가 `t-`로 퇴화하던 문제 수정
+- 빈 저장소 연동 시 "저장소를 찾을 수 없습니다" 오안내 → 409 분기로 "아직 커밋이 없는 저장소입니다"
+- 커밋 상한(3000개) 도달 시 조용히 잘리던 것을 `truncated` 플래그로 UI 노출
+- 동기화 재진입 가드(`useRef`), Enter 연타 방지
+- `todayKey` 모듈 스코프 고정 → 컴포넌트 상태 + focus/visibilitychange 갱신 (자정 넘김 대응)
+- `sync.isLoading` 미사용으로 연동된 사용자에게 입력 폼이 깜빡이던 문제 수정
+- `disconnect` 후 빈 문자열 문서가 truthy로 돌아오던 것을 null로 통일
+- 수동 기록 문제 번호 숫자 검증 (깨진 링크 생성 방지)
+
+**결정 로그**
+
+- 리뷰 4개 페르소나가 모두 같은 Blocker(solveLogs delete)를 지목. 규칙이 이미 콘솔에 게시된 상태라 **운영에서 현재 삭제가 동작하지 않음** — 재게시 필요
+- `SYNC_SAFETY_MARGIN_MS`를 1시간으로 잡음. 문서 ID가 결정적이라 구간이 겹쳐도 중복이 아닌 덮어쓰기이므로 여유를 크게 잡는 비용이 없음
+- `dedupe` bypass 시 in-flight 슬롯을 새 요청이 차지하는 것은 의도된 동작 — 이후 조회는 낡은 요청이 아니라 더 신선한 쪽에 합류해야 함 (초기 테스트 기대가 틀려 수정)
+
+**다음 작업**
+
+- **firestore.rules 재게시 필요** (사용자 확인 후)
+- 자동 기록 삭제 후 "전체 다시 읽기"로 부활하는 문제 — tombstone 도입 여부는 정책 판단이라 남김
