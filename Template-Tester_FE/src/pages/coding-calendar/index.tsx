@@ -19,7 +19,9 @@ export default function CodingCalendar() {
   });
   const [selectedDateKey, setSelectedDateKey] = useState<string | null>(todayKey);
 
-  const { logsByDate, stats, isLoading, error, reload, addManualLog, removeLog } = useSolveLogs();
+  // todayKey를 넘겨야 달력의 '오늘' 표시와 연속 학습일이 같은 날짜를 가리킨다
+  const { logsByDate, stats, isLoading, error, reload, addManualLog, removeLog } =
+    useSolveLogs(todayKey);
   const sync = useCalendarSync({ onSynced: reload });
 
   // 탭으로 돌아왔을 때 날짜가 바뀌었으면 맞춘다 (밤샘 학습에서 실제로 겪는 상황)
