@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "@/widgets/Navbar/Navbar";
 import PageHeader from "@/shared/ui/molecules/PageHeader/PageHeader";
 import MonthCalendar from "@/shared/ui/molecules/MonthCalendar/MonthCalendar";
@@ -9,15 +9,32 @@ import DayDetailPanel from "@/entities/solve-log/ui/DayDetailPanel/DayDetailPane
 import { useCalendarSync } from "@/features/calendar-sync/model/useCalendarSync";
 import SyncRepoSetting from "@/features/calendar-sync/ui/SyncRepoSetting/SyncRepoSetting";
 
-const todayKey = getTodayKey();
-const today = parseDateKey(todayKey);
-
 export default function CodingCalendar() {
-  const [cursor, setCursor] = useState({ year: today.year, month: today.month });
+  // 모듈 스코프에서 한 번만 계산하면 탭을 켜 둔 채 자정을 넘겼을 때
+  // '오늘' 표시와 기본 선택 날짜가 어제에 머문다.
+  const [todayKey, setTodayKey] = useState(getTodayKey);
+  const [cursor, setCursor] = useState(() => {
+    const today = parseDateKey(todayKey);
+    return { year: today.year, month: today.month };
+  });
   const [selectedDateKey, setSelectedDateKey] = useState<string | null>(todayKey);
 
-  const { logsByDate, stats, isLoading, reload, addManualLog, removeLog } = useSolveLogs();
+  // todayKey를 넘겨야 달력의 '오늘' 표시와 연속 학습일이 같은 날짜를 가리킨다
+  const { logsByDate, stats, isLoading, error, reload, addManualLog, removeLog } =
+    useSolveLogs(todayKey);
   const sync = useCalendarSync({ onSynced: reload });
+
+  // 탭으로 돌아왔을 때 날짜가 바뀌었으면 맞춘다 (밤샘 학습에서 실제로 겪는 상황)
+  useEffect(() => {
+    const syncToday = () => setTodayKey(getTodayKey());
+
+    window.addEventListener("focus", syncToday);
+    document.addEventListener("visibilitychange", syncToday);
+    return () => {
+      window.removeEventListener("focus", syncToday);
+      document.removeEventListener("visibilitychange", syncToday);
+    };
+  }, []);
 
   const monthPrefix = `${cursor.year}-${String(cursor.month).padStart(2, "0")}`;
   const monthCount = [...logsByDate.entries()]
@@ -44,6 +61,7 @@ export default function CodingCalendar() {
           <SyncRepoSetting
             settings={sync.settings}
             isConnected={sync.isConnected}
+            isLoading={sync.isLoading}
             isSyncing={sync.isSyncing}
             error={sync.error}
             lastResult={sync.lastResult}
@@ -52,6 +70,12 @@ export default function CodingCalendar() {
             onDisconnect={sync.disconnect}
           />
         </div>
+
+        {error && (
+          <p className="mb-4 text-sm text-error" role="alert">
+            {error}
+          </p>
+        )}
 
         {isLoading ? (
           <div className="text-center py-12 text-textSecondary">불러오는 중...</div>

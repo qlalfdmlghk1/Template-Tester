@@ -17,9 +17,16 @@ export async function getCalendarSettings(): Promise<CalendarSettings | null> {
   if (!snapshot.exists()) return null;
 
   const data = snapshot.data();
+  const repoOwner = (data.repoOwner as string) ?? "";
+  const repoName = (data.repoName as string) ?? "";
+
+  // 연동 해제는 빈 문자열 문서를 남긴다. 그대로 돌려주면 "미연동"이 null과 빈 객체
+  // 두 형태로 표현돼 호출부의 `if (!settings)` 가드가 무력화된다. null로 통일한다.
+  if (!repoOwner || !repoName) return null;
+
   return {
-    repoOwner: (data.repoOwner as string) ?? "",
-    repoName: (data.repoName as string) ?? "",
+    repoOwner,
+    repoName,
     lastSyncedAt: data.lastSyncedAt ? (data.lastSyncedAt as Timestamp).toDate() : null,
   };
 }

@@ -23,6 +23,12 @@ export interface RepoRef {
   repo: string;
 }
 
+export interface FetchCommitsResult {
+  commits: GithubCommit[];
+  /** MAX_PAGES 상한에 걸려 오래된 커밋을 다 읽지 못했는가 */
+  truncated: boolean;
+}
+
 /** rate limit 초과처럼 사용자에게 그대로 보여줘야 하는 실패 */
 export class GithubApiError extends Error {
   readonly status: number;
@@ -48,6 +54,15 @@ async function requestGithub(path: string): Promise<Response> {
     throw new GithubApiError(
       "저장소를 찾을 수 없습니다. 공개 저장소인지, 경로가 맞는지 확인해주세요.",
       404,
+    );
+  }
+
+  // 커밋이 하나도 없는 저장소는 존재 확인(/repos)은 통과하고 커밋 조회에서 409로 떨어진다.
+  // "찾을 수 없다"고 안내하면 방금 확인된 경로를 계속 고쳐 입력하게 된다.
+  if (response.status === 409) {
+    throw new GithubApiError(
+      "아직 커밋이 없는 저장소입니다. BaekjoonHub가 첫 풀이를 올린 뒤 다시 시도해주세요.",
+      409,
     );
   }
 
@@ -79,10 +94,11 @@ export async function verifyRepo({ owner, repo }: RepoRef): Promise<void> {
 export async function fetchCommits(
   { owner, repo }: RepoRef,
   since?: Date | null,
-): Promise<GithubCommit[]> {
+): Promise<FetchCommitsResult> {
   const commits: GithubCommit[] = [];
   const basePath = `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/commits`;
   const sinceParam = since ? `&since=${encodeURIComponent(since.toISOString())}` : "";
+  let truncated = false;
 
   for (let page = 1; page <= MAX_PAGES; page++) {
     const response = await requestGithub(`${basePath}?per_page=${PER_PAGE}&page=${page}${sinceParam}`);
@@ -101,9 +117,13 @@ export async function fetchCommits(
     }
 
     if (body.length < PER_PAGE) break;
+
+    // 상한에 걸려 끝난 경우. 커밋 목록은 최신순이라 잘리는 쪽이 오래된 이력이고,
+    // 증분 동기화로는 다시 오지 않으므로 조용히 넘기지 않고 호출부에 알린다.
+    if (page === MAX_PAGES) truncated = true;
   }
 
-  return commits;
+  return { commits, truncated };
 }
 
 /**
@@ -112,9 +132,22 @@ export async function fetchCommits(
  * 커밋마다 상세 API를 부르는 대신 이 한 번의 호출로 "제목 → 문제번호" 색인을 만든다.
  */
 export async function fetchRepoTree({ owner, repo }: RepoRef): Promise<string[]> {
-  const response = await requestGithub(
-    `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/git/trees/HEAD?recursive=1`,
-  );
+  let response: Response;
+
+  try {
+    response = await requestGithub(
+      `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/git/trees/HEAD?recursive=1`,
+    );
+  } catch (cause) {
+    // 커밋이 없는 저장소는 HEAD가 없어 404다. 이때는 색인만 비우고 진행한다 —
+    // 같은 동기화의 커밋 조회가 409로 떨어져 사용자에게 정확한 안내가 나간다.
+    if (cause instanceof GithubApiError && cause.status === 404) {
+      console.warn("저장소 트리를 읽지 못했습니다. 문제 번호 매핑 없이 진행합니다.");
+      return [];
+    }
+    throw cause;
+  }
+
   const body = (await response.json()) as {
     tree: Array<{ path: string; type: string }>;
     truncated?: boolean;
