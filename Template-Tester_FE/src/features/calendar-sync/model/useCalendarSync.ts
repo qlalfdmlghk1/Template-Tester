@@ -91,6 +91,14 @@ export function useCalendarSync({ onSynced }: UseCalendarSyncOptions = {}) {
         fetchRepoTree(repo),
       ]);
 
+      // 커밋은 읽혔는데 트리를 못 읽은 경우(예: 트리 404) 색인이 비어 모든 기록이
+      // 제목 기반 폴백 ID로 저장된다. 번호 기반으로 이미 저장된 기록과 별개 문서가 되어
+      // 같은 풀이가 두 건으로 남고, ID가 달라 이후 동기화로도 합쳐지지 않는다.
+      // 손상이 영구적이므로 저장하지 않고 실패시킨다.
+      if (treePaths.length === 0 && commitResult.commits.length > 0) {
+        throw new Error("저장소 파일 목록을 읽지 못했습니다. 잠시 후 다시 시도해주세요.");
+      }
+
       const logs = toSolveLogs({ userId: user.uid, commits: commitResult.commits, treePaths });
       await saveSolveLogs(logs);
 
@@ -193,11 +201,17 @@ export function useCalendarSync({ onSynced }: UseCalendarSyncOptions = {}) {
 
   /** 연동 해제 — 이미 쌓인 기록은 지우지 않는다 */
   const disconnect = useCallback(async () => {
-    await saveCalendarSettings({ repoOwner: "", repoName: "", lastSyncedAt: null });
-    setSettings(null);
-    setLastResult(null);
-    setError(null);
-  }, []);
+    try {
+      await saveCalendarSettings({ repoOwner: "", repoName: "", lastSyncedAt: null });
+      setSettings(null);
+      setLastResult(null);
+      setError(null);
+    } catch (cause) {
+      // 실패하면 설정이 그대로 남아 화면은 연동 상태여야 한다.
+      // 여기서 상태만 비우면 실제와 어긋나고, 조용히 넘기면 "해제가 안 먹는다"가 된다.
+      handleFailure(cause);
+    }
+  }, [handleFailure]);
 
   const isConnected = Boolean(settings?.repoOwner && settings?.repoName);
 
