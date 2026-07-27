@@ -23,14 +23,18 @@ export interface SolveLogStats {
 export function useSolveLogs() {
   const [logs, setLogs] = useState<SolveLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   /** @param refresh true면 세션 캐시를 무시하고 다시 읽는다 (동기화 직후) */
   const load = useCallback(async (refresh = false) => {
     setIsLoading(true);
     try {
       setLogs(await getSolveLogs({ refresh }));
-    } catch (error) {
-      console.error("풀이 기록 조회 실패:", error);
+      setError(null);
+    } catch (cause) {
+      // 조회 실패를 빈 목록으로 두면 "기록 없음"과 구분되지 않는다
+      console.error("풀이 기록 조회 실패:", cause);
+      setError("기록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
     } finally {
       setIsLoading(false);
     }
@@ -60,6 +64,8 @@ export function useSolveLogs() {
     };
   }, [logs]);
 
+  // 쓰기 실패는 삼키지 않고 호출부로 던진다. UI가 사용자에게 알려야 하기 때문이다.
+  // (권한 거부·오프라인일 때 "버튼이 안 먹는다"로 보이는 것을 막는다)
   const addManualLog = useCallback(async (input: ManualLogInput) => {
     const saved = await saveManualSolveLog(input);
     setLogs((prev) => [...prev, saved]);
@@ -80,6 +86,7 @@ export function useSolveLogs() {
     logsByDate,
     stats,
     isLoading,
+    error,
     reload,
     addManualLog,
     editManualLog,
