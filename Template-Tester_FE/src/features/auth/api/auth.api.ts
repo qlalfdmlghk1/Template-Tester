@@ -8,6 +8,7 @@ import {
   updateProfile,
 } from "firebase/auth";
 import { auth } from "@/shared/api/firebase";
+import { clearSolveLogCache } from "@/entities/solve-log/api/solveLog.api";
 
 export async function signInWithGoogle() {
   const provider = new GoogleAuthProvider();
@@ -34,6 +35,8 @@ export async function signInWithGithub() {
 export async function logout() {
   try {
     await signOut(auth);
+    // 다음 사용자에게 이전 사용자의 기록이 세션에 남지 않게 한다
+    clearSolveLogCache();
   } catch (error) {
     console.error("로그아웃 실패:", error);
     throw error;
