@@ -139,7 +139,7 @@ export default function NavMenu() {
       onPointerEnter={handlePointerEnter}
       onPointerLeave={handlePointerLeave}
     >
-      <div ref={triggerRowRef} className="flex flex-nowrap gap-1 sm:gap-2">
+      <div ref={triggerRowRef} className="flex flex-nowrap gap-0 sm:gap-2">
         {navMenu.map((entry) => {
           const isActive = isEntryActive(entry, location.pathname);
           const isGroup = isNavMenuGroup(entry);
@@ -191,7 +191,7 @@ export default function NavMenu() {
                       className={cn(
                         "w-full px-2 sm:px-3 md:px-4 py-2 text-left text-xs sm:text-sm rounded-md transition-colors hover:bg-blue-50",
                         // 준비 중인 메뉴는 별도 라벨 없이 색만 연하게 두어 구분한다
-                        isItemActive ? "text-primary font-medium" : item.comingSoon ? "text-gray-400" : "text-text"
+                        isItemActive ? "text-primary font-medium" : item.comingSoon ? "text-gray-400" : "text-text",
                       )}
                     >
                       {item.label}

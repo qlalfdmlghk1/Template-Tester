@@ -29,6 +29,7 @@ export const navMenu: NavMenuEntry[] = [
     items: [
       { path: "/templates", label: "템플릿" },
       { path: "/wrong-notes", label: "오답노트" },
+      { path: "/coding-calendar", label: "코테 달력" },
     ],
   },
   {
