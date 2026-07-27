@@ -1,5 +1,13 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { readCache, writeCache, patchCache, clearCache, dedupe } from "./solveLogCache";
+import {
+  readCache,
+  writeCache,
+  patchCache,
+  clearCache,
+  dedupe,
+  currentGeneration,
+  isCurrentGeneration,
+} from "./solveLogCache";
 import type { SolveLog } from "../model/solve-log.type";
 
 function makeLog(overrides: Partial<SolveLog> = {}): SolveLog {
@@ -145,5 +153,96 @@ describe("dedupe", () => {
 
     const succeeding = vi.fn().mockResolvedValue([makeLog()]);
     await expect(dedupe(succeeding)).resolves.toHaveLength(1);
+  });
+
+  it("bypass면 진행 중인 요청에 합류하지 않아야 한다", async () => {
+    // 강제 새로고침이 동기화 이전 스냅샷을 돌려받으면 안 된다
+    const stale = vi.fn().mockResolvedValue([makeLog({ title: "예전" })]);
+    const fresh = vi.fn().mockResolvedValue([makeLog({ title: "최신" })]);
+
+    const first = dedupe(stale);
+    const second = dedupe(fresh, { bypass: true });
+
+    expect((await second)[0].title).toBe("최신");
+    expect((await first)[0].title).toBe("예전");
+    expect(fresh).toHaveBeenCalledTimes(1);
+  });
+
+  it("bypass 요청이 이후 합류 대상이 되어야 한다 (낡은 요청이 아니라)", async () => {
+    let resolveStale: ((logs: SolveLog[]) => void) | undefined;
+    const stale = vi.fn().mockReturnValue(
+      new Promise<SolveLog[]>((resolve) => {
+        resolveStale = resolve;
+      }),
+    );
+    let resolveFresh: ((logs: SolveLog[]) => void) | undefined;
+    const fresh = vi.fn().mockReturnValue(
+      new Promise<SolveLog[]>((resolve) => {
+        resolveFresh = resolve;
+      }),
+    );
+    const another = vi.fn().mockResolvedValue([makeLog()]);
+
+    const stalePromise = dedupe(stale);
+    const freshPromise = dedupe(fresh, { bypass: true });
+
+    // 둘 다 진행 중일 때 새 요청은 더 신선한 쪽(bypass 요청)에 합류해야 한다
+    const joined = dedupe(another);
+    expect(another).not.toHaveBeenCalled();
+
+    resolveFresh?.([makeLog({ title: "최신" })]);
+    expect((await joined)[0].title).toBe("최신");
+    await freshPromise;
+
+    resolveStale?.([makeLog({ title: "예전" })]);
+    await stalePromise;
+  });
+
+  it("뒤늦게 끝난 낡은 요청이 새 요청의 슬롯을 지우지 않아야 한다", async () => {
+    let resolveStale: ((logs: SolveLog[]) => void) | undefined;
+    const stale = vi.fn().mockReturnValue(
+      new Promise<SolveLog[]>((resolve) => {
+        resolveStale = resolve;
+      }),
+    );
+    let resolveFresh: ((logs: SolveLog[]) => void) | undefined;
+    const fresh = vi.fn().mockReturnValue(
+      new Promise<SolveLog[]>((resolve) => {
+        resolveFresh = resolve;
+      }),
+    );
+    const another = vi.fn().mockResolvedValue([makeLog()]);
+
+    const stalePromise = dedupe(stale);
+    const freshPromise = dedupe(fresh, { bypass: true });
+
+    // 낡은 요청이 먼저 끝나도 슬롯 주인은 fresh 이므로 합류가 유지돼야 한다
+    resolveStale?.([makeLog()]);
+    await stalePromise;
+
+    dedupe(another);
+    expect(another).not.toHaveBeenCalled();
+
+    resolveFresh?.([makeLog()]);
+    await freshPromise;
+  });
+});
+
+describe("세대(generation)", () => {
+  it("clearCache 이후에는 이전 세대가 무효여야 한다", () => {
+    const captured = currentGeneration();
+    expect(isCurrentGeneration(captured)).toBe(true);
+
+    clearCache();
+
+    expect(isCurrentGeneration(captured)).toBe(false);
+  });
+
+  it("clearCache가 없으면 세대가 유지돼야 한다", () => {
+    const captured = currentGeneration();
+    writeCache("uid1", [makeLog()], NOW);
+    patchCache("uid1", (logs) => logs);
+
+    expect(isCurrentGeneration(captured)).toBe(true);
   });
 });

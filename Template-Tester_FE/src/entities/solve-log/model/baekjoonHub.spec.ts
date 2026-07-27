@@ -71,6 +71,16 @@ describe("parseBaekjoonHubMessage", () => {
     expect(result?.title).toBe("1998년생인 내가 태국에서는 2541년생?!");
   });
 
+  it("제목이 비어 있으면 파싱 실패로 취급해야 한다", () => {
+    // 통과시키면 문서 ID가 `t-`로 퇴화해 같은 날 기록이 한 건으로 합쳐진다
+    expect(
+      parseBaekjoonHubMessage("[level 1] Title: , Time: 1 ms, Memory: 1 MB -BaekjoonHub"),
+    ).toBeNull();
+    expect(
+      parseBaekjoonHubMessage("[level 1] Title:    , Time: 1 ms, Memory: 1 MB -BaekjoonHub"),
+    ).toBeNull();
+  });
+
   it("사용자가 직접 만든 뭉치 커밋은 걸러야 한다", () => {
     expect(parseBaekjoonHubMessage("260202-260331 업로드")).toBeNull();
     expect(parseBaekjoonHubMessage("Chore: 풀이 파일 일자별 폴더 구조로 재정리")).toBeNull();

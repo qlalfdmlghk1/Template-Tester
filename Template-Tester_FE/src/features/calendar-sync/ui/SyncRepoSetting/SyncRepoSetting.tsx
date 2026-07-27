@@ -7,6 +7,8 @@ import type { SyncResult } from "../../model/useCalendarSync";
 interface SyncRepoSettingProps {
   settings: CalendarSettings | null;
   isConnected: boolean;
+  /** 설정을 아직 읽는 중 — 연동된 사용자에게 입력 폼이 깜빡이는 것을 막는다 */
+  isLoading: boolean;
   isSyncing: boolean;
   error: string | null;
   lastResult: SyncResult | null;
@@ -21,6 +23,7 @@ const INPUT_CLASS =
 export default function SyncRepoSetting({
   settings,
   isConnected,
+  isLoading,
   isSyncing,
   error,
   lastResult,
@@ -38,7 +41,11 @@ export default function SyncRepoSetting({
 
   return (
     <section className="bg-surface border border-border rounded-lg p-4 sm:p-5">
-      {isConnected && settings ? (
+      {isLoading ? (
+        // 설정을 읽기 전에는 미연동으로 보이므로, 이미 연동한 사용자에게도
+        // 입력 폼이 잠깐 떴다 사라진다. 그 깜빡임을 막는다.
+        <p className="text-sm text-textSecondary m-0">연동 정보를 불러오는 중...</p>
+      ) : isConnected && settings ? (
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="text-sm text-text m-0">
@@ -103,7 +110,11 @@ export default function SyncRepoSetting({
               placeholder="owner/repo (예: qlalfdmlghk1/Algorism_Python)"
               className={INPUT_CLASS}
               onKeyDown={(event) => {
-                if (event.key === "Enter") onConnect(input);
+                // 백필이 길어 반응이 없어 보이면 Enter를 연타하게 된다.
+                // 버튼은 loading으로 잠기지만 Enter는 따로 막아야 중복 실행이 없다.
+                if (event.key === "Enter" && !isSyncing && input.trim()) {
+                  onConnect(input);
+                }
               }}
             />
             <AppButton
@@ -134,6 +145,14 @@ export default function SyncRepoSetting({
       {!error && !isSyncing && lastResult && (
         <p className="text-xs text-textSecondary mt-3 m-0">
           커밋 {lastResult.scanned}개를 확인해 풀이 기록 {lastResult.saved}건을 반영했습니다.
+          {lastResult.truncated && (
+            <>
+              {" "}
+              <span className="text-warning">
+                커밋이 너무 많아 오래된 이력 일부는 읽지 못했습니다.
+              </span>
+            </>
+          )}
         </p>
       )}
 

@@ -29,6 +29,7 @@ export default function DayDetailPanel({
   onRemoveLog,
 }: DayDetailPanelProps) {
   const [isAdding, setIsAdding] = useState(false);
+  const [removeError, setRemoveError] = useState<string | null>(null);
   const form = useManualLogForm({
     dateKey: dateKey ?? "",
     onSubmit: async (input) => {
@@ -37,9 +38,17 @@ export default function DayDetailPanel({
     },
   });
 
-  const handleRemove = (log: SolveLog) => {
-    if (window.confirm(`"${log.title}" 기록을 삭제할까요?`)) {
-      onRemoveLog(log.id);
+  // 삭제 실패를 잡지 않으면 unhandled rejection만 남고 화면은 그대로여서,
+  // 사용자에게는 "버튼이 안 먹는다"로 보인다.
+  const handleRemove = async (log: SolveLog) => {
+    if (!window.confirm(`"${log.title}" 기록을 삭제할까요?`)) return;
+
+    setRemoveError(null);
+    try {
+      await onRemoveLog(log.id);
+    } catch (cause) {
+      console.error("기록 삭제 실패:", cause);
+      setRemoveError("기록을 삭제하지 못했습니다. 잠시 후 다시 시도해주세요.");
     }
   };
 
@@ -124,6 +133,17 @@ export default function DayDetailPanel({
             className={INPUT_CLASS}
           />
 
+          {form.hasInvalidProblemNo && (
+            <p className="text-xs text-error m-0" role="alert">
+              문제 번호는 숫자만 입력해주세요. (예: 42578)
+            </p>
+          )}
+          {form.error && (
+            <p className="text-xs text-error m-0" role="alert">
+              {form.error}
+            </p>
+          )}
+
           <AppButton
             variant="solid"
             size="sm"
@@ -135,6 +155,12 @@ export default function DayDetailPanel({
             기록 추가
           </AppButton>
         </div>
+      )}
+
+      {removeError && (
+        <p className="text-xs text-error m-0" role="alert">
+          {removeError}
+        </p>
       )}
 
       {logs.length === 0 ? (
