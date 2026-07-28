@@ -82,7 +82,7 @@ export default function SyncHelp() {
             <p className="text-[11px] font-medium text-text mt-2 mb-1">백준</p>
             <pre className="text-[11px] text-textSecondary bg-gray-100 rounded p-2 overflow-x-auto m-0">
               {`[Bronze V] Title: A+B, Time: 80 ms, Memory: 42660 KB -BaekjoonHub
-백준/Bronze/1000. A+B/A+B.py`}
+백준/Bronze/1000. A＋B/A＋B.py`}
             </pre>
 
             <p className="text-xs text-textSecondary mt-2 m-0">
@@ -90,6 +90,12 @@ export default function SyncHelp() {
               <code className="px-1 py-0.5 bg-gray-100 rounded text-[11px]">level 2</code>처럼 적혀 있으면
               프로그래머스, <code className="px-1 py-0.5 bg-gray-100 rounded text-[11px]">Silver III</code> 같은
               티어면 백준으로 봅니다.
+            </p>
+            <p className="text-xs text-textSecondary mt-1.5 m-0">
+              위 예시처럼 폴더 이름의 기호가 메시지와 달라 보일 수 있습니다. 확장이 경로에 쓸 수 없는 문자를
+              전각으로 바꿔 저장하기 때문이며(<code className="px-1 py-0.5 bg-gray-100 rounded text-[11px]">A+B</code>{" "}
+              → <code className="px-1 py-0.5 bg-gray-100 rounded text-[11px]">A＋B</code>), 대조할 때 자동으로
+              맞춰 보므로 기록에는 영향이 없습니다.
             </p>
           </section>
 
@@ -100,7 +106,6 @@ export default function SyncHelp() {
                 직접 올린 커밋 (<code className="px-1 py-0.5 bg-gray-100 rounded text-[11px]">250102 업로드</code> 같은
                 묶음 커밋) — 커밋 날짜가 실제 푼 날짜와 달라 제외합니다
               </li>
-              <li>확장이 만든 폴더에서 옮기거나 이름을 바꾼 풀이</li>
               <li>비공개 저장소, 다른 확장이나 손으로 정리한 저장소</li>
             </ul>
             <p className="text-xs text-textSecondary mt-1.5 m-0">
@@ -126,7 +131,8 @@ export default function SyncHelp() {
               </li>
             </ul>
             <p className="text-xs text-textSecondary mt-1.5 m-0">
-              폴더가 지워졌거나 이름이 바뀌었으면 기록은 남지만 원문 링크가 비어 있습니다.
+              폴더를 옮겼거나 이름을 바꿨거나 지웠으면 <strong>기록은 그대로 남고 원문 링크만</strong> 비어
+              있습니다. 기록은 커밋 메시지만으로 만들어지기 때문입니다.
             </p>
           </section>
         </div>
