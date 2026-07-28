@@ -14,7 +14,7 @@
 
 ## 프로젝트 개요
 
-- 프로젝트명: `Template-Tester` (모노레포: `Template-Tester_FE` / `Template-Tester_BE`, 이 설정은 **FE 전용**)
+- 프로젝트명: `Template-Tester` (FE 단독 레포. BE는 별도 레포 [`Template-Tester-BE`](https://github.com/qlalfdmlghk1/Template-Tester-BE)로 분리됨)
 - 설명: 코딩테스트 템플릿·오답노트와 이론 개념 학습·데일리 적응형 출제를 제공하는 취업 준비 학습 웹 서비스
 - 주요 스택: `React 19 + Vite + TypeScript + Tailwind CSS` (Storybook, Vitest, Playwright, Firebase)
 - 기본 브랜치: `dev`
@@ -25,7 +25,8 @@
 ### 이 프로젝트의 현재 구조
 
 - FE는 **FSD(Feature-Sliced Design) + Atomic Design** 구조를 이미 사용 중입니다. 상세 컨벤션은 `.claude/rules/fe-convention.md`(프로젝트 고유)를 우선 따르고, 표준 rule `.claude/rules/fe/react-vite.md`는 보완적으로 참고합니다.
-- BE(`Template-Tester_BE`)는 Spring Boot(Java 17/Gradle)이며 팀 표준에 해당 rule이 아직 없습니다. 이 설정의 적용 범위 밖입니다.
+- 이 레포는 FE 단독입니다. 레포 루트가 곧 FE 루트이며, 별도의 `Template-Tester_FE/` 하위 경로는 없습니다.
+- BE는 Spring Boot(Java 17/Gradle)이며 별도 레포([`Template-Tester-BE`](https://github.com/qlalfdmlghk1/Template-Tester-BE))로 분리됐습니다. 현재 FE는 BE API를 사용하지 않고 Firebase(Auth/Firestore)를 직접 사용합니다. 이 설정의 적용 범위 밖입니다.
 
 ## 기본 작업 원칙
 
