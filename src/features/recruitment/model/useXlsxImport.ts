@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import { createCompany, updateCompany } from "@/entities/company/api/company.api";
 import { UNASSIGNED_HALF_ID } from "@/entities/job-application/model/half";
+import { stripUndefined } from "@/shared/lib/firestore";
 import { createApplication } from "@/entities/job-application/api/application.api";
 import { readImportPreview } from "./xlsxImport";
 import type { Company } from "@/entities/company/model/company.type";
@@ -131,11 +132,16 @@ export function useXlsxImport({ companies, onDone }: UseXlsxImportOptions) {
       if (includeResearch) {
         for (const note of researchRows) {
           try {
-            const patch = {
+            // 임포트는 "채워진 값만 병합"이다.
+            // undefined 를 그대로 두면 updateCompany 가 deleteField 로 바꿔,
+            // 시트에 비어 있는 칸이 앱에서 직접 입력한 조사 내용을 지운다.
+            const patch = stripUndefined({
               targetJob: note.targetJob,
               jobDescription: note.jobDescription,
               requirements: note.requirements,
-            };
+            });
+
+            if (Object.keys(patch).length === 0) continue;
 
             const existingId = companyIdByName.get(note.companyName);
             if (existingId) {

@@ -33,4 +33,9 @@ describe("safeUrl", () => {
   it("주소로 해석되지 않으면 null", () => {
     expect(safeUrl("http://")).toBeNull();
   });
+
+  it("스킴 없는 값은 통과시키지 않는다 — 앱 내부 경로로 새는 것을 막는다", () => {
+    expect(safeUrl("www.example.com")).toBeNull();
+    expect(safeUrl("/companies")).toBeNull();
+  });
 });
