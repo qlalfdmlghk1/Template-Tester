@@ -3,6 +3,11 @@ export interface NavMenuItem {
   label: string;
   /** 페이지가 아직 준비 중인 항목 */
   comingSoon?: boolean;
+  /**
+   * 하위 경로를 별도 메뉴로 둔 경우 정확히 일치할 때만 활성으로 본다.
+   * (`/companies` 와 `/companies/research` 가 동시에 강조되는 것을 막는다)
+   */
+  exact?: boolean;
 }
 
 /** 하위 항목 없이 바로 이동하는 단일 메뉴 */
@@ -11,6 +16,7 @@ export interface NavMenuLink {
   label: string;
   path: string;
   comingSoon?: boolean;
+  exact?: boolean;
 }
 
 /** 하위 항목을 드롭다운으로 노출하는 그룹 메뉴 */
@@ -43,7 +49,10 @@ export const navMenu: NavMenuEntry[] = [
   {
     id: "company",
     label: "채용",
-    path: "/companies",
+    items: [
+      { path: "/companies", label: "지원 현황", exact: true },
+      { path: "/companies/research", label: "기업 조사" },
+    ],
   },
 ];
 
@@ -51,12 +60,15 @@ export function isNavMenuGroup(entry: NavMenuEntry): entry is NavMenuGroup {
   return "items" in entry;
 }
 
-export function isPathActive(pathname: string, path: string): boolean {
+export function isPathActive(pathname: string, path: string, exact = false): boolean {
+  if (exact) return pathname === path;
   return pathname === path || pathname.startsWith(`${path}/`);
 }
 
 export function isEntryActive(entry: NavMenuEntry, pathname: string): boolean {
-  return getEntryItems(entry).some((item) => isPathActive(pathname, item.path));
+  return getEntryItems(entry).some((item) =>
+    isPathActive(pathname, item.path, item.exact),
+  );
 }
 
 /**
@@ -68,5 +80,7 @@ export function getEntryItems(entry: NavMenuEntry): NavMenuItem[] {
   if (isNavMenuGroup(entry)) {
     return entry.items;
   }
-  return [{ path: entry.path, label: entry.label, comingSoon: entry.comingSoon }];
+  return [
+    { path: entry.path, label: entry.label, comingSoon: entry.comingSoon, exact: entry.exact },
+  ];
 }
