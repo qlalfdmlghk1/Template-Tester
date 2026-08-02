@@ -58,6 +58,7 @@ export async function getCompanies(): Promise<Company[]> {
         id: snap.id,
         userId: data.userId,
         name: data.name ?? "",
+        categories: Array.isArray(data.categories) ? data.categories : undefined,
         postingUrl: data.postingUrl,
         location: data.location,
         targetJob: data.targetJob,

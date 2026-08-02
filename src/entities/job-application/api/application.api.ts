@@ -156,6 +156,32 @@ export async function deleteApplication(applicationId: string): Promise<void> {
 /** 한 배치에 담을 수 있는 쓰기 상한 (Firestore 제한) */
 const BATCH_LIMIT = 500;
 
+/** 특정 기업에 걸린 지원 건을 모두 삭제하고 삭제 건수를 돌려준다 */
+export async function deleteApplicationsByCompany(companyId: string): Promise<number> {
+  try {
+    const user = requireUser();
+
+    const snapshot = await getDocs(
+      query(
+        collection(db, COLLECTION),
+        where("userId", "==", user.uid),
+        where("companyId", "==", companyId),
+      ),
+    );
+
+    for (let i = 0; i < snapshot.docs.length; i += BATCH_LIMIT) {
+      const batch = writeBatch(db);
+      snapshot.docs.slice(i, i + BATCH_LIMIT).forEach((snap) => batch.delete(snap.ref));
+      await batch.commit();
+    }
+
+    return snapshot.size;
+  } catch (error) {
+    console.error("기업별 지원 건 삭제 실패:", error);
+    throw error;
+  }
+}
+
 /** 내 지원 건을 모두 삭제하고 삭제 건수를 돌려준다 */
 export async function deleteAllApplications(): Promise<number> {
   try {

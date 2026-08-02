@@ -10,7 +10,7 @@
  */
 
 import { formatSchedule } from "@/entities/job-application/model/schedule";
-import { STAGE_KEYS } from "@/entities/job-application/model/stage";
+import { JOB_TAGS, STAGE_KEYS } from "@/entities/job-application/model/stage";
 import type { RoughPart, Schedule } from "@/entities/job-application/model/schedule";
 import type { JobTag, StageKey, StageStatus } from "@/entities/job-application/model/stage";
 
@@ -247,11 +247,17 @@ export function parseScheduleText(raw: string, baseYear: number): ParsedSchedule
   return { schedule: null, memo: text };
 }
 
-const JOB_TAG_SET = new Set<string>(["IT", "SW", "FE", "PM"]);
+const JOB_TAG_SET = new Set<string>(JOB_TAGS);
 
 export function parseJobTag(raw: string | null | undefined): JobTag | null {
-  const value = raw?.trim().toUpperCase();
-  return value && JOB_TAG_SET.has(value) ? (value as JobTag) : null;
+  // 한글 태그("기획")가 있어 대문자 변환 후에도 원본을 함께 확인한다
+  const trimmed = raw?.trim();
+  if (!trimmed) return null;
+
+  if (JOB_TAG_SET.has(trimmed)) return trimmed as JobTag;
+
+  const upper = trimmed.toUpperCase();
+  return JOB_TAG_SET.has(upper) ? (upper as JobTag) : null;
 }
 
 /** "15명" → 15, "00명"·빈값 → null (공고에 인원이 안 적힌 경우) */

@@ -1,8 +1,14 @@
 import { useCallback, useMemo, useState } from "react";
 import { useToast } from "@/shared/ui/molecules/AppToast";
 import { useCompanies } from "@/entities/company/model/useCompanies";
+import { useApplications } from "@/entities/job-application/model/useApplications";
+import { deleteApplicationsByCompany } from "@/entities/job-application/api/application.api";
 import { hasResearch } from "@/entities/company/model/company.type";
-import type { Company, CompanyInput } from "@/entities/company/model/company.type";
+import type {
+  Company,
+  CompanyCategory,
+  CompanyInput,
+} from "@/entities/company/model/company.type";
 
 /**
  * 기업 조사 화면.
@@ -11,13 +17,18 @@ import type { Company, CompanyInput } from "@/entities/company/model/company.typ
 export function useCompanyResearch() {
   const { companies, isLoading, error, addCompany, editCompany, removeCompany, reload } =
     useCompanies();
+  // 기업을 지울 때 딸린 지원 건이 몇 건인지 보여주기 위해 함께 읽는다
+  const { applications, reload: reloadApplications } = useApplications();
   const { showToast } = useToast();
 
   const [keyword, setKeyword] = useState("");
   const [onlyResearched, setOnlyResearched] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState<CompanyCategory[]>([]);
   /** undefined = 닫힘, null = 신규 등록, 객체 = 수정 */
   const [formTarget, setFormTarget] = useState<Company | null | undefined>(undefined);
   const [deleteTarget, setDeleteTarget] = useState<Company | null>(null);
+  /** 기업과 함께 딸린 지원 건도 지울지 */
+  const [cascadeDelete, setCascadeDelete] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const filtered = useMemo(() => {
@@ -25,13 +36,22 @@ export function useCompanyResearch() {
 
     return companies.filter((company) => {
       if (onlyResearched && !hasResearch(company)) return false;
+
+      // 분류는 여러 개 달 수 있으므로 하나라도 걸리면 통과시킨다
+      if (
+        selectedCategories.length > 0 &&
+        !selectedCategories.some((category) => company.categories?.includes(category))
+      ) {
+        return false;
+      }
+
       if (!query) return true;
 
       return [company.name, company.targetJob, company.jobDescription, company.requirements]
         .filter(Boolean)
         .some((value) => value!.toLowerCase().includes(query));
     });
-  }, [companies, keyword, onlyResearched]);
+  }, [companies, keyword, onlyResearched, selectedCategories]);
 
   const researchedCount = useMemo(
     () => companies.filter(hasResearch).length,
@@ -59,21 +79,42 @@ export function useCompanyResearch() {
     [formTarget, addCompany, editCompany, showToast],
   );
 
+  /** 삭제하려는 기업에 걸린 지원 건 수 */
+  const deleteTargetApplicationCount = useMemo(
+    () =>
+      deleteTarget
+        ? applications.filter((application) => application.companyId === deleteTarget.id).length
+        : 0,
+    [deleteTarget, applications],
+  );
+
   const confirmDelete = useCallback(async () => {
     if (!deleteTarget) return;
 
     setSaving(true);
     try {
+      // 지원 건을 먼저 지운다 — 기업이 먼저 사라지면 참조가 끊긴 지원 건이 남는다
+      let removedApplications = 0;
+      if (cascadeDelete) {
+        removedApplications = await deleteApplicationsByCompany(deleteTarget.id);
+      }
+
       await removeCompany(deleteTarget.id);
+      if (removedApplications > 0) await reloadApplications();
+
       setDeleteTarget(null);
-      showToast("기업을 삭제했습니다.");
+      showToast(
+        removedApplications > 0
+          ? `기업과 지원 건 ${removedApplications}건을 삭제했습니다.`
+          : "기업을 삭제했습니다.",
+      );
     } catch (cause) {
       console.error("기업 삭제 실패:", cause);
       showToast("삭제하지 못했습니다. 잠시 후 다시 시도해 주세요.", "error");
     } finally {
       setSaving(false);
     }
-  }, [deleteTarget, removeCompany, showToast]);
+  }, [deleteTarget, cascadeDelete, removeCompany, reloadApplications, showToast]);
 
   return {
     companies: filtered,
@@ -87,6 +128,8 @@ export function useCompanyResearch() {
     setKeyword,
     onlyResearched,
     setOnlyResearched,
+    selectedCategories,
+    setSelectedCategories,
 
     formTarget,
     openCreateForm: () => setFormTarget(null),
@@ -95,7 +138,14 @@ export function useCompanyResearch() {
     submitForm,
 
     deleteTarget,
-    requestDelete: (company: Company) => setDeleteTarget(company),
+    deleteTargetApplicationCount,
+    cascadeDelete,
+    setCascadeDelete,
+    requestDelete: (company: Company) => {
+      setDeleteTarget(company);
+      // 딸린 지원 건까지 지우는 것은 매번 새로 선택하게 둔다
+      setCascadeDelete(false);
+    },
     cancelDelete: () => setDeleteTarget(null),
     confirmDelete,
 

@@ -1,6 +1,10 @@
 import { AppSelect } from "@/shared/ui/atoms/AppSelect";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
 import { formatHalfId } from "@/entities/job-application/model/half";
+import {
+  COMPANY_CATEGORIES,
+  COMPANY_CATEGORY_LABELS,
+} from "@/entities/company/model/company.type";
 import { JOB_TAGS } from "@/entities/job-application/model/stage";
 import {
   APPLICATION_STATUSES,
@@ -10,6 +14,7 @@ import type { SelectValue } from "@/shared/ui/atoms/AppSelect";
 import type { HalfId } from "@/entities/job-application/model/half";
 import type { JobTag } from "@/entities/job-application/model/stage";
 import type { ApplicationStatus } from "@/entities/job-application/model/application.type";
+import type { CompanyCategory } from "@/entities/company/model/company.type";
 import type { RecruitmentFilter } from "../../model/useRecruitmentBoard";
 
 interface RecruitmentToolbarProps {
@@ -34,7 +39,8 @@ export function RecruitmentToolbar({
   onChangeFilter,
   onResetFilter,
 }: RecruitmentToolbarProps) {
-  const hasFilter = filter.jobTags.length > 0 || filter.statuses.length > 0;
+  const hasFilter =
+    filter.jobTags.length > 0 || filter.statuses.length > 0 || filter.categories.length > 0;
 
   const handleJobTagChange = (value: SelectValue | SelectValue[]) => {
     onChangeFilter({ ...filter, jobTags: toArray(value) as JobTag[] });
@@ -42,6 +48,10 @@ export function RecruitmentToolbar({
 
   const handleStatusChange = (value: SelectValue | SelectValue[]) => {
     onChangeFilter({ ...filter, statuses: toArray(value) as ApplicationStatus[] });
+  };
+
+  const handleCategoryChange = (value: SelectValue | SelectValue[]) => {
+    onChangeFilter({ ...filter, categories: toArray(value) as CompanyCategory[] });
   };
 
   return (
@@ -76,6 +86,19 @@ export function RecruitmentToolbar({
         value={filter.statuses}
         onChange={handleStatusChange}
         placeholder="상태 전체"
+      />
+
+      <AppSelect
+        size="sm"
+        width="150px"
+        multiple
+        options={COMPANY_CATEGORIES.map((category) => ({
+          value: category,
+          label: COMPANY_CATEGORY_LABELS[category],
+        }))}
+        value={filter.categories}
+        onChange={handleCategoryChange}
+        placeholder="분류 전체"
       />
 
       {hasFilter && (

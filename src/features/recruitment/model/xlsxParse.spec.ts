@@ -191,6 +191,16 @@ describe("parseJobTag", () => {
     expect(parseJobTag("")).toBeNull();
     expect(parseJobTag(null)).toBeNull();
   });
+
+  it("한글 태그도 읽는다 — 대문자 변환에 걸리지 않아야 한다", () => {
+    expect(parseJobTag("기획")).toBe("기획");
+    expect(parseJobTag(" 기획 ")).toBe("기획");
+  });
+
+  it("하반기 시트에 있던 DT 를 읽는다", () => {
+    expect(parseJobTag("DT")).toBe("DT");
+    expect(parseJobTag("dt")).toBe("DT");
+  });
 });
 
 describe("parseHeadcount", () => {

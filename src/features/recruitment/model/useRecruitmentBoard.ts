@@ -14,7 +14,7 @@ import {
   getCurrentStage,
   getUpcomingSchedule,
 } from "@/entities/job-application/model/stats";
-import type { Company } from "@/entities/company/model/company.type";
+import type { Company, CompanyCategory } from "@/entities/company/model/company.type";
 import type { HalfId } from "@/entities/job-application/model/half";
 import type { JobTag, StageKey } from "@/entities/job-application/model/stage";
 import type { UpcomingSchedule } from "@/entities/job-application/model/stats";
@@ -36,9 +36,11 @@ export interface RecruitmentRow {
 export interface RecruitmentFilter {
   jobTags: JobTag[];
   statuses: ApplicationStatus[];
+  /** 기업 유형 — 지원 건이 아니라 참조하는 기업의 속성으로 거른다 */
+  categories: CompanyCategory[];
 }
 
-const EMPTY_FILTER: RecruitmentFilter = { jobTags: [], statuses: [] };
+const EMPTY_FILTER: RecruitmentFilter = { jobTags: [], statuses: [], categories: [] };
 
 /**
  * 채용 현황 보드.
@@ -102,6 +104,10 @@ export function useRecruitmentBoard() {
         !filter.statuses.includes(getApplicationStatus(application))
       ) {
         return false;
+      }
+      if (filter.categories.length > 0) {
+        const categories = companyMap.get(application.companyId)?.categories ?? [];
+        if (!filter.categories.some((category) => categories.includes(category))) return false;
       }
       return true;
     });

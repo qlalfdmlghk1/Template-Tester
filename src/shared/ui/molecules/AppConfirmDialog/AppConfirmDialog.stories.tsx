@@ -18,6 +18,10 @@ const meta: Meta<typeof AppConfirmDialog> = {
       description: "삭제처럼 되돌리기 어려운 동작이면 확인 버튼을 경고색으로",
     },
     loading: { control: "boolean", description: "확인 처리 중" },
+    children: {
+      control: false,
+      description: "설명 아래에 넣을 부가 입력 (예: 함께 삭제 체크박스)",
+    },
   },
 };
 
@@ -69,6 +73,56 @@ export const Loading: Story = {
     docs: {
       source: {
         code: `<AppConfirmDialog open danger loading title="지원 건을 삭제할까요?" ... />`,
+      },
+    },
+  },
+};
+
+function CascadeDemo() {
+  const [cascade, setCascade] = useState(false);
+
+  return (
+    <AppConfirmDialog
+      open
+      danger
+      title="기업을 삭제할까요?"
+      description={'"IBK 기업은행" 의 조사 내용이 사라집니다.'}
+      confirmText="삭제"
+      onConfirm={() => undefined}
+      onCancel={() => undefined}
+    >
+      <label className="flex items-start gap-2 px-3 py-2 bg-gray-100 rounded-sm cursor-pointer">
+        <input
+          type="checkbox"
+          checked={cascade}
+          onChange={(event) => setCascade(event.target.checked)}
+          className="mt-0.5"
+        />
+        <span className="text-sm text-text">
+          이 기업의 지원 건 2건도 함께 삭제
+          <span className="block text-xs text-textSecondary">
+            체크하지 않으면 지원 건은 남지만 기업 정보가 끊깁니다.
+          </span>
+        </span>
+      </label>
+    </AppConfirmDialog>
+  );
+}
+
+/** 설명 아래에 부가 입력을 넣는 경우 */
+export const WithExtraInput: Story = {
+  render: () => <CascadeDemo />,
+  parameters: {
+    docs: {
+      source: {
+        code: `
+<AppConfirmDialog open danger title="기업을 삭제할까요?" confirmText="삭제" ...>
+  <label>
+    <input type="checkbox" checked={cascade} onChange={...} />
+    이 기업의 지원 건 2건도 함께 삭제
+  </label>
+</AppConfirmDialog>
+        `.trim(),
       },
     },
   },

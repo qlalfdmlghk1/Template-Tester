@@ -10,6 +10,8 @@ export interface AppConfirmDialogProps {
   /** 삭제처럼 되돌리기 어려운 동작이면 확인 버튼을 경고색으로 */
   danger?: boolean;
   loading?: boolean;
+  /** 설명 아래에 넣을 부가 입력 (예: "딸린 항목도 함께 삭제" 체크박스) */
+  children?: React.ReactNode;
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -23,6 +25,7 @@ export default function AppConfirmDialog({
   cancelText = "취소",
   danger = false,
   loading = false,
+  children,
   onConfirm,
   onCancel,
 }: AppConfirmDialogProps) {
@@ -65,10 +68,12 @@ export default function AppConfirmDialog({
           {title}
         </h2>
         {description && (
-          <p className="m-0 mb-4 text-sm text-textSecondary whitespace-pre-wrap">
+          <p className="m-0 mb-3 text-sm text-textSecondary whitespace-pre-wrap">
             {description}
           </p>
         )}
+
+        {children && <div className="mb-4">{children}</div>}
 
         <div ref={actionsRef} className="flex justify-end gap-2">
           <AppButton variant="outline" color="gray" size="sm" onClick={onCancel}>
