@@ -180,7 +180,7 @@ export default function NavMenu() {
             {navMenu.map((entry, index) => (
               <div key={entry.id} className="flex flex-col gap-0.5" style={{ width: columnLayout?.widths[index] }}>
                 {getEntryItems(entry).map((item) => {
-                  const isItemActive = isPathActive(location.pathname, item.path);
+                  const isItemActive = isPathActive(location.pathname, item.path, item.exact);
 
                   return (
                     <button
