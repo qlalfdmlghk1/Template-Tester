@@ -119,6 +119,31 @@ service cloud.firestore {
       allow read, write: if isSignedIn() && request.auth.uid == userId;
     }
 
+    // ── companies (채용) ──────────────────────────────────────────────────
+    // 지원 기업 + 비채용기간용 조사 노트. 조회는 where("userId","==",uid) 로만 걸린다.
+    // 지원 건과 분리해 두어, 같은 기업에 여러 번 지원해도 조사 노트가 중복되지 않는다.
+    match /companies/{companyId} {
+      allow read: if isOwner();
+      allow create: if isCreatingOwn();
+
+      // update 에 isCreatingOwn() 을 함께 거는 이유: update 의 request.resource.data 는
+      // 병합 후 문서 전체라, 이걸 보지 않으면 userId 를 남의 uid 로 바꿔 문서를 넘길 수 있다.
+      allow update: if isOwner() && isCreatingOwn();
+
+      // delete 요청에는 request.resource 가 없어 isCreatingOwn() 을 걸면 평가 오류 → 삭제가 항상 실패한다.
+      allow delete: if isOwner();
+    }
+
+    // ── jobApplications (채용) ────────────────────────────────────────────
+    // 지원 건 = 화면의 한 행. 전형 10단계의 상태·일정을 stages 맵으로 갖는다.
+    // 그리드 셀 편집은 stages.{단계} 부분 업데이트로 들어온다.
+    match /jobApplications/{applicationId} {
+      allow read: if isOwner();
+      allow create: if isCreatingOwn();
+      allow update: if isOwner() && isCreatingOwn();
+      allow delete: if isOwner();
+    }
+
     // ── 그 외 ────────────────────────────────────────────────────────────
     // 명시하지 않은 경로는 전부 차단. 새 컬렉션을 만들면 위에 규칙을 추가해야 한다.
     match /{document=**} {
