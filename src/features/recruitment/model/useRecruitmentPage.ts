@@ -157,13 +157,18 @@ export function useRecruitmentPage() {
   }, [xlsxImport]);
 
   const applyImport = useCallback(async () => {
-    const { created, failed } = await xlsxImport.applySelected();
+    const { created, failed, research } = await xlsxImport.applySelected();
 
-    if (created > 0) {
+    if (created > 0 || research > 0) {
+      const done = [
+        created > 0 ? `지원 건 ${created}건` : null,
+        research > 0 ? `기업 조사 ${research}건` : null,
+      ]
+        .filter(Boolean)
+        .join(", ");
+
       showToast(
-        failed > 0
-          ? `${created}건을 가져왔습니다. ${failed}건은 실패했습니다.`
-          : `${created}건을 가져왔습니다.`,
+        failed > 0 ? `${done}을 가져왔습니다. ${failed}건은 실패했습니다.` : `${done}을 가져왔습니다.`,
         failed > 0 ? "error" : "success",
       );
       closeImport();

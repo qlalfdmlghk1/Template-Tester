@@ -4,10 +4,13 @@ import AppIcon from "@/shared/ui/atoms/AppIcon/AppIcon";
 import { cn } from "@/shared/lib/cn";
 import { formatSchedule } from "@/entities/job-application/model/schedule";
 import { STAGE_LABELS, STAGE_STATUS_LABELS } from "@/entities/job-application/model/stage";
-import type { ImportPreviewRow } from "../../model/xlsxImport";
+import type { ImportPreviewRow, ResearchPreviewRow } from "../../model/xlsxImport";
 
 interface XlsxImportDialogProps {
   rows: ImportPreviewRow[];
+  researchRows: ResearchPreviewRow[];
+  includeResearch: boolean;
+  onToggleResearch: (checked: boolean) => void;
   selectedIds: Set<string>;
   isReading: boolean;
   isApplying: boolean;
@@ -36,6 +39,9 @@ function summarizeStages(row: ImportPreviewRow): string {
 
 export function XlsxImportDialog({
   rows,
+  researchRows,
+  includeResearch,
+  onToggleResearch,
   selectedIds,
   isReading,
   isApplying,
@@ -106,6 +112,24 @@ export function XlsxImportDialog({
           <p className="m-0 px-3 py-2 text-sm text-red-800 bg-red-50 border border-red-300 rounded-sm">
             {error}
           </p>
+        )}
+
+        {researchRows.length > 0 && (
+          <label className="flex items-start gap-2 px-3 py-2 bg-gray-100 rounded-sm cursor-pointer">
+            <input
+              type="checkbox"
+              checked={includeResearch}
+              onChange={(event) => onToggleResearch(event.target.checked)}
+              className="mt-0.5"
+            />
+            <span className="text-sm text-text">
+              기업 조사 내용 {researchRows.length}건도 함께 가져오기
+              <span className="block text-xs text-textSecondary">
+                직무 설명·자격 요건이 기업에 저장되며, 「기업 조사」 화면에서 볼 수 있습니다.
+                이미 등록된 기업이면 조사 내용만 채웁니다.
+              </span>
+            </span>
+          </label>
         )}
 
         {rows.length > 0 && (
@@ -189,7 +213,7 @@ export function XlsxImportDialog({
           <AppButton
             size="sm"
             loading={isApplying}
-            disabled={selectedIds.size === 0}
+            disabled={selectedIds.size === 0 && !(includeResearch && researchRows.length > 0)}
             onClick={onApply}
           >
             선택한 {selectedIds.size}건 가져오기
