@@ -42,9 +42,8 @@ export const navMenu: NavMenuEntry[] = [
   },
   {
     id: "company",
-    label: "기업 조사",
+    label: "채용",
     path: "/companies",
-    comingSoon: true,
   },
 ];
 
