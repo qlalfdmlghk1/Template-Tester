@@ -97,13 +97,17 @@ export function getUpcomingSchedule(
 
   const candidates: { stageKey: StageKey; schedule: Schedule; anchor: number }[] = [];
 
+  // 날짜만 있는 일정의 마감은 그날 00:00 이라, 현재 시각과 비교하면
+  // "오늘 마감"이 하루 종일 지난 것으로 잡힌다. 오늘 자정을 기준으로 삼는다.
+  const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
   for (const stageKey of STAGE_KEYS) {
     const entry = application.stages[stageKey];
     if (!entry?.schedule) continue;
     if (entry.status !== "PENDING" && entry.status !== "SUBMITTED") continue;
 
     const deadline = getScheduleDeadline(entry.schedule);
-    if (!deadline || deadline.getTime() < today.getTime()) continue;
+    if (!deadline || deadline.getTime() < startOfToday.getTime()) continue;
 
     const anchor = getScheduleAnchor(entry.schedule);
     candidates.push({

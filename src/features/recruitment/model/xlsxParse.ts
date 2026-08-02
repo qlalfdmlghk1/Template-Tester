@@ -175,6 +175,19 @@ function extractTime(text: string): { hour: number; minute: number } | null {
   return null;
 }
 
+/**
+ * "MM/DD" 매치가 실제 존재하는 월·일인지.
+ *
+ * 검증 없이 `new Date(year, 1, 29)` 같은 값을 만들면 3/1 로 조용히 넘어가고,
+ * `13/45` 는 이듬해 날짜가 된다. 시트 오타가 그럴듯한 오답으로 임포트되는 것을 막는다.
+ * (2/29 처럼 연도에 따라 달라지는 경우까지는 보지 않고, 월 1~12 · 일 1~31 만 본다)
+ */
+function isRealMonthDay(match: RegExpMatchArray): boolean {
+  const month = Number(match[1]);
+  const day = Number(match[2]);
+  return month >= 1 && month <= 12 && day >= 1 && day <= 31;
+}
+
 export interface ParsedSchedule {
   schedule: Schedule | null;
   /** 파싱 결과가 원문을 온전히 담지 못하면 원문을 메모로 남긴다 */
@@ -197,7 +210,7 @@ export function parseScheduleText(raw: string, baseYear: number): ParsedSchedule
 
   // 1) "MM/DD" 형태가 하나 이상 — 정확한 일시 또는 기간
   const dates = [...text.matchAll(/(\d{1,2})[/.](\d{1,2})/g)];
-  if (dates.length > 0) {
+  if (dates.length > 0 && dates.every(isRealMonthDay)) {
     const toDate = (match: RegExpMatchArray) =>
       new Date(baseYear, Number(match[1]) - 1, Number(match[2]));
 

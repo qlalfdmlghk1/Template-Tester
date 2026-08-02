@@ -236,3 +236,34 @@
 **다음 작업**
 
 - 실사용 점검 또는 PR
+
+---
+
+### Commit — 2026-08-02 20:10
+
+- Message: `Fix:#75 리뷰 Blocker 3건 및 명백한 결함 반영`
+- Issue: `#75`
+- Jira: 미사용
+
+**변경 요약**
+
+`/review-converge` Round 1에서 나온 Blocker 3건과 명백한 기능 오류를 반영했다.
+
+- **보안(High)**: xlsx에서 읽은 공고 URL을 스킴 검증 없이 `<a href>`에 렌더하던 것을 `shared/lib/safeUrl` 로 거른다
+- **필드 삭제 불가**: `update` 경로에 `stripUndefined` 를 써서 폼에서 비운 값이 "안 건드림"으로 해석되던 문제. `toUpdatePayload`(deleteField)로 분리
+- **롤백 누락**: `editStage` 의 롤백 값을 setState updater 안에서 캡처하던 것을 ref 기반으로 밖에서 확정. 못 잡으면 `load()` 폴백
+- 오늘 마감인 일정이 "임박 일정"에서 빠지던 문제 (마감 비교 기준을 오늘 자정으로)
+- `2/29`·`13/45` 같은 잘못된 월·일이 경고 없이 그럴듯한 날짜로 임포트되던 문제
+- 같은 파일 재선택 시 change 미발생, 경고 문구 중복 시 React key 충돌
+- 파괴적 확인 다이얼로그가 열자마자 삭제 버튼에 포커스되던 문제 (취소 쪽으로)
+- 토스트 타이머 배열이 세션 내내 누적되던 문제 (Map 기반 정리)
+- `"미분류"` 문자열 비교를 `halfId === UNASSIGNED_HALF_ID` 로 교체
+
+**결정 로그**
+
+- `stripUndefined` 는 생성 전용임을 주석에 못박고, 수정 경로용 `toUpdatePayload` 를 따로 뒀다. 중첩 필드 경로(`stages.{단계}`)에는 `deleteField` 를 섞을 수 없어 그 경로만 `stripUndefined` 를 유지한다.
+- `npm run lint` 는 실패하지만 대상이 전부 기존 파일(`auth.api.ts`, 기존 스토리 4종)이다. 이번 PR 신규 파일은 0건이라 범위 밖 부채로 남겼다.
+
+**다음 작업**
+
+- Round 2 재리뷰

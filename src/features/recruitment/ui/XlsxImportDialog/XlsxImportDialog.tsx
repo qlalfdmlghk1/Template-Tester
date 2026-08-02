@@ -61,6 +61,8 @@ export function XlsxImportDialog({
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) onPickFile(file);
+    // 값을 비워야 같은 파일을 다시 골랐을 때도 change 가 발생한다
+    event.target.value = "";
   };
 
   return (
@@ -188,9 +190,9 @@ export function XlsxImportDialog({
                       </td>
                       <td className="px-2 py-2 align-top border-b border-border">
                         <p className="m-0 text-xs text-textSecondary">{summarizeStages(row)}</p>
-                        {row.warnings.map((warning) => (
+                        {row.warnings.map((warning, index) => (
                           <p
-                            key={warning}
+                            key={`${row.id}-warning-${index}`}
                             className="m-0 mt-1 flex items-start gap-1 text-xs text-yellow-800"
                           >
                             <AppIcon name="exclamation-triangle" size={12} className="mt-0.5 shrink-0" />

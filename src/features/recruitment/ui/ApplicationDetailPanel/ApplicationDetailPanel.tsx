@@ -1,6 +1,7 @@
 import AppIcon from "@/shared/ui/atoms/AppIcon/AppIcon";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
 import { cn } from "@/shared/lib/cn";
+import { safeUrl } from "@/shared/lib/safeUrl";
 import { formatSchedule } from "@/entities/job-application/model/schedule";
 import {
   JOB_TAG_CLASSES,
@@ -34,6 +35,8 @@ export function ApplicationDetailPanel({
   onDelete,
 }: ApplicationDetailPanelProps) {
   const { application, company, status } = row;
+  // 공고 링크는 사용자가 올린 xlsx에서 온 값이라 허용 스킴만 링크로 만든다
+  const postingUrl = safeUrl(company?.postingUrl);
 
   return (
     <aside className="flex flex-col gap-4 p-4 bg-surface border border-border rounded-md">
@@ -99,12 +102,12 @@ export function ApplicationDetailPanel({
           </>
         )}
 
-        {company?.postingUrl && (
+        {postingUrl && (
           <>
             <dt className="text-textSecondary">공고</dt>
             <dd className="m-0">
               <a
-                href={company.postingUrl}
+                href={postingUrl}
                 target="_blank"
                 rel="noreferrer"
                 className="text-blue-600 underline break-all"

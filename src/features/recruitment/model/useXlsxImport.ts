@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import { createCompany, updateCompany } from "@/entities/company/api/company.api";
+import { UNASSIGNED_HALF_ID } from "@/entities/job-application/model/half";
 import { createApplication } from "@/entities/job-application/api/application.api";
 import { readImportPreview } from "./xlsxImport";
 import type { Company } from "@/entities/company/model/company.type";
@@ -111,7 +112,8 @@ export function useXlsxImport({ companies, onDone }: UseXlsxImportOptions) {
             // 같은 기업 복수 지원 건을 구분할 단서.
             // 시트명("상반기")에는 연도가 없어 몇 년도 건인지 알 수 없으므로,
             // 자소서 마감일에서 계산한 반기 라벨("2025 상반기")을 쓴다.
-            postingTitle: row.halfLabel === "미분류" ? row.sheetName : row.halfLabel,
+            postingTitle:
+              row.halfId === UNASSIGNED_HALF_ID ? row.sheetName : row.halfLabel,
             jobTag: row.jobTag ?? "IT",
             headcount: row.headcount,
             notAppliedReason: row.notAppliedReason,

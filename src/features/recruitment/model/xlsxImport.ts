@@ -7,7 +7,12 @@
  */
 
 import { createEmptyStages, STAGE_KEYS } from "@/entities/job-application/model/stage";
-import { formatHalfId, getHalfOfDate, toHalfId } from "@/entities/job-application/model/half";
+import {
+  UNASSIGNED_HALF_ID,
+  formatHalfId,
+  getHalfOfDate,
+  toHalfId,
+} from "@/entities/job-application/model/half";
 import { getScheduleAnchor } from "@/entities/job-application/model/schedule";
 import {
   buildColumnMap,
@@ -18,6 +23,7 @@ import {
   parseJobTag,
   parseScheduleText,
 } from "./xlsxParse";
+import type { HalfId } from "@/entities/job-application/model/half";
 import type { JobTag, StageKey } from "@/entities/job-application/model/stage";
 import type { StageEntry } from "@/entities/job-application/model/application.type";
 import type { ResearchColumn } from "./xlsxParse";
@@ -35,7 +41,9 @@ export interface ImportPreviewRow {
   location?: string;
   notAppliedReason?: string;
   stages: Record<StageKey, StageEntry>;
-  /** 자소서 일정에서 파생한 반기 표시값 */
+  /** 자소서 일정에서 파생한 반기 */
+  halfId: HalfId;
+  /** 위 반기의 표시값 */
   halfLabel: string;
   /** 사용자에게 알려야 할 사항 (읽지 못한 값 등) */
   warnings: string[];
@@ -219,6 +227,7 @@ function buildRow(
   }
 
   const anchor = getScheduleAnchor(stages.resume?.schedule ?? null);
+  const halfId = anchor ? toHalfId(getHalfOfDate(anchor)) : UNASSIGNED_HALF_ID;
 
   return {
     id: `${sheetName}:${rowNumber}`,
@@ -231,7 +240,8 @@ function buildRow(
     location: meta.location || undefined,
     notAppliedReason: meta.notAppliedReason || undefined,
     stages,
-    halfLabel: anchor ? formatHalfId(toHalfId(getHalfOfDate(anchor))) : "미분류",
+    halfId,
+    halfLabel: formatHalfId(halfId),
     warnings,
   };
 }

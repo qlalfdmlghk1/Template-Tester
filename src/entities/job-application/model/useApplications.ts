@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   createApplication,
   deleteApplication,
@@ -18,6 +18,10 @@ export function useApplications() {
   const [applications, setApplications] = useState<JobApplication[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+
+  // 낙관적 업데이트 롤백 시 "편집 직전 값"을 렌더 밖에서 읽기 위한 최신 스냅샷
+  const applicationsRef = useRef<JobApplication[]>([]);
+  applicationsRef.current = applications;
 
   const load = useCallback(async () => {
     setIsLoading(true);
@@ -67,39 +71,38 @@ export function useApplications() {
    */
   const editStage = useCallback(
     async (applicationId: string, stageKey: StageKey, entry: StageEntry): Promise<void> => {
-      let previous: StageEntry | undefined;
+      // 롤백 값은 setState updater 안이 아니라 밖에서 확정한다.
+      // updater 는 순수해야 하고 호출 시점도 React 가 정하므로, 그 안에서 캡처하면
+      // 저장 실패 시 값이 비어 롤백이 조용히 건너뛰어질 수 있다.
+      const previous = applicationsRef.current
+        .find((application) => application.id === applicationId)
+        ?.stages[stageKey];
 
-      setApplications((current) =>
-        current.map((application) => {
-          if (application.id !== applicationId) return application;
-          previous = application.stages[stageKey];
-          return {
-            ...application,
-            stages: { ...application.stages, [stageKey]: entry },
-          };
-        }),
-      );
+      const replaceStage = (next: StageEntry) => {
+        setApplications((current) =>
+          current.map((application) =>
+            application.id === applicationId
+              ? { ...application, stages: { ...application.stages, [stageKey]: next } }
+              : application,
+          ),
+        );
+      };
+
+      replaceStage(entry);
 
       try {
         await updateApplicationStage(applicationId, stageKey, entry);
       } catch (cause) {
         if (previous) {
-          const rollback = previous;
-          setApplications((current) =>
-            current.map((application) =>
-              application.id === applicationId
-                ? {
-                    ...application,
-                    stages: { ...application.stages, [stageKey]: rollback },
-                  }
-                : application,
-            ),
-          );
+          replaceStage(previous);
+        } else {
+          // 편집 직전 값을 못 잡았으면 화면이 실패한 값을 그대로 들고 있게 두지 않는다
+          await load();
         }
         throw cause;
       }
     },
-    [],
+    [load],
   );
 
   return {

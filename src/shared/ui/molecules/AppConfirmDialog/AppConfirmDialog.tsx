@@ -36,9 +36,10 @@ export default function AppConfirmDialog({
   useEffect(() => {
     if (!open) return;
 
-    actionsRef.current
-      ?.querySelector<HTMLButtonElement>("button:last-of-type")
-      ?.focus();
+    // 되돌리기 어려운 동작은 확인 버튼에 포커스를 주지 않는다.
+    // 열자마자 Enter 한 번에 삭제가 실행되는 것을 막기 위해 취소 쪽에 둔다.
+    const selector = danger ? "button:first-of-type" : "button:last-of-type";
+    actionsRef.current?.querySelector<HTMLButtonElement>(selector)?.focus();
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") onCancel();
@@ -46,7 +47,7 @@ export default function AppConfirmDialog({
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [open, onCancel]);
+  }, [open, danger, onCancel]);
 
   if (!open) return null;
 
