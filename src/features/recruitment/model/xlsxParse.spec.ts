@@ -171,6 +171,13 @@ describe("parseScheduleText", () => {
     expect(parseScheduleText("04/03 ~ 04/11", 2026).memo).toBeUndefined();
   });
 
+  it("존재하지 않는 월·일은 날짜로 읽지 않고 원문을 메모로 남긴다", () => {
+    // 검증이 없으면 13/45 가 이듬해 날짜로 조용히 굴러가 반기 귀속까지 틀어진다
+    expect(parseScheduleText("13/45", 2026)).toEqual({ schedule: null, memo: "13/45" });
+    expect(parseScheduleText("00/10", 2026)).toEqual({ schedule: null, memo: "00/10" });
+    expect(parseScheduleText("04/32", 2026)).toEqual({ schedule: null, memo: "04/32" });
+  });
+
   it("읽을 수 없는 표기는 값을 잃지 않게 원문을 메모로 남긴다", () => {
     const { schedule, memo } = parseScheduleText("추후 공지", 2026);
 

@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
+  calcPassRates,
   calcStagePassRate,
   formatPassRate,
   getApplicationStatus,
@@ -159,6 +160,59 @@ describe("calcStagePassRate", () => {
   });
 });
 
+describe("calcPassRates", () => {
+  it("최종발표·출근은 집계 대상이 아니다 — 결과가 있어도 rate 가 null 이다", () => {
+    const applications = [
+      makeApplication({
+        resume: { status: "PASSED" },
+        finalResult: { status: "PASSED" },
+        onboarding: { status: "PASSED" },
+      }),
+      makeApplication({
+        resume: { status: "FAILED" },
+        finalResult: { status: "FAILED" },
+        onboarding: { status: "FAILED" },
+      }),
+    ];
+
+    const rates = calcPassRates(applications);
+
+    expect(rates.resume).toEqual({ passed: 1, failed: 1, rate: 0.5 });
+    expect(rates.finalResult).toEqual({ passed: 0, failed: 0, rate: null });
+    expect(rates.onboarding).toEqual({ passed: 0, failed: 0, rate: null });
+  });
+
+  it("전형 8단계(자소서~2차 면접)는 모두 집계한다", () => {
+    const applications = [
+      makeApplication({
+        resume: { status: "PASSED" },
+        aiTest: { status: "PASSED" },
+        personality: { status: "PASSED" },
+        aptitude: { status: "PASSED" },
+        written: { status: "PASSED" },
+        codingTest: { status: "PASSED" },
+        interview1: { status: "PASSED" },
+        interview2: { status: "PASSED" },
+      }),
+    ];
+
+    const rates = calcPassRates(applications);
+
+    for (const key of [
+      "resume",
+      "aiTest",
+      "personality",
+      "aptitude",
+      "written",
+      "codingTest",
+      "interview1",
+      "interview2",
+    ] as const) {
+      expect(rates[key].rate).toBe(1);
+    }
+  });
+});
+
 describe("formatPassRate", () => {
   it("분모가 0이면 '-' 로 표시해 진행 전과 전원 탈락을 구분한다", () => {
     expect(formatPassRate(null)).toBe("-");
@@ -202,6 +256,19 @@ describe("getUpcomingSchedule", () => {
     });
 
     expect(getUpcomingSchedule(application, today)?.stageKey).toBe("written");
+  });
+
+  it("오늘 마감인 일정은 아직 남은 것으로 본다", () => {
+    const application = makeApplication({
+      resume: {
+        status: "PENDING",
+        schedule: { kind: "exact", at: "2026-03-01", hasTime: false } as Schedule,
+      },
+    });
+
+    // 날짜만 있는 일정의 마감은 그날 00:00 이라, 현재 시각과 비교하면 하루 종일 "지난 것"이 된다
+    const afternoon = new Date(2026, 2, 1, 15, 0);
+    expect(getUpcomingSchedule(application, afternoon)?.stageKey).toBe("resume");
   });
 
   it("이미 결과가 나온 단계는 대상이 아니다", () => {

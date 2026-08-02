@@ -10,7 +10,7 @@ import {
   writeBatch,
 } from "firebase/firestore";
 import { auth, db } from "@/shared/api/firebase";
-import { stripUndefined } from "@/shared/lib/firestore";
+import { stripUndefined, toUpdatePayload } from "@/shared/lib/firestore";
 import { STAGE_KEYS, createEmptyStages } from "../model/stage";
 import type { StageKey } from "../model/stage";
 import type {
@@ -111,9 +111,11 @@ export async function updateApplication(
   try {
     requireUser();
 
+    // 비운 값을 실제로 지우려면 undefined 를 걷어내지 말고 deleteField 로 보내야 한다
+    // (미지원 사유를 지웠는데 계속 미지원으로 분류되던 문제)
     await updateDoc(
       doc(db, COLLECTION, applicationId),
-      stripUndefined({ ...input, updatedAt: new Date() }),
+      toUpdatePayload({ ...input, updatedAt: new Date() }),
     );
   } catch (error) {
     console.error("지원 건 수정 실패:", error);
@@ -133,6 +135,8 @@ export async function updateApplicationStage(
   try {
     requireUser();
 
+    // 단계 칸은 통째로 교체되므로 memo 를 비우면 그대로 사라진다.
+    // 중첩 필드 경로에는 deleteField 를 섞을 수 없어 undefined 만 걷어낸다.
     await updateDoc(doc(db, COLLECTION, applicationId), {
       [`stages.${stageKey}`]: stripUndefined({ ...entry }),
       updatedAt: new Date(),

@@ -10,7 +10,7 @@ import {
   writeBatch,
 } from "firebase/firestore";
 import { auth, db } from "@/shared/api/firebase";
-import { stripUndefined } from "@/shared/lib/firestore";
+import { stripUndefined, toUpdatePayload } from "@/shared/lib/firestore";
 import type { Company, CompanyInput } from "../model/company.type";
 
 const COLLECTION = "companies";
@@ -84,9 +84,10 @@ export async function updateCompany(
   try {
     requireUser();
 
+    // 비운 값을 실제로 지우려면 undefined 를 걷어내지 말고 deleteField 로 보내야 한다
     await updateDoc(
       doc(db, COLLECTION, companyId),
-      stripUndefined({ ...input, updatedAt: new Date() }),
+      toUpdatePayload({ ...input, updatedAt: new Date() }),
     );
   } catch (error) {
     console.error("기업 수정 실패:", error);

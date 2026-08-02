@@ -1,5 +1,6 @@
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
 import { cn } from "@/shared/lib/cn";
+import { safeUrl } from "@/shared/lib/safeUrl";
 import {
   COMPANY_CATEGORY_CLASSES,
   COMPANY_CATEGORY_LABELS,
@@ -26,6 +27,9 @@ function ResearchSection({ title, body }: { title: string; body?: string }) {
 }
 
 export function CompanyResearchCard({ company, onEdit, onDelete }: CompanyResearchCardProps) {
+  // 공고 링크는 사용자가 올린 xlsx에서 온 값이라 허용 스킴만 링크로 만든다
+  const postingUrl = safeUrl(company.postingUrl);
+
   return (
     <li className="flex flex-col gap-3 p-4 bg-surface border border-border rounded-md">
       <header className="flex items-start justify-between gap-3">
@@ -47,9 +51,9 @@ export function CompanyResearchCard({ company, onEdit, onDelete }: CompanyResear
           <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5 text-xs text-textSecondary">
             {company.targetJob && <span>{company.targetJob}</span>}
             {company.location && <span>· {company.location}</span>}
-            {company.postingUrl && (
+            {postingUrl && (
               <a
-                href={company.postingUrl}
+                href={postingUrl}
                 target="_blank"
                 rel="noreferrer"
                 className="text-blue-600 underline"

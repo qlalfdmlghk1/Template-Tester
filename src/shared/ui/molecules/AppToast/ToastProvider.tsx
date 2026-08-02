@@ -9,9 +9,15 @@ const AUTO_DISMISS_MS = 3000;
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const nextIdRef = useRef(0);
-  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  // 배열에 쌓기만 하면 발화된 타이머가 세션 내내 남으므로 id 로 관리해 지운다
+  const timersRef = useRef(new Map<number, ReturnType<typeof setTimeout>>());
 
   const dismiss = useCallback((id: number) => {
+    const timer = timersRef.current.get(id);
+    if (timer) {
+      clearTimeout(timer);
+      timersRef.current.delete(id);
+    }
     setToasts((current) => current.filter((toast) => toast.id !== id));
   }, []);
 
@@ -21,19 +27,17 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       nextIdRef.current += 1;
 
       setToasts((current) => [...current, { id, type, message }]);
-
-      const timer = setTimeout(() => dismiss(id), AUTO_DISMISS_MS);
-      timersRef.current.push(timer);
+      timersRef.current.set(id, setTimeout(() => dismiss(id), AUTO_DISMISS_MS));
     },
     [dismiss],
   );
 
   // 언마운트 시 남은 타이머 정리
   useEffect(() => {
-    const timers = timersRef;
+    const timers = timersRef.current;
     return () => {
-      timers.current.forEach(clearTimeout);
-      timers.current = [];
+      timers.forEach(clearTimeout);
+      timers.clear();
     };
   }, []);
 
