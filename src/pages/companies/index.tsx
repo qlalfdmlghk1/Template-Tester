@@ -138,6 +138,9 @@ export default function Companies() {
       {page.importOpen && (
         <XlsxImportDialog
           rows={page.xlsxImport.rows}
+          researchRows={page.xlsxImport.researchRows}
+          includeResearch={page.xlsxImport.includeResearch}
+          onToggleResearch={page.xlsxImport.setIncludeResearch}
           selectedIds={page.xlsxImport.selectedIds}
           isReading={page.xlsxImport.isReading}
           isApplying={page.xlsxImport.isApplying}

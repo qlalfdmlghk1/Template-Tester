@@ -1,13 +1,15 @@
 import { useCallback, useState } from "react";
-import { createCompany } from "@/entities/company/api/company.api";
+import { createCompany, updateCompany } from "@/entities/company/api/company.api";
 import { createApplication } from "@/entities/job-application/api/application.api";
 import { readImportPreview } from "./xlsxImport";
 import type { Company } from "@/entities/company/model/company.type";
-import type { ImportPreviewRow } from "./xlsxImport";
+import type { ImportPreviewRow, ResearchPreviewRow } from "./xlsxImport";
 
 export interface ImportResult {
   created: number;
   failed: number;
+  /** 조사 노트를 채운 기업 수 */
+  research: number;
 }
 
 interface UseXlsxImportOptions {
@@ -25,6 +27,8 @@ interface UseXlsxImportOptions {
  */
 export function useXlsxImport({ companies, onDone }: UseXlsxImportOptions) {
   const [rows, setRows] = useState<ImportPreviewRow[]>([]);
+  const [researchRows, setResearchRows] = useState<ResearchPreviewRow[]>([]);
+  const [includeResearch, setIncludeResearch] = useState(true);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isReading, setIsReading] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
@@ -36,10 +40,12 @@ export function useXlsxImport({ companies, onDone }: UseXlsxImportOptions) {
     try {
       const preview = await readImportPreview(file);
       setRows(preview.rows);
+      setResearchRows(preview.researchRows);
       setSelectedIds(new Set(preview.rows.map((row) => row.id)));
     } catch (cause) {
       console.error("xlsx 읽기 실패:", cause);
       setRows([]);
+      setResearchRows([]);
       setSelectedIds(new Set());
       setError("파일을 읽지 못했습니다. xlsx 파일이 맞는지 확인해 주세요.");
     } finally {
@@ -69,6 +75,8 @@ export function useXlsxImport({ companies, onDone }: UseXlsxImportOptions) {
 
   const reset = useCallback(() => {
     setRows([]);
+    setResearchRows([]);
+    setIncludeResearch(true);
     setSelectedIds(new Set());
     setError(null);
   }, []);
@@ -79,6 +87,7 @@ export function useXlsxImport({ companies, onDone }: UseXlsxImportOptions) {
     setIsApplying(true);
     let created = 0;
     let failed = 0;
+    let research = 0;
 
     // 같은 기업이 여러 행에 나오므로 이름 → id 를 캐시해 중복 생성을 막는다
     const companyIdByName = new Map(companies.map((company) => [company.name, company.id]));
@@ -115,16 +124,45 @@ export function useXlsxImport({ companies, onDone }: UseXlsxImportOptions) {
           failed += 1;
         }
       }
+
+      // 조사 노트는 기업에 붙는다. 이미 있는 기업이면 노트만 채우고, 없으면 새로 만든다.
+      if (includeResearch) {
+        for (const note of researchRows) {
+          try {
+            const patch = {
+              targetJob: note.targetJob,
+              jobDescription: note.jobDescription,
+              requirements: note.requirements,
+            };
+
+            const existingId = companyIdByName.get(note.companyName);
+            if (existingId) {
+              await updateCompany(existingId, patch);
+            } else {
+              const id = await createCompany({ name: note.companyName, ...patch });
+              companyIdByName.set(note.companyName, id);
+            }
+
+            research += 1;
+          } catch (cause) {
+            console.error(`조사 노트 임포트 실패 (${note.companyName}):`, cause);
+            failed += 1;
+          }
+        }
+      }
     } finally {
       setIsApplying(false);
       await onDone();
     }
 
-    return { created, failed };
-  }, [rows, selectedIds, companies, onDone]);
+    return { created, failed, research };
+  }, [rows, selectedIds, companies, researchRows, includeResearch, onDone]);
 
   return {
     rows,
+    researchRows,
+    includeResearch,
+    setIncludeResearch,
     selectedIds,
     isReading,
     isApplying,

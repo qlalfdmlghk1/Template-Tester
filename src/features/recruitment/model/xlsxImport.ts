@@ -11,6 +11,8 @@ import { formatHalfId, getHalfOfDate, toHalfId } from "@/entities/job-applicatio
 import { getScheduleAnchor } from "@/entities/job-application/model/schedule";
 import {
   buildColumnMap,
+  buildResearchColumnMap,
+  isResearchSheet,
   mapFillToStatus,
   parseHeadcount,
   parseJobTag,
@@ -18,6 +20,7 @@ import {
 } from "./xlsxParse";
 import type { JobTag, StageKey } from "@/entities/job-application/model/stage";
 import type { StageEntry } from "@/entities/job-application/model/application.type";
+import type { ResearchColumn } from "./xlsxParse";
 
 export interface ImportPreviewRow {
   /** 시트명 + 행번호 조합 — 미리보기 선택 키 */
@@ -38,8 +41,20 @@ export interface ImportPreviewRow {
   warnings: string[];
 }
 
+/** "채용 정보" 시트 한 줄 — 지원 여부와 무관한 사전 조사 기록 */
+export interface ResearchPreviewRow {
+  id: string;
+  sheetName: string;
+  rowNumber: number;
+  companyName: string;
+  targetJob?: string;
+  jobDescription?: string;
+  requirements?: string;
+}
+
 export interface ImportPreview {
   rows: ImportPreviewRow[];
+  researchRows: ResearchPreviewRow[];
   sheetNames: string[];
 }
 
@@ -229,6 +244,7 @@ export async function readImportPreview(file: File): Promise<ImportPreview> {
   await workbook.xlsx.load(await file.arrayBuffer());
 
   const rows: ImportPreviewRow[] = [];
+  const researchRows: ResearchPreviewRow[] = [];
   const sheetNames: string[] = [];
 
   workbook.eachSheet((worksheet) => {
@@ -250,10 +266,39 @@ export async function readImportPreview(file: File): Promise<ImportPreview> {
     const headerIndex = findHeaderRow(rawRows);
     if (headerIndex === -1) return;
 
-    const columnMap = buildColumnMap(rawRows[headerIndex].map((cell) => cell?.text ?? null));
+    const headerTexts = rawRows[headerIndex].map((cell) => cell?.text ?? null);
 
-    // 전형 컬럼이 하나도 없으면 지원 현황 시트가 아니다.
-    // (기업 조사 메모용 "채용 정보" 시트도 기업명 헤더를 갖고 있어 여기서 걸러진다)
+    // "채용 정보" 시트는 전형 컬럼 없이 직무 설명·자격 요건을 담는다 — 조사 노트로 따로 모은다
+    if (isResearchSheet(headerTexts)) {
+      const researchMap = buildResearchColumnMap(headerTexts);
+      sheetNames.push(worksheet.name);
+
+      rawRows.slice(headerIndex + 1).forEach((cells, offset) => {
+        const values: Partial<Record<ResearchColumn, string>> = {};
+        for (const [index, key] of researchMap) {
+          values[key] = cells[index]?.text ?? "";
+        }
+
+        const companyName = (values.companyName ?? "").trim();
+        if (!companyName) return;
+
+        researchRows.push({
+          id: `${worksheet.name}:${headerIndex + 2 + offset}`,
+          sheetName: worksheet.name,
+          rowNumber: headerIndex + 2 + offset,
+          companyName,
+          targetJob: values.targetJob?.trim() || undefined,
+          jobDescription: values.jobDescription?.trim() || undefined,
+          requirements: values.requirements?.trim() || undefined,
+        });
+      });
+
+      return;
+    }
+
+    const columnMap = buildColumnMap(headerTexts);
+
+    // 전형 컬럼도 조사 컬럼도 없으면 다룰 수 있는 시트가 아니다
     if (columnMap.stages.size === 0) return;
 
     sheetNames.push(worksheet.name);
@@ -271,7 +316,7 @@ export async function readImportPreview(file: File): Promise<ImportPreview> {
     });
   });
 
-  return { rows, sheetNames };
+  return { rows, researchRows, sheetNames };
 }
 
 /** 전형 단계가 하나라도 채워졌는지 — 기업명만 있고 비어 있는 행을 걸러낼 때 쓴다 */

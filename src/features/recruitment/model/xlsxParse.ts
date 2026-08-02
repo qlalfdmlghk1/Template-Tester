@@ -89,6 +89,48 @@ export function buildColumnMap(headerCells: (string | null)[]): ColumnMap {
   return { stages, meta };
 }
 
+// ── 기업 조사 시트 ("채용 정보") ────────────────────────────────
+// 지원 현황 시트와 달리 전형 컬럼이 없고 긴 설명 텍스트를 담는다.
+// "직무" 헤더가 양쪽에 있지만 뜻이 다르다 — 지원 현황에서는 태그(IT·FE),
+// 조사 시트에서는 직무명("프론트엔드 개발자")이라 매핑을 따로 둔다.
+
+export type ResearchColumn =
+  | "companyName"
+  | "targetJob"
+  | "jobDescription"
+  | "requirements";
+
+const HEADER_RESEARCH: Record<string, ResearchColumn> = {
+  기업명: "companyName",
+  직무: "targetJob",
+  "직무 설명": "jobDescription",
+  "자격 요건": "requirements",
+};
+
+/** 조사 시트인지 — 설명·요건 컬럼이 있으면 그렇게 본다 */
+export function isResearchSheet(headerCells: (string | null)[]): boolean {
+  return headerCells.some((raw) => {
+    const header = raw?.trim();
+    return header === "직무 설명" || header === "자격 요건";
+  });
+}
+
+export function buildResearchColumnMap(
+  headerCells: (string | null)[],
+): Map<number, ResearchColumn> {
+  const map = new Map<number, ResearchColumn>();
+
+  headerCells.forEach((raw, index) => {
+    const header = raw?.trim();
+    if (!header) return;
+
+    const key = HEADER_RESEARCH[header];
+    if (key) map.set(index, key);
+  });
+
+  return map;
+}
+
 /** Excel serial number → Date. 1900 기준이며 존재하지 않는 1900-02-29 보정을 포함한다 */
 export function excelSerialToDate(serial: number): Date {
   const EPOCH_OFFSET_DAYS = 25569; // 1970-01-01 의 serial
