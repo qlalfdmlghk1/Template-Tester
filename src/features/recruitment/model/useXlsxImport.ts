@@ -141,12 +141,14 @@ export function useXlsxImport({ companies, onDone }: UseXlsxImportOptions) {
               requirements: note.requirements,
             });
 
-            if (Object.keys(patch).length === 0) continue;
-
             const existingId = companyIdByName.get(note.companyName);
+
             if (existingId) {
+              // 채울 값이 없으면 굳이 쓰지 않는다 (이미 있는 기업이라 새로 만들 것도 없다)
+              if (Object.keys(patch).length === 0) continue;
               await updateCompany(existingId, patch);
             } else {
+              // 이름만 적어둔 관심 기업도 등록해야 한다 — 조사 내용은 나중에 채울 수 있다
               const id = await createCompany({ name: note.companyName, ...patch });
               companyIdByName.set(note.companyName, id);
             }
