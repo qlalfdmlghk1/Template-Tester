@@ -14,8 +14,9 @@ export function safeUrl(raw: string | null | undefined): string | null {
   if (!value) return null;
 
   try {
-    // 상대 경로도 절대 주소로 해석해야 스킴 판정이 가능하다
-    const url = new URL(value, window.location.origin);
+    // base 없이 파싱한다. base 를 주면 "www.example.com" 같은 스킴 없는 값이
+    // 앱 도메인 하위 경로로 정규화돼, 외부 공고 대신 SPA 내부 라우트로 이동한다.
+    const url = new URL(value);
     return ALLOWED_PROTOCOLS.includes(url.protocol) ? url.href : null;
   } catch {
     return null;
