@@ -143,6 +143,16 @@ describe("calcStagePassRate", () => {
     expect(result.failed).toBe(0);
   });
 
+  it("불참·포기한 전형은 분모에서 뺀다 — 응시 자체를 하지 않았다", () => {
+    const applications = makeApplications("codingTest", ["PASSED", "SKIPPED", "FAILED"]);
+
+    const result = calcStagePassRate(applications, "codingTest");
+
+    expect(result.passed).toBe(1);
+    expect(result.failed).toBe(1);
+    expect(formatPassRate(result.rate)).toBe("50.00%");
+  });
+
   it("결과가 확정된 건이 없으면 rate 는 null 이다", () => {
     const applications = makeApplications("codingTest", ["PENDING", "SUBMITTED"]);
     expect(calcStagePassRate(applications, "codingTest").rate).toBeNull();

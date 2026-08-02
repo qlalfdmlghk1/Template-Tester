@@ -45,6 +45,7 @@ export const STAGE_STATUSES = [
   "PASSED",
   "SUBMITTED",
   "FAILED",
+  "SKIPPED",
   "NOT_APPLICABLE",
   "PENDING",
 ] as const;
@@ -55,6 +56,8 @@ export const STAGE_STATUS_LABELS: Record<StageStatus, string> = {
   PASSED: "합격",
   SUBMITTED: "응시·제출",
   FAILED: "불합격",
+  /** 응시 자격은 있었으나 가지 않은 전형. "해당 없음"과 달리 그 기업에 존재하는 단계다 */
+  SKIPPED: "불참·포기",
   NOT_APPLICABLE: "해당 없음",
   PENDING: "진행 전",
 };
@@ -83,6 +86,11 @@ export const STAGE_STATUS_DISPLAY: Record<
     icon: "x-mark",
     cellClass: "bg-red-50",
     iconClass: "text-red-600",
+  },
+  SKIPPED: {
+    icon: "arrow-uturn-right",
+    cellClass: "bg-yellow-100",
+    iconClass: "text-yellow-800",
   },
   NOT_APPLICABLE: {
     icon: "minus",

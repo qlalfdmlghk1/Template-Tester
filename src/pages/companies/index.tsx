@@ -10,6 +10,7 @@ import { RecruitmentCardList } from "@/features/recruitment/ui/RecruitmentCardLi
 import { ApplicationDetailPanel } from "@/features/recruitment/ui/ApplicationDetailPanel/ApplicationDetailPanel";
 import { ApplicationFormDialog } from "@/features/recruitment/ui/ApplicationFormDialog/ApplicationFormDialog";
 import { StageEditDialog } from "@/features/recruitment/ui/StageEditDialog/StageEditDialog";
+import { XlsxImportDialog } from "@/features/recruitment/ui/XlsxImportDialog/XlsxImportDialog";
 
 export default function Companies() {
   const page = useRecruitmentPage();
@@ -27,9 +28,19 @@ export default function Companies() {
             title="채용"
             description="지원 현황을 전형 단계별로 관리하고, 비채용기간에는 관심 기업을 미리 조사합니다."
           />
-          <AppButton size="sm" onClick={page.openCreateForm}>
-            지원 건 추가
-          </AppButton>
+          <div className="flex shrink-0 gap-2">
+            {page.totalCount > 0 && (
+              <AppButton variant="ghost" color="red" size="sm" onClick={page.openReset}>
+                전체 삭제
+              </AppButton>
+            )}
+            <AppButton variant="outline" color="gray" size="sm" onClick={page.openImport}>
+              시트 가져오기
+            </AppButton>
+            <AppButton size="sm" onClick={page.openCreateForm}>
+              지원 건 추가
+            </AppButton>
+          </div>
         </div>
 
         {page.error ? (
@@ -40,10 +51,10 @@ export default function Companies() {
           <AppFallback
             type="empty"
             title="아직 등록된 지원 건이 없습니다."
-            description="지원할 기업과 공고를 추가해 시작하세요."
-            buttonText="지원 건 추가"
+            description="관리하던 시트를 가져오거나, 지원 건을 직접 추가해 시작하세요."
+            buttonText="시트 가져오기"
             buttonIcon={null}
-            onAction={page.openCreateForm}
+            onAction={page.openImport}
           />
         ) : (
           <div className="flex flex-col gap-4">
@@ -123,6 +134,32 @@ export default function Companies() {
           onClose={page.closeStageEditor}
         />
       )}
+
+      {page.importOpen && (
+        <XlsxImportDialog
+          rows={page.xlsxImport.rows}
+          selectedIds={page.xlsxImport.selectedIds}
+          isReading={page.xlsxImport.isReading}
+          isApplying={page.xlsxImport.isApplying}
+          error={page.xlsxImport.error}
+          onPickFile={page.xlsxImport.readFile}
+          onToggleRow={page.xlsxImport.toggleRow}
+          onToggleAll={page.xlsxImport.toggleAll}
+          onApply={page.applyImport}
+          onClose={page.closeImport}
+        />
+      )}
+
+      <AppConfirmDialog
+        open={page.resetOpen}
+        danger
+        title="채용 데이터를 모두 삭제할까요?"
+        description={`지원 건 ${page.totalCount}건과 등록된 기업 ${page.companies.length}건이 전부 사라집니다.\n전형 진행 기록도 함께 지워지며 되돌릴 수 없습니다.`}
+        confirmText="전부 삭제"
+        loading={page.saving}
+        onConfirm={page.confirmResetAll}
+        onCancel={page.cancelReset}
+      />
 
       <AppConfirmDialog
         open={page.deleteTarget !== null}
