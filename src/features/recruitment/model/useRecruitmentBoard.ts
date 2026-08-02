@@ -141,6 +141,8 @@ export function useRecruitmentBoard() {
     error: applicationsError ?? companiesError,
     /** 필터 때문이 아니라 실제로 데이터가 없는 상태 */
     isEmpty: applications.length === 0,
+    /** 반기·필터와 무관한 전체 지원 건 수 */
+    totalCount: applications.length,
     addCompany,
     editCompany,
     addApplication,

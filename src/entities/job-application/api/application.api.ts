@@ -7,6 +7,7 @@ import {
   query,
   updateDoc,
   where,
+  writeBatch,
 } from "firebase/firestore";
 import { auth, db } from "@/shared/api/firebase";
 import { stripUndefined } from "@/shared/lib/firestore";
@@ -148,6 +149,31 @@ export async function deleteApplication(applicationId: string): Promise<void> {
     await deleteDoc(doc(db, COLLECTION, applicationId));
   } catch (error) {
     console.error("지원 건 삭제 실패:", error);
+    throw error;
+  }
+}
+
+/** 한 배치에 담을 수 있는 쓰기 상한 (Firestore 제한) */
+const BATCH_LIMIT = 500;
+
+/** 내 지원 건을 모두 삭제하고 삭제 건수를 돌려준다 */
+export async function deleteAllApplications(): Promise<number> {
+  try {
+    const user = requireUser();
+
+    const snapshot = await getDocs(
+      query(collection(db, COLLECTION), where("userId", "==", user.uid)),
+    );
+
+    for (let i = 0; i < snapshot.docs.length; i += BATCH_LIMIT) {
+      const batch = writeBatch(db);
+      snapshot.docs.slice(i, i + BATCH_LIMIT).forEach((snap) => batch.delete(snap.ref));
+      await batch.commit();
+    }
+
+    return snapshot.size;
+  } catch (error) {
+    console.error("지원 건 일괄 삭제 실패:", error);
     throw error;
   }
 }

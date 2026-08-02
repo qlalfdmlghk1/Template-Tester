@@ -1,7 +1,10 @@
 import { useCallback, useState } from "react";
 import { useToast } from "@/shared/ui/molecules/AppToast";
+import { deleteAllCompanies } from "@/entities/company/api/company.api";
+import { deleteAllApplications } from "@/entities/job-application/api/application.api";
 import { parseHalfId } from "@/entities/job-application/model/half";
 import { useRecruitmentBoard } from "./useRecruitmentBoard";
+import { useXlsxImport } from "./useXlsxImport";
 import type { StageKey } from "@/entities/job-application/model/stage";
 import type { StageEntry } from "@/entities/job-application/model/application.type";
 import type { JobApplication } from "@/entities/job-application/model/application.type";
@@ -25,9 +28,13 @@ export function useRecruitmentPage() {
   const [stageTarget, setStageTarget] = useState<StageTarget | null>(null);
   const [formTarget, setFormTarget] = useState<JobApplication | null | undefined>(undefined);
   const [deleteTarget, setDeleteTarget] = useState<JobApplication | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
+  const [resetOpen, setResetOpen] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const { rows, addCompany, addApplication, editApplication, removeApplication, editStage } = board;
+
+  const xlsxImport = useXlsxImport({ companies: board.companies, onDone: board.reload });
 
   const selectedRow = rows.find((row) => row.application.id === selectedApplicationId) ?? null;
 
@@ -120,6 +127,52 @@ export function useRecruitmentPage() {
     }
   }, [deleteTarget, removeApplication, selectedApplicationId, showToast]);
 
+  /**
+   * 채용 데이터를 통째로 지운다.
+   * 시트를 다시 가져올 때 기존 건 위에 중복으로 쌓이는 것을 막는 용도이며 되돌릴 수 없다.
+   */
+  const confirmResetAll = useCallback(async () => {
+    setSaving(true);
+    try {
+      // 지원 건을 먼저 지운다 — 기업이 먼저 사라지면 참조가 끊긴 지원 건이 남는다
+      const removedApplications = await deleteAllApplications();
+      const removedCompanies = await deleteAllCompanies();
+
+      setSelectedApplicationId(null);
+      setResetOpen(false);
+      await board.reload();
+
+      showToast(`지원 건 ${removedApplications}건, 기업 ${removedCompanies}건을 삭제했습니다.`);
+    } catch (error) {
+      console.error("채용 데이터 전체 삭제 실패:", error);
+      showToast("삭제하지 못했습니다. 잠시 후 다시 시도해 주세요.", "error");
+    } finally {
+      setSaving(false);
+    }
+  }, [board, showToast]);
+
+  const closeImport = useCallback(() => {
+    setImportOpen(false);
+    xlsxImport.reset();
+  }, [xlsxImport]);
+
+  const applyImport = useCallback(async () => {
+    const { created, failed } = await xlsxImport.applySelected();
+
+    if (created > 0) {
+      showToast(
+        failed > 0
+          ? `${created}건을 가져왔습니다. ${failed}건은 실패했습니다.`
+          : `${created}건을 가져왔습니다.`,
+        failed > 0 ? "error" : "success",
+      );
+      closeImport();
+      return;
+    }
+
+    showToast("가져오지 못했습니다. 잠시 후 다시 시도해 주세요.", "error");
+  }, [xlsxImport, showToast, closeImport]);
+
   return {
     ...board,
     selectedApplicationId,
@@ -144,6 +197,17 @@ export function useRecruitmentPage() {
     requestDelete: (application: JobApplication) => setDeleteTarget(application),
     cancelDelete: () => setDeleteTarget(null),
     confirmDelete,
+
+    resetOpen,
+    openReset: () => setResetOpen(true),
+    cancelReset: () => setResetOpen(false),
+    confirmResetAll,
+
+    importOpen,
+    openImport: () => setImportOpen(true),
+    closeImport,
+    applyImport,
+    xlsxImport,
 
     saving,
   };
