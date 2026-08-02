@@ -1,5 +1,10 @@
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
-import { hasResearch } from "@/entities/company/model/company.type";
+import { cn } from "@/shared/lib/cn";
+import {
+  COMPANY_CATEGORY_CLASSES,
+  COMPANY_CATEGORY_LABELS,
+  hasResearch,
+} from "@/entities/company/model/company.type";
 import type { Company } from "@/entities/company/model/company.type";
 
 interface CompanyResearchCardProps {
@@ -25,7 +30,20 @@ export function CompanyResearchCard({ company, onEdit, onDelete }: CompanyResear
     <li className="flex flex-col gap-3 p-4 bg-surface border border-border rounded-md">
       <header className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h3 className="m-0 text-base font-semibold text-text">{company.name}</h3>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <h3 className="m-0 text-base font-semibold text-text">{company.name}</h3>
+            {company.categories?.map((category) => (
+              <span
+                key={category}
+                className={cn(
+                  "px-1.5 py-0.5 rounded-sm text-xs font-medium",
+                  COMPANY_CATEGORY_CLASSES[category],
+                )}
+              >
+                {COMPANY_CATEGORY_LABELS[category]}
+              </span>
+            ))}
+          </div>
           <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5 text-xs text-textSecondary">
             {company.targetJob && <span>{company.targetJob}</span>}
             {company.location && <span>· {company.location}</span>}

@@ -2,6 +2,13 @@ import Navbar from "@/widgets/Navbar/Navbar";
 import PageHeader from "@/shared/ui/molecules/PageHeader/PageHeader";
 import AppFallback from "@/shared/ui/molecules/AppFallback/AppFallback";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
+import { AppSwitch } from "@/shared/ui/atoms/AppSwitch";
+import { cn } from "@/shared/lib/cn";
+import {
+  COMPANY_CATEGORIES,
+  COMPANY_CATEGORY_CLASSES,
+  COMPANY_CATEGORY_LABELS,
+} from "@/entities/company/model/company.type";
 import { AppConfirmDialog } from "@/shared/ui/molecules/AppConfirmDialog";
 import { useCompanyResearch } from "@/features/recruitment/model/useCompanyResearch";
 import { CompanyResearchCard } from "@/features/recruitment/ui/CompanyResearchCard/CompanyResearchCard";
@@ -53,14 +60,44 @@ export default function CompanyResearch() {
                 className="flex-1 min-w-[200px] max-w-[360px] px-3 py-1.5 text-sm bg-surface text-text border border-border rounded-sm"
               />
 
-              <label className="flex items-center gap-1.5 text-sm text-text cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={page.onlyResearched}
-                  onChange={(event) => page.setOnlyResearched(event.target.checked)}
-                />
-                조사 완료만
-              </label>
+              <div className="flex flex-wrap gap-1.5">
+                {COMPANY_CATEGORIES.map((category) => {
+                  const selected = page.selectedCategories.includes(category);
+
+                  return (
+                    <button
+                      key={category}
+                      type="button"
+                      aria-pressed={selected}
+                      onClick={() =>
+                        page.setSelectedCategories(
+                          selected
+                            ? page.selectedCategories.filter((item) => item !== category)
+                            : [...page.selectedCategories, category],
+                        )
+                      }
+                      className={cn(
+                        "px-2.5 py-1 text-xs font-medium rounded-sm border transition-colors",
+                        selected
+                          ? cn(
+                              COMPANY_CATEGORY_CLASSES[category],
+                              "border-blue-500 ring-1 ring-blue-500",
+                            )
+                          : "bg-surface text-textSecondary border-border hover:border-gray-400",
+                      )}
+                    >
+                      {COMPANY_CATEGORY_LABELS[category]}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <AppSwitch
+                checked={page.onlyResearched}
+                onChange={page.setOnlyResearched}
+                label="조사 완료만"
+                size="sm"
+              />
 
               <span className="text-sm text-textSecondary">
                 전체 {page.totalCount}건 · 조사 완료 {page.researchedCount}건
@@ -103,12 +140,30 @@ export default function CompanyResearch() {
         open={page.deleteTarget !== null}
         danger
         title="기업을 삭제할까요?"
-        description={`"${page.deleteTarget?.name ?? ""}" 의 조사 내용이 사라집니다.\n이 기업으로 등록한 지원 건은 남지만 기업 정보가 끊깁니다.`}
+        description={`"${page.deleteTarget?.name ?? ""}" 의 조사 내용이 사라집니다.`}
         confirmText="삭제"
         loading={page.saving}
         onConfirm={page.confirmDelete}
         onCancel={page.cancelDelete}
-      />
+      >
+        {page.deleteTargetApplicationCount > 0 && (
+          <label className="flex items-start gap-2 px-3 py-2 bg-gray-100 rounded-sm cursor-pointer">
+            <input
+              type="checkbox"
+              checked={page.cascadeDelete}
+              onChange={(event) => page.setCascadeDelete(event.target.checked)}
+              className="mt-0.5"
+            />
+            <span className="text-sm text-text">
+              이 기업의 지원 건 {page.deleteTargetApplicationCount}건도 함께 삭제
+              <span className="block text-xs text-textSecondary">
+                체크하지 않으면 지원 건은 남지만 기업 정보가 끊겨 「(삭제된 기업)」으로
+                표시됩니다.
+              </span>
+            </span>
+          </label>
+        )}
+      </AppConfirmDialog>
     </div>
   );
 }

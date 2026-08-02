@@ -1,7 +1,16 @@
 import { useState } from "react";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
 import { cn } from "@/shared/lib/cn";
-import type { Company, CompanyInput } from "@/entities/company/model/company.type";
+import {
+  COMPANY_CATEGORIES,
+  COMPANY_CATEGORY_CLASSES,
+  COMPANY_CATEGORY_LABELS,
+} from "@/entities/company/model/company.type";
+import type {
+  Company,
+  CompanyCategory,
+  CompanyInput,
+} from "@/entities/company/model/company.type";
 
 interface CompanyResearchDialogProps {
   /** 수정 대상. null이면 신규 등록 */
@@ -21,6 +30,7 @@ export function CompanyResearchDialog({
   onClose,
 }: CompanyResearchDialogProps) {
   const [name, setName] = useState(company?.name ?? "");
+  const [categories, setCategories] = useState<CompanyCategory[]>(company?.categories ?? []);
   const [targetJob, setTargetJob] = useState(company?.targetJob ?? "");
   const [postingUrl, setPostingUrl] = useState(company?.postingUrl ?? "");
   const [location, setLocation] = useState(company?.location ?? "");
@@ -30,12 +40,21 @@ export function CompanyResearchDialog({
 
   const canSubmit = name.trim().length > 0;
 
+  const toggleCategory = (category: CompanyCategory) => {
+    setCategories((current) =>
+      current.includes(category)
+        ? current.filter((item) => item !== category)
+        : [...current, category],
+    );
+  };
+
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     if (!canSubmit) return;
 
     onSubmit({
       name: name.trim(),
+      categories: categories.length > 0 ? categories : undefined,
       targetJob: targetJob.trim() || undefined,
       postingUrl: postingUrl.trim() || undefined,
       location: location.trim() || undefined,
@@ -114,6 +133,34 @@ export function CompanyResearchDialog({
             />
           </div>
         </div>
+
+        <fieldset className="m-0 p-0 border-0">
+          <legend className="mb-1 text-sm font-medium text-text">
+            분류 <span className="font-normal text-textSecondary">(여러 개 선택 가능)</span>
+          </legend>
+          <div className="flex flex-wrap gap-1.5">
+            {COMPANY_CATEGORIES.map((category) => {
+              const selected = categories.includes(category);
+
+              return (
+                <button
+                  key={category}
+                  type="button"
+                  onClick={() => toggleCategory(category)}
+                  aria-pressed={selected}
+                  className={cn(
+                    "px-3 py-1.5 text-xs font-medium rounded-sm border transition-colors",
+                    selected
+                      ? cn(COMPANY_CATEGORY_CLASSES[category], "border-blue-500 ring-1 ring-blue-500")
+                      : "bg-surface text-textSecondary border-border hover:border-gray-400",
+                  )}
+                >
+                  {COMPANY_CATEGORY_LABELS[category]}
+                </button>
+              );
+            })}
+          </div>
+        </fieldset>
 
         <div>
           <label htmlFor="research-desc" className="block mb-1 text-sm font-medium text-text">

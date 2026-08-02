@@ -10,6 +10,10 @@ import {
   STAGE_STATUS_LABELS,
 } from "@/entities/job-application/model/stage";
 import { APPLICATION_STATUS_LABELS } from "@/entities/job-application/model/application.type";
+import {
+  COMPANY_CATEGORY_CLASSES,
+  COMPANY_CATEGORY_LABELS,
+} from "@/entities/company/model/company.type";
 import type { StageKey } from "@/entities/job-application/model/stage";
 import type { RecruitmentRow } from "../../model/useRecruitmentBoard";
 
@@ -48,6 +52,21 @@ export function ApplicationDetailPanel({
               {company?.name ?? "(삭제된 기업)"}
             </h2>
           </div>
+          {company?.categories && company.categories.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {company.categories.map((category) => (
+                <span
+                  key={category}
+                  className={cn(
+                    "px-1.5 py-0.5 rounded-sm text-xs font-medium",
+                    COMPANY_CATEGORY_CLASSES[category],
+                  )}
+                >
+                  {COMPANY_CATEGORY_LABELS[category]}
+                </span>
+              ))}
+            </div>
+          )}
           {application.postingTitle && (
             <p className="m-0 text-sm text-textSecondary">{application.postingTitle}</p>
           )}

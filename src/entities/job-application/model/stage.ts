@@ -117,7 +117,7 @@ export function createEmptyStages(): Record<
 }
 
 /** 직무 태그 — 고정 세트 */
-export const JOB_TAGS = ["IT", "SW", "FE", "PM"] as const;
+export const JOB_TAGS = ["IT", "SW", "FE", "PM", "DT", "기획"] as const;
 
 export type JobTag = (typeof JOB_TAGS)[number];
 
@@ -126,4 +126,6 @@ export const JOB_TAG_CLASSES: Record<JobTag, string> = {
   SW: "bg-purple-100 text-purple-800",
   FE: "bg-yellow-100 text-yellow-800",
   PM: "bg-blue-100 text-blue-800",
+  DT: "bg-red-100 text-red-800",
+  기획: "bg-gray-200 text-gray-700",
 };
