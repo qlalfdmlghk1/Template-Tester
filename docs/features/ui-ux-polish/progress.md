@@ -105,3 +105,29 @@
 **다음 작업**
 
 - 서비스명 확정 후 반영
+
+---
+
+### Commit — 2026-08-04
+
+- Message: `Fix:#78 모바일 검증 스토리가 실제 모바일 폭으로 뜨지 않던 문제 수정`
+- Issue: `#78`
+- Jira: 미사용
+
+**변경 요약**
+
+- `ActionsOnMobile` 스토리의 뷰포트 지정을 `parameters.viewport.defaultViewport` → `globals.viewport.value`로 교체
+- 스토리 액션의 raw `<button>`을 실제 `AppButton`으로 교체
+
+**결정 로그**
+
+- `/review-converge` Round 1에서 시니어·QA 페르소나가 독립적으로 지적한 건. Storybook 9부터 뷰포트 선택값이
+  파라미터에서 globals로 옮겨져 `defaultViewport`가 무시된다 (storybook 10.2.7의 `ViewportParameters`는
+  `disable`·`options`만 받음). 추가한 회귀 가드가 데스크톱 폭으로 떠서 목적을 달성하지 못하는 상태였다.
+- `preview.ts`에 viewport options를 등록하지 않아 명명 키(`mobile1`)가 없으므로, 등록 없이 동작하는
+  `{width}-{height}` 형식(`375-812`)을 사용했다.
+- 줄바꿈 지점이 실제 화면과 같아야 가드로서 의미가 있어 버튼도 페이지와 동일한 `AppButton`으로 맞췄다.
+
+**다음 작업**
+
+- 서비스명 확정 후 반영
