@@ -30,6 +30,12 @@ function toArray(value: SelectValue | SelectValue[]): string[] {
   return (Array.isArray(value) ? value : [value]).map(String);
 }
 
+/**
+ * 넓은 폭에서 셀렉트 4개가 갖는 공통 너비.
+ * 좁은 폭에서는 부모의 2열 그리드가 너비를 정하므로 여기서는 sm 이상만 지정한다.
+ */
+const FILTER_WIDTH = "sm:w-40";
+
 /** 반기 선택 + 직무·상태 필터 */
 export function RecruitmentToolbar({
   halfIds,
@@ -55,10 +61,14 @@ export function RecruitmentToolbar({
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    // 좁은 폭에서는 2열 그리드로 셀렉트 너비를 균등하게 맞춘다.
+    // 고정 px 너비(160/150)를 주면 줄바꿈됐을 때 열 오른쪽 끝이 어긋나므로,
+    // 너비는 레이아웃이 정하고 AppSelect는 fullWidth로 칸을 채우게 한다.
+    <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
       <AppSelect
         size="sm"
-        width="160px"
+        fullWidth
+        className={FILTER_WIDTH}
         options={halfIds.map((id) => ({ value: id, label: formatHalfId(id) }))}
         value={activeHalfId ?? undefined}
         onChange={(value) => onSelectHalf(String(value))}
@@ -67,7 +77,8 @@ export function RecruitmentToolbar({
 
       <AppSelect
         size="sm"
-        width="150px"
+        fullWidth
+        className={FILTER_WIDTH}
         multiple
         options={JOB_TAGS.map((tag) => ({ value: tag, label: tag }))}
         value={filter.jobTags}
@@ -77,7 +88,8 @@ export function RecruitmentToolbar({
 
       <AppSelect
         size="sm"
-        width="150px"
+        fullWidth
+        className={FILTER_WIDTH}
         multiple
         options={APPLICATION_STATUSES.map((status) => ({
           value: status,
@@ -90,7 +102,8 @@ export function RecruitmentToolbar({
 
       <AppSelect
         size="sm"
-        width="150px"
+        fullWidth
+        className={FILTER_WIDTH}
         multiple
         options={COMPANY_CATEGORIES.map((category) => ({
           value: category,
@@ -102,7 +115,14 @@ export function RecruitmentToolbar({
       />
 
       {hasFilter && (
-        <AppButton variant="ghost" color="gray" size="sm" onClick={onResetFilter}>
+        // 그리드에서는 한 줄을 통째로 쓰되 버튼이 늘어나지 않게 시작점에 붙인다
+        <AppButton
+          variant="ghost"
+          color="gray"
+          size="sm"
+          className="col-span-2 justify-self-start sm:col-span-1"
+          onClick={onResetFilter}
+        >
           필터 초기화
         </AppButton>
       )}

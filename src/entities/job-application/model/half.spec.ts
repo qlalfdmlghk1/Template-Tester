@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
+  ALL_HALF_ID,
   UNASSIGNED_HALF_ID,
   collectHalfIds,
   formatHalfId,
@@ -59,6 +60,7 @@ describe("toHalfId / parseHalfId / formatHalfId", () => {
     expect(formatHalfId("2026-H1")).toBe("2026 상반기");
     expect(formatHalfId("2026-H2")).toBe("2026 하반기");
     expect(formatHalfId(UNASSIGNED_HALF_ID)).toBe("미분류");
+    expect(formatHalfId(ALL_HALF_ID)).toBe("전체");
   });
 });
 
@@ -88,20 +90,32 @@ describe("getApplicationHalfId", () => {
 });
 
 describe("collectHalfIds", () => {
-  it("최신 반기가 앞에 오고 미분류는 맨 뒤에 붙는다", () => {
+  it("전체가 맨 앞에 오고 그 뒤로 최신 반기 순으로 붙는다", () => {
     const applications = [
       makeApplication({ kind: "exact", at: "2026-03-11", hasTime: false }, "a"),
       makeApplication({ kind: "exact", at: "2026-08-09", hasTime: false }, "b"),
       makeApplication({ kind: "exact", at: "2025-09-01", hasTime: false }, "c"),
-      makeApplication(null, "d"),
     ];
 
     expect(collectHalfIds(applications)).toEqual([
+      ALL_HALF_ID,
       "2026-H2",
       "2026-H1",
       "2025-H2",
-      UNASSIGNED_HALF_ID,
     ]);
+  });
+
+  it("미분류는 선택지로 노출하지 않는다 — 전체에서 함께 보인다", () => {
+    const applications = [
+      makeApplication({ kind: "exact", at: "2026-03-11", hasTime: false }, "a"),
+      makeApplication(null, "b"),
+    ];
+
+    expect(collectHalfIds(applications)).toEqual([ALL_HALF_ID, "2026-H1"]);
+  });
+
+  it("지원 건이 없어도 전체 선택지는 남는다", () => {
+    expect(collectHalfIds([])).toEqual([ALL_HALF_ID]);
   });
 
   it("중복 반기는 하나로 묶인다", () => {
@@ -110,6 +124,6 @@ describe("collectHalfIds", () => {
       makeApplication({ kind: "exact", at: "2026-04-01", hasTime: false }, "b"),
     ];
 
-    expect(collectHalfIds(applications)).toEqual(["2026-H1"]);
+    expect(collectHalfIds(applications)).toEqual([ALL_HALF_ID, "2026-H1"]);
   });
 });

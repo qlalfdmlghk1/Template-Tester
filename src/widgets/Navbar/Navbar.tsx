@@ -55,10 +55,11 @@ export default function Navbar() {
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
         <div className="flex w-full justify-between items-center gap-6">
           <div onClick={() => navigate("/")} className="flex items-center gap-2 shrink-0 cursor-pointer">
+            {/* 모바일은 가로 공간이 빠듯해 로고 아이콘을 숨기고 서비스명 텍스트만 남긴다 */}
             <img
               src="/template-tester.svg"
               alt="템플릿 테스터 로고"
-              className="w-7 h-7 sm:w-8 sm:h-8 shrink-0"
+              className="hidden sm:block w-8 h-8 shrink-0"
               style={{ filter: isDark ? "invert(1)" : undefined }}
             />
             <span className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-primary leading-tight">
