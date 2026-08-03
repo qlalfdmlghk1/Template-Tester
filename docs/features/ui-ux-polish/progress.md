@@ -20,6 +20,8 @@
 - [x] 지원현황 반기 필터 `미분류` → `전체`
 - [x] 단계별 합격률에 직무·기업분류 필터 반영
 - [x] 모바일 페이지 헤더 레이아웃 수정
+- [x] 모바일 필터 툴바 정렬·너비 수정
+- [x] 모바일에서 헤더 로고 아이콘 숨김
 
 ### 🚧 진행 중
 
@@ -101,6 +103,32 @@
 - tsc·ESLint·vitest 384건·`npm run build` 통과
 - **시각 확인 미완** — 샌드박스가 포트 바인딩을 막아(`listen EFAULT`) Storybook·dev 서버를 띄우지 못했다.
   실제 모바일 렌더는 로컬에서 `npm run storybook`(`ActionsOnMobile` 스토리) 또는 `npm run dev`로 확인 필요.
+
+**다음 작업**
+
+- 서비스명 확정 후 반영
+
+---
+
+### Commit — 2026-08-04 (모바일 후속 2건)
+
+- Message: `Fix:#78 모바일에서 필터 툴바 정렬과 헤더 아이콘 정리`
+- Issue: `#78`
+- Jira: 미사용
+
+**변경 요약**
+
+- `RecruitmentToolbar` — 셀렉트 4개의 고정 px 너비(160/150/150/150) 제거. 좁은 폭은 2열 그리드 + `fullWidth`,
+  `sm` 이상은 `w-40` 공통 너비. `필터 초기화` 버튼은 그리드에서 `col-span-2 justify-self-start`
+- `Navbar` — 로고 `<img>`에 `hidden sm:block` 추가
+
+**결정 로그**
+
+- `AppSelect`의 `width` prop은 인라인 스타일로 들어가 반응형 분기가 불가능하다. 그래서 `width` 대신
+  `fullWidth` + 부모 레이아웃이 너비를 정하는 구조로 바꿨다. `AppSelect` 자체는 수정하지 않았다.
+- 넓은 폭에서도 160/150 혼재가 정렬이 어긋나는 원인이라 4개를 `w-40`(160px)으로 통일했다.
+  Tailwind 기본 numeric scale이 살아 있어 arbitrary value 없이 토큰으로 처리된다.
+- 모바일 로고 숨김은 사용자 요청. 홈 이동은 서비스명 텍스트가 같은 클릭 영역 안에 있어 유지된다.
 
 **다음 작업**
 
