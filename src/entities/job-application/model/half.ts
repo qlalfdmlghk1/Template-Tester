@@ -22,6 +22,13 @@ export type HalfId = string;
 /** 자소서 일정이 없어 반기를 판정할 수 없는 지원 건을 담는 그룹 */
 export const UNASSIGNED_HALF_ID: HalfId = "unassigned";
 
+/**
+ * 반기를 가리지 않고 모든 지원 건을 보는 선택지.
+ * 반기 판정 결과가 아니라 화면의 선택값으로만 쓰이며,
+ * 자소서 일정이 없어 미분류로 떨어진 건도 여기에 포함된다.
+ */
+export const ALL_HALF_ID: HalfId = "all";
+
 export function toHalfId(half: Half): HalfId {
   return `${half.year}-H${half.half}`;
 }
@@ -33,6 +40,7 @@ export function parseHalfId(id: HalfId): Half | null {
 }
 
 export function formatHalfId(id: HalfId): string {
+  if (id === ALL_HALF_ID) return "전체";
   if (id === UNASSIGNED_HALF_ID) return "미분류";
   const half = parseHalfId(id);
   if (!half) return id;
@@ -58,14 +66,17 @@ export function getApplicationHalfId(application: JobApplication): HalfId {
 
 /**
  * 목록에 존재하는 반기 선택지.
- * 최신 반기가 앞에 오고, 미분류가 있으면 맨 뒤에 붙는다.
+ * "전체"가 맨 앞에 오고 그 뒤로 최신 반기 순으로 붙는다.
+ *
+ * 미분류는 선택지로 노출하지 않는다 — 자소서 일정이 비어 있다는 사실은
+ * 사용자가 고를 만한 구분이 아니고, 해당 건은 "전체"에서 함께 보인다.
  */
 export function collectHalfIds(applications: JobApplication[]): HalfId[] {
   const ids = new Set(applications.map(getApplicationHalfId));
-  const hasUnassigned = ids.delete(UNASSIGNED_HALF_ID);
+  ids.delete(UNASSIGNED_HALF_ID);
 
   const sorted = [...ids].sort((a, b) => b.localeCompare(a));
-  return hasUnassigned ? [...sorted, UNASSIGNED_HALF_ID] : sorted;
+  return [ALL_HALF_ID, ...sorted];
 }
 
 /** 오늘 날짜가 속한 반기 */
