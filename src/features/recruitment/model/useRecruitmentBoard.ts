@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 import { useCompanies } from "@/entities/company/model/useCompanies";
 import { useApplications } from "@/entities/job-application/model/useApplications";
 import {
+  ALL_HALF_ID,
   collectHalfIds,
   getApplicationHalfId,
   getCurrentHalfId,
@@ -72,12 +73,13 @@ export function useRecruitmentBoard() {
 
   const halfIds = useMemo(() => collectHalfIds(applications), [applications]);
 
-  // 선택값이 없거나 더 이상 존재하지 않는 반기를 가리키면 현재 반기로, 그마저 없으면 첫 반기로 떨어진다.
+  // 선택값이 없거나 더 이상 존재하지 않는 반기를 가리키면 현재 반기로, 그마저 없으면 최신 반기로 떨어진다.
+  // "전체"는 halfIds 맨 앞에 있지만 최후 폴백으로만 쓴다 — 실제 반기가 있으면 그쪽을 먼저 보여준다.
   const activeHalfId = useMemo(() => {
     if (selectedHalfId && halfIds.includes(selectedHalfId)) return selectedHalfId;
     const currentHalfId = getCurrentHalfId();
     if (halfIds.includes(currentHalfId)) return currentHalfId;
-    return halfIds[0] ?? null;
+    return halfIds.find((id) => id !== ALL_HALF_ID) ?? ALL_HALF_ID;
   }, [selectedHalfId, halfIds]);
 
   const companyMap = useMemo(
@@ -85,12 +87,15 @@ export function useRecruitmentBoard() {
     [companies],
   );
 
-  /** 선택된 반기에 속한 지원 건 — 합격률은 필터와 무관하게 이 집합으로 낸다 */
+  /**
+   * 선택된 반기에 속한 지원 건 — 합격률은 필터와 무관하게 이 집합으로 낸다.
+   * "전체"를 고르면 반기를 가리지 않고 미분류 건까지 모두 포함한다.
+   */
   const halfApplications = useMemo(
     () =>
-      activeHalfId
-        ? applications.filter((application) => getApplicationHalfId(application) === activeHalfId)
-        : [],
+      activeHalfId === ALL_HALF_ID
+        ? applications
+        : applications.filter((application) => getApplicationHalfId(application) === activeHalfId),
     [applications, activeHalfId],
   );
 
