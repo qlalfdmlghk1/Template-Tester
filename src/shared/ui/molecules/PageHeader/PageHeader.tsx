@@ -9,7 +9,8 @@ interface PageHeaderProps {
 export default function PageHeader({ title, description, actions }: PageHeaderProps) {
   return (
     <div className="mb-6">
-      <div className="flex items-center gap-4 mb-4 min-h-[40px] sm:min-h-[48px]">
+      {/* 좁은 폭에서 actions가 제목 옆에 억지로 눌리지 않고 다음 줄로 넘어가게 한다 */}
+      <div className="flex flex-wrap items-center gap-4 mb-4 min-h-[40px] sm:min-h-[48px]">
         <h2 className="hidden sm:block text-lg sm:text-xl md:text-2xl font-bold text-text m-0">{title}</h2>
         {actions}
       </div>

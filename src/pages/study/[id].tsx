@@ -57,12 +57,20 @@ export default function StudyPage() {
       <Navbar />
 
       <div className="max-w-[1400px] mx-auto px-4 py-4 sm:px-6 sm:py-6">
-        <div className="flex items-center justify-between mb-4">
-          <PageHeader title="코드 학습" description="등록한 코드를 보면서 학습할 수 있습니다." />
-          <AppButton variant="ghost" size="sm" onClick={() => navigate("/templates/my")}>
-            목록으로
-          </AppButton>
-        </div>
+        <PageHeader
+          title="코드 학습"
+          description="등록한 코드를 보면서 학습할 수 있습니다."
+          actions={
+            <AppButton
+              variant="ghost"
+              size="sm"
+              className="ml-auto shrink-0"
+              onClick={() => navigate("/templates/my")}
+            >
+              목록으로
+            </AppButton>
+          }
+        />
 
         {/* 템플릿 정보 */}
         <div className="bg-surface p-4 sm:p-5 md:p-6 rounded-lg border border-border mb-6">

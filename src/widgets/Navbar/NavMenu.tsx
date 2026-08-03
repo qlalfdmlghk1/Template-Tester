@@ -178,7 +178,13 @@ export default function NavMenu() {
         >
           <div className="flex gap-1 sm:gap-2 py-3" style={{ paddingLeft: columnLayout?.left }}>
             {navMenu.map((entry, index) => (
-              <div key={entry.id} className="flex flex-col gap-0.5" style={{ width: columnLayout?.widths[index] }}>
+              // 트리거 너비는 컬럼의 하한일 뿐이다. width 로 고정하면 트리거 라벨이 짧은 그룹
+              // (예: "채용")의 컬럼이 항목 라벨("지원 현황")보다 좁아져 글자가 줄바꿈된다.
+              <div
+                key={entry.id}
+                className="flex flex-col gap-0.5"
+                style={{ minWidth: columnLayout?.widths[index] }}
+              >
                 {getEntryItems(entry).map((item) => {
                   const isItemActive = isPathActive(location.pathname, item.path, item.exact);
 
@@ -189,7 +195,7 @@ export default function NavMenu() {
                       role="menuitem"
                       onClick={() => handleNavigate(item.path)}
                       className={cn(
-                        "w-full px-2 sm:px-3 md:px-4 py-2 text-left text-xs sm:text-sm rounded-md transition-colors hover:bg-blue-50",
+                        "w-full px-2 sm:px-3 md:px-4 py-2 text-left text-xs sm:text-sm rounded-md transition-colors hover:bg-blue-50 whitespace-nowrap",
                         // 준비 중인 메뉴는 별도 라벨 없이 색만 연하게 두어 구분한다
                         isItemActive ? "text-primary font-medium" : item.comingSoon ? "text-gray-400" : "text-text",
                       )}

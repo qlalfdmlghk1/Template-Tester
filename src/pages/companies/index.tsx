@@ -23,25 +23,27 @@ export default function Companies() {
       <Navbar />
 
       <div className="max-w-[1400px] mx-auto px-6 py-6">
-        <div className="flex items-start justify-between gap-4">
-          <PageHeader
-            title="채용"
-            description="지원 현황을 전형 단계별로 관리하고, 비채용기간에는 관심 기업을 미리 조사합니다."
-          />
-          <div className="flex shrink-0 gap-2">
-            {page.totalCount > 0 && (
-              <AppButton variant="ghost" color="red" size="sm" onClick={page.openReset}>
-                전체 삭제
+        <PageHeader
+          title="채용"
+          description="지원 현황을 전형 단계별로 관리하고, 비채용기간에는 관심 기업을 미리 조사합니다."
+          actions={
+            // ml-auto 로 넓은 폭에서는 종전처럼 오른쪽 끝에 붙이고,
+            // 좁은 폭에서는 flex-wrap 으로 버튼이 줄을 넘긴다.
+            <div className="flex flex-wrap gap-2 ml-auto">
+              {page.totalCount > 0 && (
+                <AppButton variant="ghost" color="red" size="sm" onClick={page.openReset}>
+                  전체 삭제
+                </AppButton>
+              )}
+              <AppButton variant="outline" color="gray" size="sm" onClick={page.openImport}>
+                시트 가져오기
               </AppButton>
-            )}
-            <AppButton variant="outline" color="gray" size="sm" onClick={page.openImport}>
-              시트 가져오기
-            </AppButton>
-            <AppButton size="sm" onClick={page.openCreateForm}>
-              지원 건 추가
-            </AppButton>
-          </div>
-        </div>
+              <AppButton size="sm" onClick={page.openCreateForm}>
+                지원 건 추가
+              </AppButton>
+            </div>
+          }
+        />
 
         {page.error ? (
           <AppFallback type="error" onAction={page.reload} />
