@@ -19,6 +19,7 @@
 - [x] "채용" 탭 하위 메뉴 줄넘어감 현상 개선
 - [x] 지원현황 반기 필터 `미분류` → `전체`
 - [x] 단계별 합격률에 직무·기업분류 필터 반영
+- [x] 모바일 페이지 헤더 레이아웃 수정
 
 ### 🚧 진행 중
 
@@ -34,7 +35,13 @@
 
 ### 🐛 트러블슈팅
 
-<!-- /note troubleshoot 으로 추가 -->
+**[2026-08-03] 모바일에서 페이지 헤더 설명 문구가 세로 기둥으로 찌그러짐**
+
+- 증상: 360px 폭에서 `/companies` 설명 문구가 5~6글자마다 줄바꿈되고 오른쪽 공간은 비어 있음. 제목("채용")은 아예 안 보임.
+- 원인 1: 페이지가 `PageHeader`를 형제 요소와 나란히 두고(`flex ... justify-between`) 버튼 묶음에 `shrink-0`을 걸어, 버튼이 폭을 전부 가져가고 `PageHeader`만 눌렸다.
+- 원인 2: 제목이 안 보인 건 `PageHeader`의 `<h2>`가 `hidden sm:block`이라 모바일에서 숨겨지기 때문. 의도된 동작이라 그대로 뒀다.
+- 조치: 쓰이지 않던 `PageHeader`의 `actions` prop을 사용하도록 바꾸고, 제목 행에 `flex-wrap`을 더해 좁은 폭에서 액션이 다음 줄로 넘어가게 했다. 넓은 폭 정렬은 액션 래퍼의 `ml-auto`로 종전과 동일하게 유지.
+- 같은 패턴이던 `companies/research.tsx`, `study/[id].tsx`도 함께 정리.
 
 ### ⏭️ 남은 작업
 
@@ -67,4 +74,34 @@
 **다음 작업**
 
 - 모바일 레이아웃 점검 (사용자 스크린샷 기준)
+- 서비스명 확정 후 반영
+
+---
+
+### Commit — 2026-08-03
+
+- Message: `Fix:#78 모바일에서 페이지 헤더가 찌그러지던 문제 수정`
+- Issue: `#78`
+- Jira: 미사용
+
+**변경 요약**
+
+- `PageHeader` 제목 행에 `flex-wrap` 추가 — 좁은 폭에서 액션이 다음 줄로 넘어간다
+- `companies/index.tsx`·`companies/research.tsx`·`study/[id].tsx`가 형제 요소 대신 `actions` prop을 쓰도록 변경
+- `PageHeader.stories.tsx`에 모바일 뷰포트 스토리(`ActionsOnMobile`) 추가
+
+**결정 로그**
+
+- 페이지마다 `flex-col`로 쌓는 대신 이미 있던 `actions` prop을 쓰기로 했다. 제목이 모바일에서 `hidden`이라
+  액션을 제목 행에 넣으면 빈 행이 생기지 않고, 세 페이지가 같은 방식으로 정리된다.
+- 넓은 폭 정렬은 액션 래퍼의 `ml-auto`로 종전 `justify-between`과 동일하게 유지 — 데스크톱 회귀 없음
+
+**검증**
+
+- tsc·ESLint·vitest 384건·`npm run build` 통과
+- **시각 확인 미완** — 샌드박스가 포트 바인딩을 막아(`listen EFAULT`) Storybook·dev 서버를 띄우지 못했다.
+  실제 모바일 렌더는 로컬에서 `npm run storybook`(`ActionsOnMobile` 스토리) 또는 `npm run dev`로 확인 필요.
+
+**다음 작업**
+
 - 서비스명 확정 후 반영

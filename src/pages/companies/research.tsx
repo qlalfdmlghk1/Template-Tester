@@ -22,15 +22,15 @@ export default function CompanyResearch() {
       <Navbar />
 
       <div className="max-w-[1400px] mx-auto px-6 py-6">
-        <div className="flex items-start justify-between gap-4">
-          <PageHeader
-            title="기업 조사"
-            description="채용기간이 아닐 때 미리 조사해 두는 공간입니다. 지원 여부와 관계없이 기업 단위로 모입니다."
-          />
-          <AppButton size="sm" className="shrink-0" onClick={page.openCreateForm}>
-            기업 추가
-          </AppButton>
-        </div>
+        <PageHeader
+          title="기업 조사"
+          description="채용기간이 아닐 때 미리 조사해 두는 공간입니다. 지원 여부와 관계없이 기업 단위로 모입니다."
+          actions={
+            <AppButton size="sm" className="ml-auto shrink-0" onClick={page.openCreateForm}>
+              기업 추가
+            </AppButton>
+          }
+        />
 
         {page.error ? (
           <AppFallback type="error" onAction={page.reload} />
