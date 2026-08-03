@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 import { useCompanies } from "@/entities/company/model/useCompanies";
 import { useApplications } from "@/entities/job-application/model/useApplications";
 import {
+  ALL_HALF_ID,
   collectHalfIds,
   getApplicationHalfId,
   getCurrentHalfId,
@@ -72,12 +73,13 @@ export function useRecruitmentBoard() {
 
   const halfIds = useMemo(() => collectHalfIds(applications), [applications]);
 
-  // 선택값이 없거나 더 이상 존재하지 않는 반기를 가리키면 현재 반기로, 그마저 없으면 첫 반기로 떨어진다.
+  // 선택값이 없거나 더 이상 존재하지 않는 반기를 가리키면 현재 반기로, 그마저 없으면 최신 반기로 떨어진다.
+  // "전체"는 halfIds 맨 앞에 있지만 최후 폴백으로만 쓴다 — 실제 반기가 있으면 그쪽을 먼저 보여준다.
   const activeHalfId = useMemo(() => {
     if (selectedHalfId && halfIds.includes(selectedHalfId)) return selectedHalfId;
     const currentHalfId = getCurrentHalfId();
     if (halfIds.includes(currentHalfId)) return currentHalfId;
-    return halfIds[0] ?? null;
+    return halfIds.find((id) => id !== ALL_HALF_ID) ?? ALL_HALF_ID;
   }, [selectedHalfId, halfIds]);
 
   const companyMap = useMemo(
@@ -85,32 +87,47 @@ export function useRecruitmentBoard() {
     [companies],
   );
 
-  /** 선택된 반기에 속한 지원 건 — 합격률은 필터와 무관하게 이 집합으로 낸다 */
+  /**
+   * 선택된 반기에 속한 지원 건.
+   * "전체"를 고르면 반기를 가리지 않고 미분류 건까지 모두 포함한다.
+   */
   const halfApplications = useMemo(
     () =>
-      activeHalfId
-        ? applications.filter((application) => getApplicationHalfId(application) === activeHalfId)
-        : [],
+      activeHalfId === ALL_HALF_ID
+        ? applications
+        : applications.filter((application) => getApplicationHalfId(application) === activeHalfId),
     [applications, activeHalfId],
   );
 
+  /**
+   * 합격률 모수 — 반기에 직무·기업분류 필터까지 적용한 집합.
+   *
+   * 상태 필터는 일부러 뺀다. 상태로 걸러낸 뒤 합격률을 내면 "탈락만 보기 → 전 단계 0%",
+   * "합격만 보기 → 100%"처럼 필터가 곧 답이 되어 수치가 의미를 잃는다.
+   * 반면 직무·기업분류는 "FE 합격률", "대기업 합격률"처럼 묻는 값이 성립한다.
+   */
+  const scopedApplications = useMemo(
+    () =>
+      halfApplications.filter((application) => {
+        if (filter.jobTags.length > 0 && !filter.jobTags.includes(application.jobTag)) {
+          return false;
+        }
+        if (filter.categories.length > 0) {
+          const categories = companyMap.get(application.companyId)?.categories ?? [];
+          if (!filter.categories.some((category) => categories.includes(category))) return false;
+        }
+        return true;
+      }),
+    [halfApplications, filter.jobTags, filter.categories, companyMap],
+  );
+
   const rows = useMemo(() => {
-    const filtered = halfApplications.filter((application) => {
-      if (filter.jobTags.length > 0 && !filter.jobTags.includes(application.jobTag)) {
-        return false;
-      }
-      if (
-        filter.statuses.length > 0 &&
-        !filter.statuses.includes(getApplicationStatus(application))
-      ) {
-        return false;
-      }
-      if (filter.categories.length > 0) {
-        const categories = companyMap.get(application.companyId)?.categories ?? [];
-        if (!filter.categories.some((category) => categories.includes(category))) return false;
-      }
-      return true;
-    });
+    const filtered =
+      filter.statuses.length > 0
+        ? scopedApplications.filter((application) =>
+            filter.statuses.includes(getApplicationStatus(application)),
+          )
+        : scopedApplications;
 
     const sorted = [...filtered].sort((a, b) =>
       compareSchedules(a.stages[HALF_ANCHOR_STAGE]?.schedule, b.stages[HALF_ANCHOR_STAGE]?.schedule),
@@ -123,9 +140,9 @@ export function useRecruitmentBoard() {
       currentStage: getCurrentStage(application),
       upcoming: getUpcomingSchedule(application),
     }));
-  }, [halfApplications, filter, companyMap]);
+  }, [scopedApplications, filter.statuses, companyMap]);
 
-  const passRates = useMemo(() => calcPassRates(halfApplications), [halfApplications]);
+  const passRates = useMemo(() => calcPassRates(scopedApplications), [scopedApplications]);
 
   const reload = useCallback(async () => {
     await Promise.all([reloadCompanies(), reloadApplications()]);
