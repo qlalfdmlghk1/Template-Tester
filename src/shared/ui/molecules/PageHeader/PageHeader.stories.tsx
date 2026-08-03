@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
+import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
 import PageHeader from "./PageHeader";
 
 const meta: Meta<typeof PageHeader> = {
@@ -50,25 +51,34 @@ export const WithActions: Story = {
   },
 };
 
-/** 좁은 폭에서 액션이 제목 옆에 눌리지 않고 다음 줄로 넘어가는지 확인하는 스토리 */
+/**
+ * 좁은 폭에서 액션이 제목 옆에 눌리지 않고 다음 줄로 넘어가는지 확인하는 스토리.
+ *
+ * 뷰포트는 `globals.viewport.value`로 지정한다 — Storybook 9부터 선택값이 파라미터에서
+ * globals로 옮겨져 `parameters.viewport.defaultViewport`는 무시된다.
+ * preview.ts에 viewport options를 등록하지 않았으므로, 명명 키(`mobile1`) 대신
+ * 등록 없이 동작하는 `{width}-{height}` 형식을 쓴다.
+ *
+ * 줄바꿈 지점이 실제 화면과 같아야 의미가 있으므로 버튼은 페이지와 같은 AppButton을 쓴다.
+ */
 export const ActionsOnMobile: Story = {
+  globals: { viewport: { value: "375-812" } },
   args: {
     title: "채용",
     description: "지원 현황을 전형 단계별로 관리하고, 비채용기간에는 관심 기업을 미리 조사합니다.",
     actions: (
       <div className="flex flex-wrap gap-2 ml-auto">
-        <button className="px-3 py-1.5 text-sm text-red-500 rounded-md">전체 삭제</button>
-        <button className="px-3 py-1.5 text-sm border border-gray-300 rounded-md">
+        <AppButton variant="ghost" color="red" size="sm">
+          전체 삭제
+        </AppButton>
+        <AppButton variant="outline" color="gray" size="sm">
           시트 가져오기
-        </button>
-        <button className="px-3 py-1.5 text-sm bg-blue-500 text-white rounded-md">
-          지원 건 추가
-        </button>
+        </AppButton>
+        <AppButton size="sm">지원 건 추가</AppButton>
       </div>
     ),
   },
   parameters: {
-    viewport: { defaultViewport: "mobile1" },
     docs: {
       source: {
         code: `<PageHeader
