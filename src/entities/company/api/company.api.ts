@@ -65,6 +65,11 @@ export async function getCompanies(): Promise<Company[]> {
         jobDescription: data.jobDescription,
         requirements: data.requirements,
         researchNote: data.researchNote,
+        talentProfile: data.talentProfile,
+        businessSummary: data.businessSummary,
+        recentIssues: data.recentIssues,
+        researchSources: data.researchSources,
+        researchedAt: data.researchedAt?.toDate(),
         createdAt: data.createdAt?.toDate() ?? new Date(),
         updatedAt: data.updatedAt?.toDate(),
       } satisfies Company;

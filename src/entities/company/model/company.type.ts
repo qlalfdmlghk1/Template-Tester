@@ -43,9 +43,42 @@ export interface Company {
   /** 위 항목에 담기지 않는 자유 메모 */
   researchNote?: string;
 
+  // ── AI 자동 조사 대상 ────────────────────────────────────
+  // 자소서·면접에서 바로 인용할 수 있게, 자유 메모에 뭉뚱그리지 않고 항목을 나눠 둔다.
+
+  /** 인재상 — 기업이 공표한 인재상·핵심 가치 */
+  talentProfile?: string;
+  /** 사업 내용 — 주요 사업 영역·제품·서비스 */
+  businessSummary?: string;
+  /** 최근 이슈 — 실적·조직 개편·신사업 등 최근 소식 */
+  recentIssues?: string;
+
+  /**
+   * AI 자동 조사가 채운 항목의 출처 URL.
+   * AI 결과는 초안일 뿐이므로 사용자가 직접 사실 확인할 수 있게 남긴다.
+   */
+  researchSources?: Partial<Record<AiResearchField, string[]>>;
+  /** AI 자동 조사를 마지막으로 실행한 시각 — 내용이 언제 기준인지 판단용 */
+  researchedAt?: Date;
+
   createdAt: Date;
   updatedAt?: Date;
 }
+
+/** AI 자동 조사가 채우는 항목 */
+export const AI_RESEARCH_FIELDS = [
+  "talentProfile",
+  "businessSummary",
+  "recentIssues",
+] as const;
+
+export type AiResearchField = (typeof AI_RESEARCH_FIELDS)[number];
+
+export const AI_RESEARCH_FIELD_LABELS: Record<AiResearchField, string> = {
+  talentProfile: "인재상",
+  businessSummary: "사업 내용",
+  recentIssues: "최근 이슈",
+};
 
 /** 기업 생성·수정 입력값 */
 export type CompanyInput = Pick<Company, "name"> &
@@ -59,6 +92,11 @@ export type CompanyInput = Pick<Company, "name"> &
       | "jobDescription"
       | "requirements"
       | "researchNote"
+      | "talentProfile"
+      | "businessSummary"
+      | "recentIssues"
+      | "researchSources"
+      | "researchedAt"
     >
   >;
 
