@@ -27,7 +27,8 @@ export function CompanyResearchFormPage({ companyId }: CompanyResearchFormPagePr
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      <div className="max-w-[900px] mx-auto px-6 py-6">
+      {/* 목록·코테달력과 같은 폭 — 조사 내용을 2열로 펼치려면 넓이가 필요하다 */}
+      <div className="max-w-[1400px] mx-auto px-4 py-4 sm:px-6 sm:py-6">
         {/* 목록의 검색어·필터는 URL 쿼리에 있어, cancel 이 그대로 들고 돌아간다 */}
         <AppButton
           variant="ghost"
