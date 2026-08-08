@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "@/widgets/Navbar/Navbar";
 import PageHeader from "@/shared/ui/molecules/PageHeader/PageHeader";
 import AppFallback from "@/shared/ui/molecules/AppFallback/AppFallback";
@@ -13,12 +13,14 @@ import {
 import { AppConfirmDialog } from "@/shared/ui/molecules/AppConfirmDialog";
 import { useCompanyResearch } from "@/features/recruitment/model/useCompanyResearch";
 import { CompanyResearchCard } from "@/features/recruitment/ui/CompanyResearchCard/CompanyResearchCard";
-import { CompanyResearchDialog } from "@/features/recruitment/ui/CompanyResearchDialog/CompanyResearchDialog";
-import { AiKeyDialog } from "@/features/ai-key/ui/AiKeyDialog/AiKeyDialog";
 
 export default function CompanyResearch() {
   const page = useCompanyResearch();
-  const [keyDialogOpen, setKeyDialogOpen] = useState(false);
+  const navigate = useNavigate();
+
+  // 필터는 URL 쿼리에 있으므로, 그대로 들고 가면 돌아왔을 때 그 상태로 복원된다
+  const goToForm = (path: string) =>
+    navigate({ pathname: path, search: window.location.search });
 
   return (
     <div className="min-h-screen bg-background">
@@ -29,7 +31,11 @@ export default function CompanyResearch() {
           title="기업 조사"
           description="채용기간이 아닐 때 미리 조사해 두는 공간입니다. 지원 여부와 관계없이 기업 단위로 모입니다."
           actions={
-            <AppButton size="sm" className="ml-auto shrink-0" onClick={page.openCreateForm}>
+            <AppButton
+              size="sm"
+              className="ml-auto shrink-0"
+              onClick={() => goToForm("/companies/research/new")}
+            >
               기업 추가
             </AppButton>
           }
@@ -38,7 +44,11 @@ export default function CompanyResearch() {
         {page.error ? (
           <AppFallback type="error" onAction={page.reload} />
         ) : page.isLoading ? (
-          <div className="flex flex-col gap-3" role="status" aria-label="기업 조사 불러오는 중">
+          <div
+            className="flex flex-col gap-3"
+            role="status"
+            aria-label="기업 조사 불러오는 중"
+          >
             <div className="h-8 w-64 bg-gray-100 rounded-md animate-pulse" />
             <div className="h-40 bg-gray-100 rounded-md animate-pulse" />
           </div>
@@ -49,7 +59,7 @@ export default function CompanyResearch() {
             description="관심 있는 기업을 추가하거나, 지원 현황 화면에서 시트를 가져오세요."
             buttonText="기업 추가"
             buttonIcon={null}
-            onAction={page.openCreateForm}
+            onAction={() => goToForm("/companies/research/new")}
           />
         ) : (
           <div className="flex flex-col gap-4">
@@ -75,7 +85,9 @@ export default function CompanyResearch() {
                       onClick={() =>
                         page.setSelectedCategories(
                           selected
-                            ? page.selectedCategories.filter((item) => item !== category)
+                            ? page.selectedCategories.filter(
+                                (item) => item !== category,
+                              )
                             : [...page.selectedCategories, category],
                         )
                       }
@@ -120,7 +132,7 @@ export default function CompanyResearch() {
                   <CompanyResearchCard
                     key={company.id}
                     company={company}
-                    onEdit={() => page.openEditForm(company)}
+                    onEdit={() => goToForm(`/companies/research/${company.id}`)}
                     onDelete={() => page.requestDelete(company)}
                   />
                 ))}
@@ -129,18 +141,6 @@ export default function CompanyResearch() {
           </div>
         )}
       </div>
-
-      {page.formTarget !== undefined && (
-        <CompanyResearchDialog
-          company={page.formTarget}
-          saving={page.saving}
-          onSubmit={page.submitForm}
-          onClose={page.closeForm}
-          onOpenKeySettings={() => setKeyDialogOpen(true)}
-        />
-      )}
-
-      {keyDialogOpen && <AiKeyDialog onClose={() => setKeyDialogOpen(false)} />}
 
       <AppConfirmDialog
         open={page.deleteTarget !== null}
@@ -161,10 +161,11 @@ export default function CompanyResearch() {
               className="mt-0.5"
             />
             <span className="text-sm text-text">
-              이 기업의 지원 건 {page.deleteTargetApplicationCount}건도 함께 삭제
+              이 기업의 지원 건 {page.deleteTargetApplicationCount}건도 함께
+              삭제
               <span className="block text-xs text-textSecondary">
-                체크하지 않으면 지원 건은 남지만 기업 정보가 끊겨 「(삭제된 기업)」으로
-                표시됩니다.
+                체크하지 않으면 지원 건은 남지만 기업 정보가 끊겨 「(삭제된
+                기업)」으로 표시됩니다.
               </span>
             </span>
           </label>
