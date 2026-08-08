@@ -6,7 +6,7 @@ import {
   COMPANY_CATEGORY_LABELS,
   hasResearch,
 } from "@/entities/company/model/company.type";
-import type { Company } from "@/entities/company/model/company.type";
+import type { Company, ResearchSource } from "@/entities/company/model/company.type";
 import { computeResearchProgress } from "@/entities/company/model/research";
 import { ResearchSourceLinks } from "../ResearchSourceLinks/ResearchSourceLinks";
 
@@ -25,7 +25,7 @@ function ResearchSection({
   title: string;
   body?: string;
   /** AI가 채운 항목이면 근거 링크를 함께 보여준다 */
-  sources?: string[];
+  sources?: ResearchSource[];
 }) {
   if (!body?.trim()) return null;
 
@@ -34,7 +34,7 @@ function ResearchSection({
       <h4 className="m-0 mb-1 text-xs font-semibold text-textSecondary">{title}</h4>
       {/* AI가 채운 값이 섞여 있으므로 HTML 로 렌더링하지 않는다 */}
       <p className="m-0 text-sm text-text whitespace-pre-wrap">{body}</p>
-      <ResearchSourceLinks urls={sources} />
+      <ResearchSourceLinks sources={sources} />
     </section>
   );
 }

@@ -12,13 +12,16 @@ function jsonResponse(body: unknown, status = 200): Response {
 }
 
 /** Gemini 정상 응답 한 건 */
-function geminiPayload(text: string, groundingUris: string[] = []) {
+function geminiPayload(
+  text: string,
+  grounding: { uri: string; title?: string }[] = [],
+) {
   return {
     candidates: [
       {
         content: { parts: [{ text }] },
         groundingMetadata: {
-          groundingChunks: groundingUris.map((uri) => ({ web: { uri } })),
+          groundingChunks: grounding.map((web) => ({ web })),
         },
       },
     ],
@@ -80,15 +83,15 @@ describe("Gemini 조사 — 응답 처리", () => {
     });
 
     expect(result.talentProfile).toBe("도전하는 인재");
-    expect(result.sources.talentProfile).toEqual(["https://a.com"]);
+    expect(result.sources.talentProfile).toEqual([{ url: "https://a.com" }]);
   });
 
   it("모델이 출처를 안 주면 grounding 이 참조한 URL 로 메워야 한다", async () => {
     fetchMock.mockResolvedValue(
       jsonResponse(
         geminiPayload('{"businessSummary":"반도체","sources":{}}', [
-          "https://grounded.example/1",
-          "https://grounded.example/2",
+          { uri: "https://grounded.example/1", title: "출처 제목 1" },
+          { uri: "https://grounded.example/2" },
         ]),
       ),
     );
@@ -99,9 +102,10 @@ describe("Gemini 조사 — 응답 처리", () => {
       name: "삼성전자",
     });
 
+    // 제목이 함께 저장돼야 화면에서 링크를 구분할 수 있다
     expect(result.sources.businessSummary).toEqual([
-      "https://grounded.example/1",
-      "https://grounded.example/2",
+      { url: "https://grounded.example/1", title: "출처 제목 1" },
+      { url: "https://grounded.example/2", title: undefined },
     ]);
   });
 
@@ -109,7 +113,7 @@ describe("Gemini 조사 — 응답 처리", () => {
     fetchMock.mockResolvedValue(
       jsonResponse(
         geminiPayload('{"businessSummary":"반도체","sources":{}}', [
-          "https://grounded.example/1",
+          { uri: "https://grounded.example/1" },
         ]),
       ),
     );

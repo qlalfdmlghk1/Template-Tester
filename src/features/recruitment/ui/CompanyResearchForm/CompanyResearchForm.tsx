@@ -341,7 +341,7 @@ export function CompanyResearchForm({
               placeholder="기업이 공표한 인재상·핵심 가치"
               className={cn(inputClass, "resize-y")}
             />
-            <ResearchSourceLinks urls={researchSources?.talentProfile} />
+            <ResearchSourceLinks sources={researchSources?.talentProfile} />
           </div>
 
           <div>
@@ -356,7 +356,7 @@ export function CompanyResearchForm({
               placeholder="주요 사업 영역·제품·서비스"
               className={cn(inputClass, "resize-y")}
             />
-            <ResearchSourceLinks urls={researchSources?.businessSummary} />
+            <ResearchSourceLinks sources={researchSources?.businessSummary} />
           </div>
 
           <div>
@@ -371,7 +371,7 @@ export function CompanyResearchForm({
               placeholder="실적·조직 개편·신사업 등 최근 소식"
               className={cn(inputClass, "resize-y")}
             />
-            <ResearchSourceLinks urls={researchSources?.recentIssues} />
+            <ResearchSourceLinks sources={researchSources?.recentIssues} />
           </div>
         </section>
       </div>

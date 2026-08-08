@@ -20,6 +20,7 @@ import type {
   CompanyResearchTarget,
 } from "./research.shared";
 import { AI_RESEARCH_FIELDS } from "../model/company.type";
+import type { ResearchSource } from "../model/company.type";
 
 const BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models";
 
@@ -37,10 +38,16 @@ interface GeminiResponse {
   candidates?: {
     content?: { parts?: GeminiPart[] };
     groundingMetadata?: {
-      groundingChunks?: { web?: { uri?: string } }[];
+      groundingChunks?: { web?: { uri?: string; title?: string } }[];
     };
   }[];
 }
+
+/**
+ * 출처가 없는 항목에 채워 넣을 grounding 링크 개수 상한.
+ * 참조한 모든 링크를 항목마다 붙이면 화면이 링크로 뒤덮인다.
+ */
+const MAX_FALLBACK_SOURCES = 4;
 
 function extractText(data: GeminiResponse): string {
   return (data.candidates?.[0]?.content?.parts ?? [])
@@ -48,17 +55,27 @@ function extractText(data: GeminiResponse): string {
     .join("");
 }
 
-/** 모델이 sources 를 비워 보내면 grounding 이 실제로 참조한 URL 로 채운다 */
-function fallbackSources(data: GeminiResponse): string[] {
+/**
+ * 모델이 sources 를 비워 보내면 grounding 이 실제로 참조한 링크로 채운다.
+ *
+ * uri 는 구글을 거쳐 가는 리다이렉트 주소라 호스트가 전부 같다 —
+ * 주소만으로는 라벨을 만들 수 없어 함께 오는 title 을 반드시 챙긴다.
+ */
+function fallbackSources(data: GeminiResponse): ResearchSource[] {
   const chunks = data.candidates?.[0]?.groundingMetadata?.groundingChunks ?? [];
+  const seen = new Set<string>();
+  const sources: ResearchSource[] = [];
 
-  return [
-    ...new Set(
-      chunks
-        .map((chunk) => chunk.web?.uri)
-        .filter((uri): uri is string => Boolean(uri)),
-    ),
-  ];
+  for (const chunk of chunks) {
+    const url = chunk.web?.uri;
+    if (!url || seen.has(url)) continue;
+
+    seen.add(url);
+    sources.push({ url, title: chunk.web?.title });
+    if (sources.length >= MAX_FALLBACK_SOURCES) break;
+  }
+
+  return sources;
 }
 
 /**

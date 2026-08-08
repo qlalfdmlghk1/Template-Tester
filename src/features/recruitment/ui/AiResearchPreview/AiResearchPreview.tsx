@@ -90,7 +90,7 @@ export function AiResearchPreview({
                   <span className="block mt-1 text-sm text-text whitespace-pre-wrap">
                     {result[field]}
                   </span>
-                  <ResearchSourceLinks urls={result.sources[field]} />
+                  <ResearchSourceLinks sources={result.sources[field]} />
                 </span>
               </label>
             </li>
