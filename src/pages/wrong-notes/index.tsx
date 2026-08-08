@@ -116,40 +116,54 @@ export default function WrongNotes() {
       <Navbar />
 
       <div className="max-w-[1400px] mx-auto px-4 py-4 sm:px-6 sm:py-6">
-        <PageHeader title="오답노트" />
-
-        {/* 탭 */}
-        <div className="flex items-end gap-2 mt-6 border-b border-border">
-          <button
-            onClick={() => setActiveTab("list")}
-            className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
-              activeTab === "list"
-                ? "text-primary border-primary"
-                : "text-textSecondary border-transparent hover:text-text"
-            }`}
-          >
-            목록
-          </button>
-          <button
-            onClick={() => setActiveTab("friends")}
-            className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
-              activeTab === "friends"
-                ? "text-primary border-primary"
-                : "text-textSecondary border-transparent hover:text-text"
-            }`}
-          >
-            친구 오답노트
-          </button>
-          <div className="ml-auto pb-2">
+        {/* 작성 화면에서는 탭 대신 목록으로 돌아가는 버튼만 둔다 (기업 등록 화면과 같은 형태) */}
+        {activeTab === "write" ? (
+          <>
             <AppButton
-              variant={activeTab === "write" ? "solid" : "outline"}
+              variant="ghost"
+              color="gray"
               size="sm"
-              onClick={() => setActiveTab("write")}
+              className="mb-2 -ml-2"
+              onClick={() => setActiveTab("list")}
             >
-              + 작성
+              ← 목록으로
             </AppButton>
-          </div>
-        </div>
+            <PageHeader title="오답노트 작성" />
+          </>
+        ) : (
+          <>
+            <PageHeader title="오답노트" />
+
+            {/* 탭 */}
+            <div className="flex items-end gap-2 mt-6 border-b border-border">
+              <button
+                onClick={() => setActiveTab("list")}
+                className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
+                  activeTab === "list"
+                    ? "text-primary border-primary"
+                    : "text-textSecondary border-transparent hover:text-text"
+                }`}
+              >
+                목록
+              </button>
+              <button
+                onClick={() => setActiveTab("friends")}
+                className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
+                  activeTab === "friends"
+                    ? "text-primary border-primary"
+                    : "text-textSecondary border-transparent hover:text-text"
+                }`}
+              >
+                친구 오답노트
+              </button>
+              <div className="ml-auto pb-2">
+                <AppButton variant="outline" size="sm" onClick={() => setActiveTab("write")}>
+                  + 작성
+                </AppButton>
+              </div>
+            </div>
+          </>
+        )}
 
         {/* 목록 탭 */}
         {activeTab === "list" && (
@@ -544,7 +558,7 @@ export default function WrongNotes() {
 
         {/* 작성 탭 */}
         {activeTab === "write" && (
-          <div className="mt-6 space-y-6">
+          <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-4">
               <div>
                 <label className="block text-sm font-medium text-text leading-[30px] mb-2">문제 이름</label>
