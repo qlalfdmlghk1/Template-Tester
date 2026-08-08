@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Navbar from "@/widgets/Navbar/Navbar";
 import PageHeader from "@/shared/ui/molecules/PageHeader/PageHeader";
 import AppFallback from "@/shared/ui/molecules/AppFallback/AppFallback";
@@ -13,9 +14,11 @@ import { AppConfirmDialog } from "@/shared/ui/molecules/AppConfirmDialog";
 import { useCompanyResearch } from "@/features/recruitment/model/useCompanyResearch";
 import { CompanyResearchCard } from "@/features/recruitment/ui/CompanyResearchCard/CompanyResearchCard";
 import { CompanyResearchDialog } from "@/features/recruitment/ui/CompanyResearchDialog/CompanyResearchDialog";
+import { AiKeyDialog } from "@/features/ai-key/ui/AiKeyDialog/AiKeyDialog";
 
 export default function CompanyResearch() {
   const page = useCompanyResearch();
+  const [keyDialogOpen, setKeyDialogOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-background">
@@ -133,8 +136,11 @@ export default function CompanyResearch() {
           saving={page.saving}
           onSubmit={page.submitForm}
           onClose={page.closeForm}
+          onOpenKeySettings={() => setKeyDialogOpen(true)}
         />
       )}
+
+      {keyDialogOpen && <AiKeyDialog onClose={() => setKeyDialogOpen(false)} />}
 
       <AppConfirmDialog
         open={page.deleteTarget !== null}

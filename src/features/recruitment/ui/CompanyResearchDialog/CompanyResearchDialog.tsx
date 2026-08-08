@@ -7,10 +7,13 @@ import {
   COMPANY_CATEGORY_LABELS,
 } from "@/entities/company/model/company.type";
 import type {
+  AiResearchField,
   Company,
   CompanyCategory,
   CompanyInput,
 } from "@/entities/company/model/company.type";
+import { useCompanyAiResearch } from "../../model/useCompanyAiResearch";
+import { AiResearchPreview } from "../AiResearchPreview/AiResearchPreview";
 
 interface CompanyResearchDialogProps {
   /** 수정 대상. null이면 신규 등록 */
@@ -18,6 +21,8 @@ interface CompanyResearchDialogProps {
   saving: boolean;
   onSubmit: (input: CompanyInput) => void;
   onClose: () => void;
+  /** API 키 설정 화면 열기 — 키가 없을 때 안내에서 호출 */
+  onOpenKeySettings: () => void;
 }
 
 const inputClass =
@@ -28,6 +33,7 @@ export function CompanyResearchDialog({
   saving,
   onSubmit,
   onClose,
+  onOpenKeySettings,
 }: CompanyResearchDialogProps) {
   const [name, setName] = useState(company?.name ?? "");
   const [categories, setCategories] = useState<CompanyCategory[]>(company?.categories ?? []);
@@ -37,8 +43,24 @@ export function CompanyResearchDialog({
   const [jobDescription, setJobDescription] = useState(company?.jobDescription ?? "");
   const [requirements, setRequirements] = useState(company?.requirements ?? "");
   const [researchNote, setResearchNote] = useState(company?.researchNote ?? "");
+  const [talentProfile, setTalentProfile] = useState(company?.talentProfile ?? "");
+  const [businessSummary, setBusinessSummary] = useState(company?.businessSummary ?? "");
+  const [recentIssues, setRecentIssues] = useState(company?.recentIssues ?? "");
+  /** AI가 채운 항목의 출처 — 반영한 항목만 남긴다 */
+  const [researchSources, setResearchSources] = useState(company?.researchSources);
+  const [researchedAt, setResearchedAt] = useState(company?.researchedAt);
+
+  const ai = useCompanyAiResearch();
 
   const canSubmit = name.trim().length > 0;
+  // 기업명이 없으면 조사할 대상이 없다
+  const canResearch = ai.hasApiKey && canSubmit && !ai.isResearching;
+
+  const aiFieldSetters: Record<AiResearchField, (value: string) => void> = {
+    talentProfile: setTalentProfile,
+    businessSummary: setBusinessSummary,
+    recentIssues: setRecentIssues,
+  };
 
   const toggleCategory = (category: CompanyCategory) => {
     setCategories((current) =>
@@ -46,6 +68,34 @@ export function CompanyResearchDialog({
         ? current.filter((item) => item !== category)
         : [...current, category],
     );
+  };
+
+  const handleResearch = () => {
+    void ai.run({
+      name: name.trim(),
+      targetJob: targetJob.trim() || undefined,
+      location: location.trim() || undefined,
+      postingUrl: postingUrl.trim() || undefined,
+    });
+  };
+
+  /** 사용자가 고른 항목만 폼에 반영한다 — 나머지는 손대지 않는다 */
+  const handleApplyResearch = () => {
+    if (!ai.result) return;
+
+    const nextSources = { ...researchSources };
+
+    ai.selectedFields.forEach((field) => {
+      const value = ai.result?.[field];
+      if (!value) return;
+
+      aiFieldSetters[field](value);
+      nextSources[field] = ai.result?.sources[field];
+    });
+
+    setResearchSources(nextSources);
+    setResearchedAt(new Date());
+    ai.dismiss();
   };
 
   const handleSubmit = (event: React.FormEvent) => {
@@ -61,6 +111,11 @@ export function CompanyResearchDialog({
       jobDescription: jobDescription.trim() || undefined,
       requirements: requirements.trim() || undefined,
       researchNote: researchNote.trim() || undefined,
+      talentProfile: talentProfile.trim() || undefined,
+      businessSummary: businessSummary.trim() || undefined,
+      recentIssues: recentIssues.trim() || undefined,
+      researchSources,
+      researchedAt,
     });
   };
 
@@ -189,6 +244,105 @@ export function CompanyResearchDialog({
             className={cn(inputClass, "resize-y")}
           />
         </div>
+
+        <section className="flex flex-col gap-3 pt-1 border-t border-border">
+          <header className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 className="m-0 text-sm font-semibold text-text">기업 조사</h3>
+              <p className="m-0 mt-0.5 text-xs text-textSecondary">
+                자소서·면접에서 바로 인용할 항목입니다.
+              </p>
+            </div>
+            <AppButton
+              type="button"
+              variant="outline"
+              size="xs"
+              onClick={handleResearch}
+              loading={ai.isResearching}
+              disabled={!canResearch}
+            >
+              AI로 조사
+            </AppButton>
+          </header>
+
+          {!ai.hasApiKey && (
+            <p className="m-0 p-2 text-xs text-textSecondary bg-background border border-border rounded-sm">
+              AI 조사를 쓰려면 본인 Anthropic API 키가 필요합니다.{" "}
+              <button
+                type="button"
+                onClick={onOpenKeySettings}
+                className="text-blue-600 underline"
+              >
+                키 설정하기
+              </button>
+            </p>
+          )}
+
+          {ai.hasApiKey && !canSubmit && (
+            <p className="m-0 text-xs text-textSecondary">
+              기업명을 먼저 입력하면 조사할 수 있습니다.
+            </p>
+          )}
+
+          {ai.error && (
+            <p className="m-0 p-2 text-xs text-red-600 bg-red-100 border border-red-300 rounded-sm">
+              {ai.error}
+            </p>
+          )}
+
+          {ai.result && (
+            <AiResearchPreview
+              result={ai.result}
+              currentValues={{ talentProfile, businessSummary, recentIssues }}
+              selectedFields={ai.selectedFields}
+              onToggleField={ai.toggleField}
+              onApply={handleApplyResearch}
+              onDismiss={ai.dismiss}
+            />
+          )}
+
+          <div>
+            <label htmlFor="research-talent" className="block mb-1 text-sm font-medium text-text">
+              인재상
+            </label>
+            <textarea
+              id="research-talent"
+              rows={3}
+              value={talentProfile}
+              onChange={(event) => setTalentProfile(event.target.value)}
+              placeholder="기업이 공표한 인재상·핵심 가치"
+              className={cn(inputClass, "resize-y")}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="research-business" className="block mb-1 text-sm font-medium text-text">
+              사업 내용
+            </label>
+            <textarea
+              id="research-business"
+              rows={3}
+              value={businessSummary}
+              onChange={(event) => setBusinessSummary(event.target.value)}
+              placeholder="주요 사업 영역·제품·서비스"
+              className={cn(inputClass, "resize-y")}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="research-issues" className="block mb-1 text-sm font-medium text-text">
+              최근 이슈
+            </label>
+            <textarea
+              id="research-issues"
+              rows={3}
+              value={recentIssues}
+              onChange={(event) => setRecentIssues(event.target.value)}
+              placeholder="실적·조직 개편·신사업 등 최근 소식"
+              className={cn(inputClass, "resize-y")}
+            />
+          </div>
+        </section>
 
         <div>
           <label htmlFor="research-memo" className="block mb-1 text-sm font-medium text-text">
