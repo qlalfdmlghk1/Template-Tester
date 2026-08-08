@@ -47,6 +47,8 @@ export interface CompanyResearchResult {
 
 export type CompanyResearchErrorKind =
   | "auth"
+  /** 크레딧 잔액 부족 — 키는 정상이지만 충전이 안 된 상태 */
+  | "credit"
   | "rateLimit"
   | "network"
   | "parse"
@@ -132,6 +134,23 @@ function extractText(content: AnthropicContentBlock[]): string {
     .join("");
 }
 
+/**
+ * 실패 응답 본문에서 원인 문구를 꺼낸다.
+ *
+ * 400 은 "어느 필드가 왜 잘못됐는지"가 본문에 적혀 오므로, 이걸 버리면
+ * 사용자도 개발자도 원인을 알 수 없다. 본문에는 키가 포함되지 않는다.
+ */
+async function readErrorMessage(response: Response): Promise<string> {
+  try {
+    const body = (await response.json()) as {
+      error?: { message?: string };
+    };
+    return body.error?.message ?? "";
+  } catch {
+    return "";
+  }
+}
+
 async function callApi(
   apiKey: string,
   messages: unknown[],
@@ -178,12 +197,24 @@ async function callApi(
     }
     if (response.status === 429) {
       throw new CompanyResearchError(
-        "요청이 몰렸거나 크레딧이 부족합니다. 잠시 후 다시 시도해 주세요.",
+        "요청이 너무 잦습니다. 잠시 후 다시 시도해 주세요.",
         "rateLimit",
       );
     }
+
+    // 400 등은 본문에 원인이 그대로 담겨 온다. 상태 코드만 보여주면 원인을 알 수 없다.
+    const detail = await readErrorMessage(response);
+
+    // 키를 발급만 하고 충전을 안 한 상태가 가장 흔한 실패다. 영어 원문 대신 안내로 바꾼다.
+    if (/credit balance/i.test(detail)) {
+      throw new CompanyResearchError(
+        "Anthropic 계정에 크레딧이 없습니다. 콘솔의 Plans & Billing에서 충전한 뒤 다시 시도해 주세요.",
+        "credit",
+      );
+    }
+
     throw new CompanyResearchError(
-      `조사에 실패했습니다. (HTTP ${response.status})`,
+      `조사에 실패했습니다. (HTTP ${response.status}) ${detail}`.trim(),
       "unknown",
     );
   }
