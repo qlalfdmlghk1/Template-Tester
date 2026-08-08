@@ -11,9 +11,32 @@ import {
 } from "firebase/firestore";
 import { auth, db } from "@/shared/api/firebase";
 import { stripUndefined, toUpdatePayload } from "@/shared/lib/firestore";
-import type { Company, CompanyInput } from "../model/company.type";
+import type { Company, CompanyInput, ResearchSource } from "../model/company.type";
 
 const COLLECTION = "companies";
+
+/**
+ * 출처는 처음에 URL 문자열 배열로 저장했다가 제목을 함께 담는 형태로 바뀌었다.
+ * 이미 저장된 문서를 마이그레이션하지 않고 읽는 쪽에서 흡수한다.
+ */
+function toResearchSources(
+  raw: unknown,
+): Company["researchSources"] | undefined {
+  if (!raw || typeof raw !== "object") return undefined;
+
+  const entries = Object.entries(raw as Record<string, unknown>).map(
+    ([field, value]) => [
+      field,
+      (Array.isArray(value) ? value : [])
+        .map((item) =>
+          typeof item === "string" ? { url: item } : (item as ResearchSource),
+        )
+        .filter((item) => typeof item?.url === "string"),
+    ],
+  );
+
+  return Object.fromEntries(entries) as Company["researchSources"];
+}
 
 function requireUser() {
   const user = auth.currentUser;
@@ -68,7 +91,7 @@ export async function getCompanies(): Promise<Company[]> {
         talentProfile: data.talentProfile,
         businessSummary: data.businessSummary,
         recentIssues: data.recentIssues,
-        researchSources: data.researchSources,
+        researchSources: toResearchSources(data.researchSources),
         researchedAt: data.researchedAt?.toDate(),
         createdAt: data.createdAt?.toDate() ?? new Date(),
         updatedAt: data.updatedAt?.toDate(),

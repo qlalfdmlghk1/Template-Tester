@@ -5,7 +5,7 @@
  * 결과 형식이 흔들리지 않고, 조사 품질을 같은 기준으로 비교할 수 있다.
  */
 
-import type { AiResearchField } from "../model/company.type";
+import type { AiResearchField, ResearchSource } from "../model/company.type";
 
 /** 사용자가 고를 수 있는 AI 제공자 */
 export const AI_PROVIDERS = ["gemini", "anthropic"] as const;
@@ -30,8 +30,8 @@ export interface CompanyResearchResult {
   talentProfile?: string;
   businessSummary?: string;
   recentIssues?: string;
-  /** 항목별 근거 URL */
-  sources: Partial<Record<AiResearchField, string[]>>;
+  /** 항목별 근거 */
+  sources: Partial<Record<AiResearchField, ResearchSource[]>>;
 }
 
 export type CompanyResearchErrorKind =
@@ -117,7 +117,8 @@ export function parseResearchResult(text: string): CompanyResearchResult {
   for (const candidate of candidates) {
     try {
       const parsed = JSON.parse(candidate) as CompanyResearchResult;
-      return { ...parsed, sources: parsed.sources ?? {} };
+      // 모델은 프롬프트대로 URL 문자열을 주므로 표시용 형태로 맞춘다
+      return { ...parsed, sources: normalizeSources(parsed.sources) };
     } catch {
       // 다음 후보로
     }
@@ -151,6 +152,24 @@ export async function readErrorBody(response: Response): Promise<ApiErrorBody> {
   } catch {
     return { message: "", raw: "" };
   }
+}
+
+/** 모델이 준 출처를 표시용 형태로 맞춘다. URL 문자열과 객체를 모두 받는다. */
+function normalizeSources(
+  raw: unknown,
+): Partial<Record<AiResearchField, ResearchSource[]>> {
+  if (!raw || typeof raw !== "object") return {};
+
+  return Object.fromEntries(
+    Object.entries(raw as Record<string, unknown>).map(([field, value]) => [
+      field,
+      (Array.isArray(value) ? value : [])
+        .map((item) =>
+          typeof item === "string" ? { url: item } : (item as ResearchSource),
+        )
+        .filter((item) => typeof item?.url === "string"),
+    ]),
+  );
 }
 
 /** fetch 자체가 실패한 경우 — 네트워크·CORS 문제 */

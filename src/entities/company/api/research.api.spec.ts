@@ -88,7 +88,7 @@ describe("researchCompany — 응답 처리", () => {
     const result = await researchCompany({ provider: "anthropic", apiKey: API_KEY, name: "삼성전자" });
 
     expect(result.talentProfile).toBe("도전하는 인재");
-    expect(result.sources.talentProfile).toEqual(["https://example.com/values"]);
+    expect(result.sources.talentProfile).toEqual([{ url: "https://example.com/values" }]);
   });
 
   it("도구 결과 블록이 섞여 있어도 text 블록만 골라 파싱해야 한다", async () => {

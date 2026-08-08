@@ -54,15 +54,26 @@ export interface Company {
   recentIssues?: string;
 
   /**
-   * AI 자동 조사가 채운 항목의 출처 URL.
+   * AI 자동 조사가 채운 항목의 출처.
    * AI 결과는 초안일 뿐이므로 사용자가 직접 사실 확인할 수 있게 남긴다.
    */
-  researchSources?: Partial<Record<AiResearchField, string[]>>;
+  researchSources?: Partial<Record<AiResearchField, ResearchSource[]>>;
   /** AI 자동 조사를 마지막으로 실행한 시각 — 내용이 언제 기준인지 판단용 */
   researchedAt?: Date;
 
   createdAt: Date;
   updatedAt?: Date;
+}
+
+/**
+ * 조사 근거 한 건.
+ *
+ * URL 만으로는 라벨을 만들 수 없다 — Gemini 는 검색 결과를 리다이렉트 주소로 주기 때문에
+ * 호스트가 전부 같다. 제공자가 함께 주는 제목을 보관해 표시에 쓴다.
+ */
+export interface ResearchSource {
+  url: string;
+  title?: string;
 }
 
 /** AI 자동 조사가 채우는 항목 */
