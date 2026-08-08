@@ -5,14 +5,11 @@ import {
   CompanyResearchError,
 } from "@/entities/company/api/research.api";
 import type {
-  CompanyResearchInput,
   CompanyResearchResult,
+  CompanyResearchTarget,
 } from "@/entities/company/api/research.api";
 import { AI_RESEARCH_FIELDS } from "@/entities/company/model/company.type";
 import type { AiResearchField } from "@/entities/company/model/company.type";
-
-/** 조사 대상 정보 — 키는 훅이 알아서 붙인다 */
-type ResearchTarget = Omit<CompanyResearchInput, "apiKey">;
 
 /**
  * 기업 조사 AI 실행 상태.
@@ -21,7 +18,7 @@ type ResearchTarget = Omit<CompanyResearchInput, "apiKey">;
  * (기획 검수 ⚠️ #4: 이미 값이 있는 필드를 일괄로 덮어쓰지 않는다)
  */
 export function useCompanyAiResearch() {
-  const { apiKey, hasApiKey } = useAiKey();
+  const { provider, apiKey, hasApiKey } = useAiKey();
 
   const [isResearching, setIsResearching] = useState(false);
   const [result, setResult] = useState<CompanyResearchResult | null>(null);
@@ -30,7 +27,7 @@ export function useCompanyAiResearch() {
   const [selectedFields, setSelectedFields] = useState<AiResearchField[]>([]);
 
   const run = useCallback(
-    async (target: ResearchTarget) => {
+    async (target: CompanyResearchTarget) => {
       if (!apiKey) return;
 
       setIsResearching(true);
@@ -38,7 +35,7 @@ export function useCompanyAiResearch() {
       setResult(null);
 
       try {
-        const research = await researchCompany({ ...target, apiKey });
+        const research = await researchCompany({ ...target, provider, apiKey });
 
         setResult(research);
         setSelectedFields(
@@ -55,7 +52,7 @@ export function useCompanyAiResearch() {
         setIsResearching(false);
       }
     },
-    [apiKey],
+    [apiKey, provider],
   );
 
   const toggleField = useCallback((field: AiResearchField) => {

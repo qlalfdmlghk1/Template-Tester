@@ -44,7 +44,7 @@ describe("researchCompany — 요청 형식", () => {
   it("브라우저 직접 호출 허용 헤더를 반드시 보내야 한다", async () => {
     fetchMock.mockResolvedValue(jsonResponse(researchPayload()));
 
-    await researchCompany({ apiKey: API_KEY, name: "삼성전자" });
+    await researchCompany({ provider: "anthropic", apiKey: API_KEY, name: "삼성전자" });
 
     const [, init] = fetchMock.mock.calls[0];
     const headers = init.headers as Record<string, string>;
@@ -56,7 +56,7 @@ describe("researchCompany — 요청 형식", () => {
   it("웹 검색 도구를 검색 횟수 상한과 함께 선언해야 한다", async () => {
     fetchMock.mockResolvedValue(jsonResponse(researchPayload()));
 
-    await researchCompany({ apiKey: API_KEY, name: "삼성전자" });
+    await researchCompany({ provider: "anthropic", apiKey: API_KEY, name: "삼성전자" });
 
     const body = JSON.parse(fetchMock.mock.calls[0][1].body);
     expect(body.tools[0].type).toBe("web_search_20260209");
@@ -67,6 +67,7 @@ describe("researchCompany — 요청 형식", () => {
     fetchMock.mockResolvedValue(jsonResponse(researchPayload()));
 
     await researchCompany({
+      provider: "anthropic",
       apiKey: API_KEY,
       name: "한화",
       targetJob: "프론트엔드 개발자",
@@ -84,7 +85,7 @@ describe("researchCompany — 응답 처리", () => {
   it("조사 결과를 파싱해 돌려줘야 한다", async () => {
     fetchMock.mockResolvedValue(jsonResponse(researchPayload()));
 
-    const result = await researchCompany({ apiKey: API_KEY, name: "삼성전자" });
+    const result = await researchCompany({ provider: "anthropic", apiKey: API_KEY, name: "삼성전자" });
 
     expect(result.talentProfile).toBe("도전하는 인재");
     expect(result.sources.talentProfile).toEqual(["https://example.com/values"]);
@@ -102,7 +103,7 @@ describe("researchCompany — 응답 처리", () => {
       }),
     );
 
-    const result = await researchCompany({ apiKey: API_KEY, name: "삼성전자" });
+    const result = await researchCompany({ provider: "anthropic", apiKey: API_KEY, name: "삼성전자" });
 
     expect(result.businessSummary).toBe("반도체");
   });
@@ -120,7 +121,7 @@ describe("researchCompany — 응답 처리", () => {
       }),
     );
 
-    const result = await researchCompany({ apiKey: API_KEY, name: "삼성전자" });
+    const result = await researchCompany({ provider: "anthropic", apiKey: API_KEY, name: "삼성전자" });
 
     expect(result.businessSummary).toBe("반도체");
   });
@@ -133,7 +134,7 @@ describe("researchCompany — 응답 처리", () => {
       }),
     );
 
-    const result = await researchCompany({ apiKey: API_KEY, name: "삼성전자" });
+    const result = await researchCompany({ provider: "anthropic", apiKey: API_KEY, name: "삼성전자" });
 
     expect(result.sources).toEqual({});
   });
@@ -150,7 +151,7 @@ describe("researchCompany — pause_turn 재개", () => {
       )
       .mockResolvedValueOnce(jsonResponse(researchPayload()));
 
-    const result = await researchCompany({ apiKey: API_KEY, name: "삼성전자" });
+    const result = await researchCompany({ provider: "anthropic", apiKey: API_KEY, name: "삼성전자" });
 
     expect(fetchMock).toHaveBeenCalledTimes(2);
     const secondBody = JSON.parse(fetchMock.mock.calls[1][1].body);
@@ -165,7 +166,7 @@ describe("researchCompany — pause_turn 재개", () => {
     );
 
     await expect(
-      researchCompany({ apiKey: API_KEY, name: "삼성전자" }),
+      researchCompany({ provider: "anthropic", apiKey: API_KEY, name: "삼성전자" }),
     ).rejects.toBeInstanceOf(CompanyResearchError);
 
     // 무한 반복하지 않는다
@@ -178,7 +179,7 @@ describe("researchCompany — 에러 처리", () => {
     fetchMock.mockResolvedValue(jsonResponse({}, 401));
 
     await expect(
-      researchCompany({ apiKey: API_KEY, name: "삼성전자" }),
+      researchCompany({ provider: "anthropic", apiKey: API_KEY, name: "삼성전자" }),
     ).rejects.toMatchObject({ kind: "auth" });
   });
 
@@ -186,7 +187,7 @@ describe("researchCompany — 에러 처리", () => {
     fetchMock.mockResolvedValue(jsonResponse({}, 429));
 
     await expect(
-      researchCompany({ apiKey: API_KEY, name: "삼성전자" }),
+      researchCompany({ provider: "anthropic", apiKey: API_KEY, name: "삼성전자" }),
     ).rejects.toMatchObject({ kind: "rateLimit" });
   });
 
@@ -207,7 +208,7 @@ describe("researchCompany — 에러 처리", () => {
     );
 
     await expect(
-      researchCompany({ apiKey: API_KEY, name: "삼성전자" }),
+      researchCompany({ provider: "anthropic", apiKey: API_KEY, name: "삼성전자" }),
     ).rejects.toMatchObject({
       kind: "credit",
       message: expect.stringContaining("크레딧"),
@@ -230,7 +231,7 @@ describe("researchCompany — 에러 처리", () => {
     );
 
     await expect(
-      researchCompany({ apiKey: API_KEY, name: "삼성전자" }),
+      researchCompany({ provider: "anthropic", apiKey: API_KEY, name: "삼성전자" }),
     ).rejects.toThrow(/tools\.0\.type: unexpected value/);
   });
 
@@ -244,7 +245,7 @@ describe("researchCompany — 에러 처리", () => {
     } as unknown as Response);
 
     await expect(
-      researchCompany({ apiKey: API_KEY, name: "삼성전자" }),
+      researchCompany({ provider: "anthropic", apiKey: API_KEY, name: "삼성전자" }),
     ).rejects.toThrow(/HTTP 500/);
   });
 
@@ -252,7 +253,7 @@ describe("researchCompany — 에러 처리", () => {
     fetchMock.mockRejectedValue(new TypeError("Failed to fetch"));
 
     await expect(
-      researchCompany({ apiKey: API_KEY, name: "삼성전자" }),
+      researchCompany({ provider: "anthropic", apiKey: API_KEY, name: "삼성전자" }),
     ).rejects.toMatchObject({ kind: "network" });
   });
 
@@ -265,7 +266,7 @@ describe("researchCompany — 에러 처리", () => {
     );
 
     await expect(
-      researchCompany({ apiKey: API_KEY, name: "삼성전자" }),
+      researchCompany({ provider: "anthropic", apiKey: API_KEY, name: "삼성전자" }),
     ).rejects.toMatchObject({ kind: "parse" });
   });
 });

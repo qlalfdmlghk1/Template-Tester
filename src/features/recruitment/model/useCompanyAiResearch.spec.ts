@@ -69,6 +69,7 @@ describe("useCompanyAiResearch", () => {
     expect(researchCompanyMock).toHaveBeenCalledWith({
       name: "삼성전자",
       targetJob: "개발자",
+      provider: "anthropic",
       apiKey: SAMPLE_KEY,
     });
   });
