@@ -7,6 +7,7 @@ import {
   hasResearch,
 } from "@/entities/company/model/company.type";
 import type { Company } from "@/entities/company/model/company.type";
+import { computeResearchProgress } from "@/entities/company/model/research";
 
 interface CompanyResearchCardProps {
   company: Company;
@@ -21,8 +22,41 @@ function ResearchSection({ title, body }: { title: string; body?: string }) {
   return (
     <section>
       <h4 className="m-0 mb-1 text-xs font-semibold text-textSecondary">{title}</h4>
+      {/* AI가 채운 값이 섞여 있으므로 HTML 로 렌더링하지 않는다 */}
       <p className="m-0 text-sm text-text whitespace-pre-wrap">{body}</p>
     </section>
+  );
+}
+
+/**
+ * 조사 완성도.
+ * 색으로만 구분하면 색각 이상 사용자가 읽을 수 없어 수치를 함께 적는다.
+ */
+function ResearchProgressBar({ company }: { company: Company }) {
+  const { filled, total, percent } = computeResearchProgress(company);
+
+  return (
+    <div className="flex items-center gap-2">
+      <div
+        className="flex-1 h-1.5 bg-border rounded-sm overflow-hidden"
+        role="progressbar"
+        aria-valuenow={percent}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label="조사 완성도"
+      >
+        <div
+          className={cn(
+            "h-full rounded-sm transition-[width]",
+            percent === 100 ? "bg-green-500" : "bg-blue-500",
+          )}
+          style={{ width: `${percent}%` }}
+        />
+      </div>
+      <span className="shrink-0 text-xs text-textSecondary tabular-nums">
+        {filled}/{total}
+      </span>
+    </div>
   );
 }
 
@@ -74,10 +108,15 @@ export function CompanyResearchCard({ company, onEdit, onDelete }: CompanyResear
         </div>
       </header>
 
+      <ResearchProgressBar company={company} />
+
       {hasResearch(company) ? (
         <div className="flex flex-col gap-3">
           <ResearchSection title="직무 설명" body={company.jobDescription} />
           <ResearchSection title="자격 요건" body={company.requirements} />
+          <ResearchSection title="인재상" body={company.talentProfile} />
+          <ResearchSection title="사업 내용" body={company.businessSummary} />
+          <ResearchSection title="최근 이슈" body={company.recentIssues} />
           <ResearchSection title="메모" body={company.researchNote} />
         </div>
       ) : (
