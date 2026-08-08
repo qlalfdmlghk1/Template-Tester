@@ -4,8 +4,26 @@
 
 - 이슈: [#81](https://github.com/qlalfdmlghk1/Template-Tester/issues/81) (Feat)
 - 브랜치: `feature/81-company-research-enhancement`
-- 단계: Phase 1 시작
+- 단계: **구현 완료, 손 검증 대기 중 (PR 미생성)**
 - 마지막 업데이트: 2026-08-08
+
+### ⏸️ 여기서 멈춘 이유
+
+AI 조사가 **Anthropic API 크레딧이 있어야** 동작하는데, 충전을 뒤로 미루기로 했다.
+Claude 구독(Pro/Max)과 API 크레딧은 **별개 결제**라 구독만으로는 API가 열리지 않는다.
+
+- 크레딧 없이도 동작하는 것: 인재상·사업 내용·최근 이슈 **입력란**, **채움률 표시**, 기존 기능 전부
+- 크레딧이 있어야 동작하는 것: **AI 자동 조사**뿐 (코드·테스트는 완성 상태)
+
+### ▶️ 이어서 할 때
+
+1. [console.anthropic.com](https://console.anthropic.com) → Plans & Billing에서 크레딧 충전 ($5면 수십 건)
+2. 앱에서 기업 수정 → "AI로 조사" 실행 → **결과가 사실과 맞는지 출처 링크로 대조**
+3. 그 결과를 보고 남은 ⚠️ 5건(#10·#11·#13·#16·#17) 판단
+4. `/pr` 로 PR 생성
+
+충전 대신 **무료 티어가 있는 다른 AI로 교체**하는 선택지도 있다. 그 경우
+`entities/company/api/research.api.ts`의 호출·파싱만 갈아끼우면 되고, UI·스키마·채움률은 그대로 쓴다.
 
 ---
 
