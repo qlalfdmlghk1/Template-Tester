@@ -1,5 +1,6 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { useDebounce } from "@/shared/lib/useDebounce";
 import { useToast } from "@/shared/ui/molecules/AppToast";
 import { useCompanies } from "@/entities/company/model/useCompanies";
 import { useApplications } from "@/entities/job-application/model/useApplications";
@@ -32,7 +33,7 @@ export function useCompanyResearch() {
   const [cascadeDelete, setCascadeDelete] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  const keyword = searchParams.get("q") ?? "";
+  const urlKeyword = searchParams.get("q") ?? "";
   const onlyResearched = searchParams.get("researched") === "1";
   const selectedCategories = useMemo(() => {
     const raw = searchParams.get("category")?.split(",") ?? [];
@@ -60,10 +61,33 @@ export function useCompanyResearch() {
     [setSearchParams],
   );
 
-  const setKeyword = useCallback(
-    (value: string) => updateParams({ q: value }),
-    [updateParams],
-  );
+  /**
+   * 입력창은 로컬 상태로 둔다.
+   *
+   * 타이핑마다 주소를 갱신하면 그때마다 리렌더가 일어나 한글 조합이 끊긴다
+   * ("삼성" → "ㅅ사삼ㅅ서성"). 입력은 즉시 로컬에 반영하고, 잠잠해진 뒤에만
+   * 주소·필터에 넘긴다.
+   */
+  const [keyword, setKeyword] = useState(urlKeyword);
+  const debouncedKeyword = useDebounce(keyword);
+
+  /** 우리가 방금 쓴 값인지 구분해, 되돌아온 주소로 입력창을 덮어쓰지 않는다 */
+  const lastWritten = useRef(urlKeyword);
+
+  useEffect(() => {
+    if (debouncedKeyword === lastWritten.current) return;
+
+    lastWritten.current = debouncedKeyword;
+    updateParams({ q: debouncedKeyword });
+  }, [debouncedKeyword, updateParams]);
+
+  // 뒤로가기 등으로 주소가 밖에서 바뀌면 입력창을 맞춘다
+  useEffect(() => {
+    if (urlKeyword === lastWritten.current) return;
+
+    lastWritten.current = urlKeyword;
+    setKeyword(urlKeyword);
+  }, [urlKeyword]);
 
   const setOnlyResearched = useCallback(
     (value: boolean) => updateParams({ researched: value ? "1" : null }),
@@ -77,7 +101,8 @@ export function useCompanyResearch() {
   );
 
   const filtered = useMemo(() => {
-    const query = keyword.trim().toLowerCase();
+    // 타이핑 중 매 글자마다 전체 목록을 다시 거르지 않는다
+    const query = debouncedKeyword.trim().toLowerCase();
 
     return companies.filter((company) => {
       if (onlyResearched && !hasResearch(company)) return false;
@@ -96,7 +121,7 @@ export function useCompanyResearch() {
         .filter(Boolean)
         .some((value) => value!.toLowerCase().includes(query));
     });
-  }, [companies, keyword, onlyResearched, selectedCategories]);
+  }, [companies, debouncedKeyword, onlyResearched, selectedCategories]);
 
   const researchedCount = useMemo(
     () => companies.filter(hasResearch).length,
