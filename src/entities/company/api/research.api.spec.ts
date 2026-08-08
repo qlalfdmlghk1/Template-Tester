@@ -190,6 +190,64 @@ describe("researchCompany — 에러 처리", () => {
     ).rejects.toMatchObject({ kind: "rateLimit" });
   });
 
+  it("크레딧 부족은 영어 원문 대신 안내 문구로 바꿔야 한다", async () => {
+    // 키 발급 후 충전을 안 한 상태가 가장 흔한 실패다
+    fetchMock.mockResolvedValue(
+      jsonResponse(
+        {
+          type: "error",
+          error: {
+            type: "invalid_request_error",
+            message:
+              "Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.",
+          },
+        },
+        400,
+      ),
+    );
+
+    await expect(
+      researchCompany({ apiKey: API_KEY, name: "삼성전자" }),
+    ).rejects.toMatchObject({
+      kind: "credit",
+      message: expect.stringContaining("크레딧"),
+    });
+  });
+
+  it("400 이면 응답 본문의 원인을 메시지에 담아야 한다", async () => {
+    // 상태 코드만 보여주면 무엇이 잘못됐는지 알 수 없다
+    fetchMock.mockResolvedValue(
+      jsonResponse(
+        {
+          type: "error",
+          error: {
+            type: "invalid_request_error",
+            message: "tools.0.type: unexpected value",
+          },
+        },
+        400,
+      ),
+    );
+
+    await expect(
+      researchCompany({ apiKey: API_KEY, name: "삼성전자" }),
+    ).rejects.toThrow(/tools\.0\.type: unexpected value/);
+  });
+
+  it("에러 본문을 읽지 못해도 상태 코드는 알려줘야 한다", async () => {
+    fetchMock.mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: async () => {
+        throw new Error("not json");
+      },
+    } as unknown as Response);
+
+    await expect(
+      researchCompany({ apiKey: API_KEY, name: "삼성전자" }),
+    ).rejects.toThrow(/HTTP 500/);
+  });
+
   it("네트워크 실패를 구분해야 한다", async () => {
     fetchMock.mockRejectedValue(new TypeError("Failed to fetch"));
 

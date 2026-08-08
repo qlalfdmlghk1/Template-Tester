@@ -112,8 +112,12 @@ export function AiKeyDialog({ onClose }: AiKeyDialogProps) {
             </a>
           </p>
           <p className="m-0">
-            콘솔에서 <strong className="font-semibold">지출 한도</strong>를 걸어두면 예상 밖의 요금을
-            막을 수 있습니다.
+            키를 만든 뒤 <strong className="font-semibold">Plans &amp; Billing에서 크레딧을 충전</strong>
+            해야 동작합니다. 충전 전에는 조사가 실패합니다.
+          </p>
+          <p className="m-0">
+            같은 화면에서 <strong className="font-semibold">지출 한도</strong>를 걸어두면 예상 밖의
+            요금을 막을 수 있습니다.
           </p>
         </div>
 
