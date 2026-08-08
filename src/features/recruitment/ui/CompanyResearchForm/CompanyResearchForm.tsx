@@ -14,6 +14,7 @@ import type {
 } from "@/entities/company/model/company.type";
 import { useCompanyAiResearch } from "../../model/useCompanyAiResearch";
 import { AiResearchPreview } from "../AiResearchPreview/AiResearchPreview";
+import { ResearchSourceLinks } from "../ResearchSourceLinks/ResearchSourceLinks";
 
 interface CompanyResearchFormProps {
   /** 수정 대상. null이면 신규 등록 */
@@ -340,6 +341,7 @@ export function CompanyResearchForm({
               placeholder="기업이 공표한 인재상·핵심 가치"
               className={cn(inputClass, "resize-y")}
             />
+            <ResearchSourceLinks urls={researchSources?.talentProfile} />
           </div>
 
           <div>
@@ -354,6 +356,7 @@ export function CompanyResearchForm({
               placeholder="주요 사업 영역·제품·서비스"
               className={cn(inputClass, "resize-y")}
             />
+            <ResearchSourceLinks urls={researchSources?.businessSummary} />
           </div>
 
           <div>
@@ -368,6 +371,7 @@ export function CompanyResearchForm({
               placeholder="실적·조직 개편·신사업 등 최근 소식"
               className={cn(inputClass, "resize-y")}
             />
+            <ResearchSourceLinks urls={researchSources?.recentIssues} />
           </div>
         </section>
       </div>
@@ -383,7 +387,12 @@ export function CompanyResearchForm({
         >
           취소
         </AppButton>
-        <AppButton type="submit" size="sm" loading={saving} disabled={!canSubmit}>
+        <AppButton
+          type="submit"
+          size="sm"
+          loading={saving}
+          disabled={!canSubmit}
+        >
           저장
         </AppButton>
       </div>

@@ -8,6 +8,7 @@ import {
 } from "@/entities/company/model/company.type";
 import type { Company } from "@/entities/company/model/company.type";
 import { computeResearchProgress } from "@/entities/company/model/research";
+import { ResearchSourceLinks } from "../ResearchSourceLinks/ResearchSourceLinks";
 
 interface CompanyResearchCardProps {
   company: Company;
@@ -16,7 +17,16 @@ interface CompanyResearchCardProps {
 }
 
 /** 조사 내용 한 덩어리 — 값이 없으면 통째로 숨긴다 */
-function ResearchSection({ title, body }: { title: string; body?: string }) {
+function ResearchSection({
+  title,
+  body,
+  sources,
+}: {
+  title: string;
+  body?: string;
+  /** AI가 채운 항목이면 근거 링크를 함께 보여준다 */
+  sources?: string[];
+}) {
   if (!body?.trim()) return null;
 
   return (
@@ -24,6 +34,7 @@ function ResearchSection({ title, body }: { title: string; body?: string }) {
       <h4 className="m-0 mb-1 text-xs font-semibold text-textSecondary">{title}</h4>
       {/* AI가 채운 값이 섞여 있으므로 HTML 로 렌더링하지 않는다 */}
       <p className="m-0 text-sm text-text whitespace-pre-wrap">{body}</p>
+      <ResearchSourceLinks urls={sources} />
     </section>
   );
 }
@@ -114,9 +125,21 @@ export function CompanyResearchCard({ company, onEdit, onDelete }: CompanyResear
         <div className="flex flex-col gap-3">
           <ResearchSection title="직무 설명" body={company.jobDescription} />
           <ResearchSection title="자격 요건" body={company.requirements} />
-          <ResearchSection title="인재상" body={company.talentProfile} />
-          <ResearchSection title="사업 내용" body={company.businessSummary} />
-          <ResearchSection title="최근 이슈" body={company.recentIssues} />
+          <ResearchSection
+            title="인재상"
+            body={company.talentProfile}
+            sources={company.researchSources?.talentProfile}
+          />
+          <ResearchSection
+            title="사업 내용"
+            body={company.businessSummary}
+            sources={company.researchSources?.businessSummary}
+          />
+          <ResearchSection
+            title="최근 이슈"
+            body={company.recentIssues}
+            sources={company.researchSources?.recentIssues}
+          />
           <ResearchSection title="메모" body={company.researchNote} />
         </div>
       ) : (
