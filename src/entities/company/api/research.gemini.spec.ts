@@ -166,6 +166,74 @@ describe("Gemini 조사 — 에러 처리", () => {
     ).rejects.toMatchObject({ kind: "rateLimit" });
   });
 
+  it("하루 한도면 오늘은 더 못 쓴다고 알려야 한다", async () => {
+    // 기다려도 소용없으므로 제공자 전환을 안내한다
+    fetchMock.mockResolvedValue(
+      jsonResponse(
+        {
+          error: {
+            message: "Quota exceeded",
+            details: [
+              {
+                violations: [
+                  { quotaId: "GenerateRequestsPerDayPerProjectPerModel" },
+                ],
+              },
+            ],
+          },
+        },
+        429,
+      ),
+    );
+
+    await expect(
+      researchCompany({ provider: "gemini", apiKey: API_KEY, name: "삼성전자" }),
+    ).rejects.toMatchObject({
+      kind: "rateLimit",
+      message: expect.stringContaining("하루 한도"),
+    });
+  });
+
+  it("분당 한도면 재시도 대기 시간을 알려야 한다", async () => {
+    fetchMock.mockResolvedValue(
+      jsonResponse(
+        {
+          error: {
+            message: "Quota exceeded",
+            details: [
+              {
+                violations: [
+                  { quotaId: "GenerateRequestsPerMinutePerProjectPerModel" },
+                ],
+              },
+              { "@type": "type.googleapis.com/google.rpc.RetryInfo", retryDelay: "39s" },
+            ],
+          },
+        },
+        429,
+      ),
+    );
+
+    await expect(
+      researchCompany({ provider: "gemini", apiKey: API_KEY, name: "삼성전자" }),
+    ).rejects.toMatchObject({
+      kind: "rateLimit",
+      message: expect.stringContaining("39초"),
+    });
+  });
+
+  it("한도 종류를 알 수 없으면 두 경우를 모두 안내해야 한다", async () => {
+    fetchMock.mockResolvedValue(
+      jsonResponse({ error: { message: "RESOURCE_EXHAUSTED: quota" } }, 429),
+    );
+
+    await expect(
+      researchCompany({ provider: "gemini", apiKey: API_KEY, name: "삼성전자" }),
+    ).rejects.toMatchObject({
+      message: expect.stringContaining("잠시 후 또는 내일"),
+    });
+  });
+
   it("그 외 실패는 응답 본문의 원인을 담아야 한다", async () => {
     // 모델명이 바뀐 경우 등 — 상태 코드만으로는 원인을 알 수 없다
     fetchMock.mockResolvedValue(

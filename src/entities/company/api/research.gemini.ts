@@ -13,7 +13,7 @@ import {
   buildResearchPrompt,
   networkError,
   parseResearchResult,
-  readErrorMessage,
+  readErrorBody,
 } from "./research.shared";
 import type {
   CompanyResearchResult,
@@ -61,6 +61,28 @@ function fallbackSources(data: GeminiResponse): string[] {
   ];
 }
 
+/**
+ * 어떤 한도에 걸렸는지 구분해 안내한다.
+ *
+ * 분당 한도면 잠시 뒤 다시 되지만, 하루 한도면 오늘은 더 못 쓴다 — 사용자가
+ * 기다릴지 제공자를 바꿀지 판단하려면 이 둘을 구분해 줘야 한다.
+ * 응답의 어느 필드에 담겨 올지 보장되지 않아, 본문 전체에서 단서를 찾는다.
+ */
+function describeQuotaError(raw: string): string {
+  if (/per\s*day|PerDay/i.test(raw)) {
+    return "Gemini 무료 하루 한도를 모두 썼습니다. 내일 다시 시도하거나 설정에서 Claude로 바꿔 주세요.";
+  }
+
+  if (/per\s*minute|PerMinute/i.test(raw)) {
+    const retryAfter = raw.match(/"retryDelay"\s*:\s*"(\d+)s"/)?.[1];
+    return retryAfter
+      ? `요청이 몰렸습니다. ${retryAfter}초 후 다시 시도해 주세요.`
+      : "요청이 몰렸습니다. 잠시 후 다시 시도해 주세요.";
+  }
+
+  return "Gemini 무료 사용량을 모두 썼습니다. 잠시 후 또는 내일 다시 시도해 주세요.";
+}
+
 export async function researchWithGemini(
   apiKey: string,
   target: CompanyResearchTarget,
@@ -90,7 +112,7 @@ export async function researchWithGemini(
   }
 
   if (!response.ok) {
-    const detail = await readErrorMessage(response);
+    const { message: detail, raw } = await readErrorBody(response);
 
     if (/API key not valid|API_KEY_INVALID/i.test(detail)) {
       throw new CompanyResearchError(
@@ -98,11 +120,8 @@ export async function researchWithGemini(
         "auth",
       );
     }
-    if (response.status === 429 || /quota|rate limit/i.test(detail)) {
-      throw new CompanyResearchError(
-        "Gemini 무료 사용량을 모두 썼습니다. 잠시 후 또는 내일 다시 시도해 주세요.",
-        "rateLimit",
-      );
+    if (response.status === 429 || /quota|rate limit/i.test(raw)) {
+      throw new CompanyResearchError(describeQuotaError(raw), "rateLimit");
     }
 
     throw new CompanyResearchError(

@@ -11,7 +11,7 @@ import {
   buildResearchPrompt,
   networkError,
   parseResearchResult,
-  readErrorMessage,
+  readErrorBody,
 } from "./research.shared";
 import type {
   CompanyResearchResult,
@@ -100,7 +100,7 @@ async function callApi(
       );
     }
 
-    const detail = await readErrorMessage(response);
+    const { message: detail } = await readErrorBody(response);
 
     // 키를 발급만 하고 충전을 안 한 상태가 가장 흔한 실패다
     if (/credit balance/i.test(detail)) {

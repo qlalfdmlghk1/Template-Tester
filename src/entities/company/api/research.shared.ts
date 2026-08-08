@@ -129,15 +129,27 @@ export function parseResearchResult(text: string): CompanyResearchResult {
   );
 }
 
-/** 실패 응답 본문에서 원인 문구를 꺼낸다. 본문에는 키가 포함되지 않는다. */
-export async function readErrorMessage(response: Response): Promise<string> {
+export interface ApiErrorBody {
+  /** 사용자에게 보여줄 원인 문구 */
+  message: string;
+  /**
+   * 응답 본문 원문(직렬화).
+   * 어떤 한도에 걸렸는지 같은 세부 사유는 `error.message` 가 아니라
+   * `details` 안에 들어오는 경우가 있어, 문자열 전체를 두고 찾는다.
+   */
+  raw: string;
+}
+
+/** 실패 응답 본문에서 원인을 꺼낸다. 본문에는 키가 포함되지 않는다. */
+export async function readErrorBody(response: Response): Promise<ApiErrorBody> {
   try {
-    const body = (await response.json()) as {
-      error?: { message?: string };
+    const body = (await response.json()) as { error?: { message?: string } };
+    return {
+      message: body.error?.message ?? "",
+      raw: JSON.stringify(body),
     };
-    return body.error?.message ?? "";
   } catch {
-    return "";
+    return { message: "", raw: "" };
   }
 }
 
