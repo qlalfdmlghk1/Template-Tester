@@ -1,12 +1,12 @@
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
 import { cn } from "@/shared/lib/cn";
-import { safeUrl } from "@/shared/lib/safeUrl";
 import {
   AI_RESEARCH_FIELDS,
   AI_RESEARCH_FIELD_LABELS,
 } from "@/entities/company/model/company.type";
 import type { AiResearchField } from "@/entities/company/model/company.type";
 import type { CompanyResearchResult } from "@/entities/company/api/research.api";
+import { ResearchSourceLinks } from "../ResearchSourceLinks/ResearchSourceLinks";
 
 interface AiResearchPreviewProps {
   result: CompanyResearchResult;
@@ -16,33 +16,6 @@ interface AiResearchPreviewProps {
   onToggleField: (field: AiResearchField) => void;
   onApply: () => void;
   onDismiss: () => void;
-}
-
-/** 항목별 근거 링크 — AI가 지어낸 내용인지 사용자가 직접 확인할 수 있어야 한다 */
-function SourceLinks({ urls }: { urls?: string[] }) {
-  // safeUrl 은 허용 스킴이 아니면 null 을 준다 — 걸러내야 링크로 쓸 수 있다
-  const safe = (urls ?? [])
-    .map(safeUrl)
-    .filter((url): url is string => url !== null);
-
-  if (safe.length === 0) return null;
-
-  return (
-    <p className="m-0 mt-1 flex flex-wrap gap-x-2 gap-y-0.5 text-xs">
-      <span className="text-textSecondary">출처</span>
-      {safe.map((url, index) => (
-        <a
-          key={url}
-          href={url}
-          target="_blank"
-          rel="noreferrer"
-          className="text-blue-600 underline"
-        >
-          [{index + 1}]
-        </a>
-      ))}
-    </p>
-  );
 }
 
 export function AiResearchPreview({
@@ -117,7 +90,7 @@ export function AiResearchPreview({
                   <span className="block mt-1 text-sm text-text whitespace-pre-wrap">
                     {result[field]}
                   </span>
-                  <SourceLinks urls={result.sources[field]} />
+                  <ResearchSourceLinks urls={result.sources[field]} />
                 </span>
               </label>
             </li>
