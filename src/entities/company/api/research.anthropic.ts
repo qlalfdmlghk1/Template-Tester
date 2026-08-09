@@ -9,6 +9,7 @@ import {
   CompanyResearchError,
   RESEARCH_SYSTEM_PROMPT,
   buildResearchPrompt,
+  isAbortError,
   networkError,
   parseResearchResult,
   readErrorBody,
@@ -55,6 +56,7 @@ function extractText(content: AnthropicContentBlock[]): string {
 async function callApi(
   apiKey: string,
   messages: unknown[],
+  signal?: AbortSignal,
 ): Promise<AnthropicResponse> {
   let response: Response;
 
@@ -81,8 +83,11 @@ async function callApi(
           },
         ],
       }),
+      signal,
     });
-  } catch {
+  } catch (cause) {
+    // 취소는 실패가 아니므로 네트워크 오류로 바꾸지 않는다
+    if (isAbortError(cause)) throw cause;
     throw networkError();
   }
 
@@ -122,13 +127,14 @@ async function callApi(
 export async function researchWithAnthropic(
   apiKey: string,
   target: CompanyResearchTarget,
+  signal?: AbortSignal,
 ): Promise<CompanyResearchResult> {
   const messages: unknown[] = [
     { role: "user", content: buildResearchPrompt(target) },
   ];
 
   for (let attempt = 0; attempt <= MAX_RESUMES; attempt += 1) {
-    const data = await callApi(apiKey, messages);
+    const data = await callApi(apiKey, messages, signal);
 
     // 서버 측 도구 루프가 한도에 걸린 것 — 그대로 이어붙여 재요청하면 이어서 진행된다
     if (data.stop_reason === "pause_turn") {

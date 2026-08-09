@@ -71,7 +71,62 @@ describe("useCompanyAiResearch", () => {
       targetJob: "개발자",
       provider: "anthropic",
       apiKey: SAMPLE_KEY,
+      signal: expect.any(AbortSignal),
     });
+  });
+
+  it("화면을 벗어나면 진행 중인 요청을 끊어야 한다", async () => {
+    // 조사는 수십 초 걸리는 호출이라, 떠난 뒤에도 돌면 무료 한도만 축낸다
+    let signal: AbortSignal | undefined;
+    researchCompanyMock.mockImplementation((input: { signal?: AbortSignal }) => {
+      signal = input.signal;
+      return new Promise(() => {});
+    });
+
+    const { result, unmount } = renderHook(() => useCompanyAiResearch());
+
+    act(() => {
+      void result.current.run({ name: "삼성전자" });
+    });
+    expect(signal?.aborted).toBe(false);
+
+    unmount();
+
+    expect(signal?.aborted).toBe(true);
+  });
+
+  it("취소된 요청의 실패는 에러로 표시하지 않아야 한다", async () => {
+    // 다시 조사하면 앞선 요청은 취소되는데, 그 실패를 화면에 남기지 않는다
+    researchCompanyMock.mockImplementationOnce(
+      (input: { signal?: AbortSignal }) =>
+        new Promise((_resolve, reject) => {
+          input.signal?.addEventListener("abort", () => {
+            const aborted = new Error("aborted");
+            aborted.name = "AbortError";
+            reject(aborted);
+          });
+        }),
+    );
+
+    const { result } = renderHook(() => useCompanyAiResearch());
+
+    act(() => {
+      void result.current.run({ name: "삼성전자" });
+    });
+
+    researchCompanyMock.mockResolvedValueOnce({
+      talentProfile: "새 결과",
+      sources: {},
+    });
+
+    await act(async () => {
+      await result.current.run({ name: "삼성전자" });
+    });
+
+    await waitFor(() => {
+      expect(result.current.result?.talentProfile).toBe("새 결과");
+    });
+    expect(result.current.error).toBeNull();
   });
 
   it("선택 항목을 토글할 수 있어야 한다", async () => {

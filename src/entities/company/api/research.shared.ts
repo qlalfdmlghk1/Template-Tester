@@ -24,6 +24,18 @@ export interface CompanyResearchTarget {
 export interface CompanyResearchInput extends CompanyResearchTarget {
   provider: AiProvider;
   apiKey: string;
+  /** 화면을 벗어나면 끊기 위한 취소 신호 */
+  signal?: AbortSignal;
+}
+
+/**
+ * 사용자가 취소한 요청인가.
+ *
+ * 취소는 실패가 아니므로 네트워크 오류로 뭉뚱그리면 안 된다 — 이미 떠난 화면에
+ * 에러를 남기거나, 뒤늦은 응답이 반영되는 일이 생긴다.
+ */
+export function isAbortError(cause: unknown): boolean {
+  return cause instanceof Error && cause.name === "AbortError";
 }
 
 export interface CompanyResearchResult {
