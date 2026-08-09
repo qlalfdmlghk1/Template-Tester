@@ -30,6 +30,11 @@ export interface Company {
   postingUrl?: string;
   /** 근무 위치 */
   location?: string;
+  /**
+   * 연봉 (만원 단위). 없으면 미정 — 공고 전에는 모르는 경우가 많다.
+   * 실제 제시액은 공고마다 다르므로 기업 단위 대략치로 본다.
+   */
+  salary?: number;
 
   // ── 비채용기간용 사전 조사 ────────────────────────────────
   // 기존 시트의 "채용 정보" 탭(기업명·직무·직무 설명·자격 요건)에 대응한다.
@@ -134,6 +139,7 @@ export type CompanyInput = Pick<Company, "name"> &
       | "categories"
       | "postingUrl"
       | "location"
+      | "salary"
       | "targetJob"
       | "jobDescription"
       | "requirements"

@@ -84,6 +84,7 @@ export async function getCompanies(): Promise<Company[]> {
         categories: Array.isArray(data.categories) ? data.categories : undefined,
         postingUrl: data.postingUrl,
         location: data.location,
+        salary: typeof data.salary === "number" ? data.salary : undefined,
         targetJob: data.targetJob,
         jobDescription: data.jobDescription,
         requirements: data.requirements,

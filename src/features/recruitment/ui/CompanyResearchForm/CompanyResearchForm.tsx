@@ -17,6 +17,7 @@ import type {
   CompanyInput,
   CompanyPreference,
 } from "@/entities/company/model/company.type";
+import { parseSalary } from "@/entities/company/model/salary";
 import { useCompanyAiResearch } from "../../model/useCompanyAiResearch";
 import { AiResearchPreview } from "../AiResearchPreview/AiResearchPreview";
 import { ResearchSourceLinks } from "../ResearchSourceLinks/ResearchSourceLinks";
@@ -53,6 +54,10 @@ export function CompanyResearchForm({
   const [targetJob, setTargetJob] = useState(company?.targetJob ?? "");
   const [postingUrl, setPostingUrl] = useState(company?.postingUrl ?? "");
   const [location, setLocation] = useState(company?.location ?? "");
+  // 숫자만 담는다 — 비워 두면 미정
+  const [salary, setSalary] = useState(
+    company?.salary ? String(company.salary) : "",
+  );
   const [jobDescription, setJobDescription] = useState(
     company?.jobDescription ?? "",
   );
@@ -132,6 +137,7 @@ export function CompanyResearchForm({
       targetJob: targetJob.trim() || undefined,
       postingUrl: postingUrl.trim() || undefined,
       location: location.trim() || undefined,
+      salary: parseSalary(salary),
       jobDescription: jobDescription.trim() || undefined,
       requirements: requirements.trim() || undefined,
       researchNote: researchNote.trim() || undefined,
@@ -203,6 +209,31 @@ export function CompanyResearchForm({
               placeholder="예: 판교"
               className={inputClass}
             />
+          </div>
+
+          <div>
+            <label htmlFor="research-salary" className={labelClass}>
+              연봉{" "}
+              <span className="font-normal text-textSecondary">(선택)</span>
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                id="research-salary"
+                value={salary}
+                inputMode="numeric"
+                // 붙여넣기로 "4,000" 이 들어와도 숫자만 남긴다
+                onChange={(event) =>
+                  setSalary(event.target.value.replace(/[^0-9]/g, ""))
+                }
+                placeholder="예: 4000"
+                aria-describedby="research-salary-hint"
+                className={cn(inputClass, "flex-1 min-w-0")}
+              />
+              <span className="shrink-0 text-sm text-textSecondary">만원</span>
+            </div>
+            <p id="research-salary-hint" className="mt-1 text-xs text-textSecondary">
+              비워 두면 미정으로 둡니다. 공고마다 달라지므로 대략치로 적습니다.
+            </p>
           </div>
 
           <fieldset className="m-0 p-0 border-0">
