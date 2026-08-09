@@ -10,7 +10,6 @@ import {
   COMPANY_CATEGORY_CLASSES,
   COMPANY_CATEGORY_LABELS,
 } from "@/entities/company/model/company.type";
-import { AppConfirmDialog } from "@/shared/ui/molecules/AppConfirmDialog";
 import { useCompanyResearch } from "@/features/recruitment/model/useCompanyResearch";
 import { CompanyResearchCard } from "@/features/recruitment/ui/CompanyResearchCard/CompanyResearchCard";
 
@@ -134,7 +133,6 @@ export default function CompanyResearch() {
                     company={company}
                     onOpen={() => goToForm(`/companies/research/${company.id}`)}
                     onEdit={() => goToForm(`/companies/research/${company.id}/edit`)}
-                    onDelete={() => page.requestDelete(company)}
                   />
                 ))}
               </ul>
@@ -143,35 +141,6 @@ export default function CompanyResearch() {
         )}
       </div>
 
-      <AppConfirmDialog
-        open={page.deleteTarget !== null}
-        danger
-        title="기업을 삭제할까요?"
-        description={`"${page.deleteTarget?.name ?? ""}" 의 조사 내용이 사라집니다.`}
-        confirmText="삭제"
-        loading={page.saving}
-        onConfirm={page.confirmDelete}
-        onCancel={page.cancelDelete}
-      >
-        {page.deleteTargetApplicationCount > 0 && (
-          <label className="flex items-start gap-2 px-3 py-2 bg-gray-100 rounded-sm cursor-pointer">
-            <input
-              type="checkbox"
-              checked={page.cascadeDelete}
-              onChange={(event) => page.setCascadeDelete(event.target.checked)}
-              className="mt-0.5"
-            />
-            <span className="text-sm text-text">
-              이 기업의 지원 건 {page.deleteTargetApplicationCount}건도 함께
-              삭제
-              <span className="block text-xs text-textSecondary">
-                체크하지 않으면 지원 건은 남지만 기업 정보가 끊겨 「(삭제된
-                기업)」으로 표시됩니다.
-              </span>
-            </span>
-          </label>
-        )}
-      </AppConfirmDialog>
     </div>
   );
 }

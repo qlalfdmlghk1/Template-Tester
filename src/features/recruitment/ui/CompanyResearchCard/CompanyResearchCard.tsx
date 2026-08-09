@@ -13,7 +13,6 @@ interface CompanyResearchCardProps {
   company: Company;
   onOpen: () => void;
   onEdit: () => void;
-  onDelete: () => void;
 }
 
 /** 목록에서 훑기 좋게 줄이는 길이 — 전문은 보기 화면에서 읽는다 */
@@ -70,7 +69,6 @@ export function CompanyResearchCard({
   company,
   onOpen,
   onEdit,
-  onDelete,
 }: CompanyResearchCardProps) {
   // 공고 링크는 사용자가 올린 xlsx에서 온 값이라 허용 스킴만 링크로 만든다
   const postingUrl = safeUrl(company.postingUrl);
@@ -81,14 +79,7 @@ export function CompanyResearchCard({
       <header className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-1.5">
-            {/* 카드 어디를 눌러도 열리게 하되, 접근성을 위해 제목을 버튼으로 둔다 */}
-            <button
-              type="button"
-              onClick={onOpen}
-              className="m-0 p-0 bg-transparent border-0 text-base font-semibold text-text text-left cursor-pointer hover:underline"
-            >
-              {company.name}
-            </button>
+            <h3 className="m-0 text-base font-semibold text-text">{company.name}</h3>
             {company.categories?.map((category) => (
               <span
                 key={category}
@@ -117,12 +108,13 @@ export function CompanyResearchCard({
           </div>
         </div>
 
+        {/* 삭제는 편집 화면 안으로 옮겼다 — 목록에서 잘못 누르면 되돌릴 수 없다 */}
         <div className="flex shrink-0 gap-1">
+          <AppButton variant="outline" size="xs" onClick={onOpen}>
+            보기
+          </AppButton>
           <AppButton variant="ghost" color="gray" size="xs" onClick={onEdit}>
             수정
-          </AppButton>
-          <AppButton variant="ghost" color="red" size="xs" onClick={onDelete}>
-            삭제
           </AppButton>
         </div>
       </header>
