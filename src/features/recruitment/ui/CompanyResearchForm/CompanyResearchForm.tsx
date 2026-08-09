@@ -119,7 +119,12 @@ export function CompanyResearchForm({
       if (!value) return;
 
       aiFieldSetters[field](value);
-      nextSources[field] = ai.result?.sources[field];
+
+      // 출처가 없을 때 undefined 를 넣으면 수정 저장이 Firestore 에서 거부된다
+      // (toUpdatePayload 는 중첩 객체를 훑지 않아 안쪽 undefined 가 그대로 나간다)
+      const sources = ai.result?.sources[field];
+      if (sources?.length) nextSources[field] = sources;
+      else delete nextSources[field];
     });
 
     setResearchSources(nextSources);
@@ -367,16 +372,29 @@ export function CompanyResearchForm({
                 자소서·면접에서 바로 인용할 항목입니다.
               </p>
             </div>
-            <AppButton
-              type="button"
-              variant="outline"
-              size="xs"
-              onClick={handleResearch}
-              loading={ai.isResearching}
-              disabled={!canResearch}
-            >
-              AI로 조사
-            </AppButton>
+            <div className="flex items-center gap-1.5">
+              {/* 키를 이미 저장한 뒤에도 들어올 길이 있어야 한다 —
+                  잘못된 키를 넣으면 안내 문구가 사라져 고칠 방법이 없어진다 */}
+              <AppButton
+                type="button"
+                variant="ghost"
+                color="gray"
+                size="xs"
+                onClick={onOpenKeySettings}
+              >
+                AI 설정
+              </AppButton>
+              <AppButton
+                type="button"
+                variant="outline"
+                size="xs"
+                onClick={handleResearch}
+                loading={ai.isResearching}
+                disabled={!canResearch}
+              >
+                AI로 조사
+              </AppButton>
+            </div>
           </header>
 
           {!ai.hasApiKey && (

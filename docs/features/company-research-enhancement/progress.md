@@ -630,3 +630,29 @@ Claude를 쓰려면 [console.anthropic.com](https://console.anthropic.com) → P
 **다음 작업**
 
 - `/pr`
+
+---
+
+### Commit — 2026-08-09 20:20
+
+- Message: `Fix:#81 AI 조사 결과 저장 실패와 AI 설정 재진입 경로 수정`
+- Issue: `#81`
+- Jira: 미사용
+
+**변경 요약**
+
+- `/review-converge` Round 1 자동 반영 — 확인된 Blocker 3건
+  1. 출처 없는 항목 반영 시 `researchSources[field] = undefined` → **수정 저장이 Firestore 에서 거부**되던 문제. 값이 있을 때만 대입하고 없으면 키를 지움
+  2. Gemini fallback 출처의 `title: undefined` → **신규 등록도 거부**되던 문제. 제목이 없으면 키 자체를 만들지 않음
+  3. 키 저장 후 AI 설정에 다시 들어갈 경로가 없어, 잘못된 키를 넣으면 복구 불가하던 문제. 조사 패널 헤더에 "AI 설정" 버튼 상시 노출
+- FSD 방향 위반 해소 — `AI_PROVIDERS`/`AiProvider`를 `shared/config/aiProvider.ts`로 옮기고 `entities`가 재수출(`shared → entities` 역방향 import 제거)
+- 전체 472건 통과, build 통과
+
+**결정 로그**
+
+- **왜 저장이 깨졌는가**: `toUpdatePayload`는 주석대로 최상위만 훑고(중첩 객체는 통째 교체 전제), `stripUndefined`는 `isPlainObject`가 배열을 제외해 **배열 안 객체까지 내려가지 않는다**. 두 구멍이 각각 수정 경로와 신규 경로를 깼다. 공용 유틸을 고치는 대신 **값을 만드는 쪽에서 undefined 를 만들지 않도록** 막았다 — 유틸 변경은 다른 엔티티 전체에 영향이 간다
+- `npm run lint` 실패 37건은 **이 PR이 건드리지 않은 파일**(스토리북 스토리 4개, 기존 페이지·훅 6개)의 기존 문제다. 범위 밖이라 손대지 않고 분리 보고
+
+**다음 작업**
+
+- 리뷰 수렴 Round 2

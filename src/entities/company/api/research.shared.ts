@@ -7,10 +7,11 @@
 
 import type { AiResearchField, ResearchSource } from "../model/company.type";
 
-/** 사용자가 고를 수 있는 AI 제공자 */
-export const AI_PROVIDERS = ["gemini", "anthropic"] as const;
+// 제공자 목록은 키 보관(shared/lib/useAiKey)과 공유하므로 shared 에 둔다
+import type { AiProvider } from "@/shared/config/aiProvider";
 
-export type AiProvider = (typeof AI_PROVIDERS)[number];
+export { AI_PROVIDERS } from "@/shared/config/aiProvider";
+export type { AiProvider } from "@/shared/config/aiProvider";
 
 export interface CompanyResearchTarget {
   /** 기업명 */
