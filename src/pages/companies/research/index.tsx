@@ -68,7 +68,7 @@ export default function CompanyResearch() {
                 type="search"
                 value={page.keyword}
                 onChange={(event) => page.setKeyword(event.target.value)}
-                placeholder="기업명·직무·조사 내용 검색"
+                placeholder="기업명·직무·직무 설명·자격 요건 검색"
                 aria-label="기업 검색"
                 className="flex-1 min-w-[200px] max-w-[360px] px-3 py-1.5 text-sm bg-surface text-text border border-border rounded-sm"
               />
