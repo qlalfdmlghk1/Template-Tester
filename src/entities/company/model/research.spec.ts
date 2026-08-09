@@ -74,20 +74,29 @@ describe("computeResearchProgress", () => {
   });
 });
 
-describe("hasResearch — 신규 필드 추가 후에도 기준이 바뀌지 않아야 한다", () => {
-  it("기존 4개 필드가 비어 있으면, 신규 필드가 채워져 있어도 false여야 한다", () => {
-    // 판정 기준을 바꾸면 기존 기업의 "조사 완료" 표시가 흔들리므로 의도적으로 유지한다
+describe("hasResearch — 채움률과 같은 항목을 봐야 한다", () => {
+  it("AI 조사 항목만 채워져 있어도 true여야 한다", () => {
+    // 어긋나면 카드에서 진행바는 3/7 인데 "조사 내용 없음"이 함께 뜨고,
+    // "조사 완료만" 필터에서도 사라진다
     const company = makeCompany({
       talentProfile: "도전하는 인재",
       businessSummary: "반도체",
       recentIssues: "신규 공장 착공",
     });
 
-    expect(hasResearch(company)).toBe(false);
+    expect(hasResearch(company)).toBe(true);
     expect(computeResearchProgress(company).filled).toBe(3);
   });
 
   it("기존 필드가 하나라도 채워져 있으면 true여야 한다", () => {
     expect(hasResearch(makeCompany({ targetJob: "개발자" }))).toBe(true);
+  });
+
+  it("아무것도 채워져 있지 않으면 false여야 한다", () => {
+    expect(hasResearch(makeCompany({}))).toBe(false);
+  });
+
+  it("공백만 채워져 있으면 false여야 한다", () => {
+    expect(hasResearch(makeCompany({ talentProfile: "   " }))).toBe(false);
   });
 });

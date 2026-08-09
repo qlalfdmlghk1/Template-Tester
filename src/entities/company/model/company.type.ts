@@ -153,12 +153,23 @@ export type CompanyInput = Pick<Company, "name"> &
     >
   >;
 
-/** 사전 조사 내용이 하나라도 채워져 있는가 */
+/**
+ * 사전 조사 내용이 하나라도 채워져 있는가.
+ *
+ * AI 조사 항목도 함께 본다 — 안 그러면 AI 로만 채운 기업이 카드에서
+ * "조사 내용 없음"으로 뜨면서 진행바는 3/7 을 그리는 모순이 생기고,
+ * "조사 완료만" 필터에서도 사라진다.
+ *
+ * OR 판정이라 항목을 늘려도 기존에 완료였던 기업이 미완료로 바뀌지는 않는다.
+ */
 export function hasResearch(company: Company): boolean {
   return Boolean(
     company.targetJob?.trim() ||
       company.jobDescription?.trim() ||
       company.requirements?.trim() ||
-      company.researchNote?.trim(),
+      company.researchNote?.trim() ||
+      company.talentProfile?.trim() ||
+      company.businessSummary?.trim() ||
+      company.recentIssues?.trim(),
   );
 }
