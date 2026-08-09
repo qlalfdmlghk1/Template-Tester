@@ -123,13 +123,17 @@ export function CompanyResearchCard({
 
       <ResearchProgressBar company={company} />
 
-      {hasResearch(company) ? (
+      {/* 요약할 본문이 없으면 빈 문단을 그리지 않는다 — 관심 직무만 적은 기업이 그렇고,
+          그 직무는 이미 위 헤더에 나와 있다 */}
+      {summary ? (
         // 전문은 보기 화면에서 읽는다 — 목록에서는 어떤 기업인지 가늠할 만큼만
         <p className="m-0 text-sm text-textSecondary line-clamp-2">{summary}</p>
       ) : (
-        <p className="m-0 text-sm text-textSecondary">
-          아직 조사 내용이 없습니다. 다음 반기에 지원할 기업이라면 미리 채워두세요.
-        </p>
+        !hasResearch(company) && (
+          <p className="m-0 text-sm text-textSecondary">
+            아직 조사 내용이 없습니다. 다음 반기에 지원할 기업이라면 미리 채워두세요.
+          </p>
+        )
       )}
     </li>
   );
