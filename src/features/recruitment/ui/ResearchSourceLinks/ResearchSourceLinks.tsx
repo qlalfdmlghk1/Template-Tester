@@ -46,8 +46,26 @@ export function ResearchSourceLinks({ sources }: ResearchSourceLinksProps) {
         출처 {safe.length}
       </button>
 
-      {open && (
-        <ul className="flex flex-col gap-1 m-0 mt-1 p-0 list-none">
+      {/*
+        내용 높이가 출처 개수마다 달라 고정값을 쓸 수 없다.
+        grid 행 높이를 0fr↔1fr 로 전환하면 높이를 재지 않고도 부드럽게 여닫힌다.
+        접혔을 때 `invisible` 을 주는 이유는 링크가 탭 이동에 잡히지 않게 하기 위함이다.
+      */}
+      <div
+        className={cn(
+          "grid transition-[grid-template-rows] duration-200 ease-out",
+          open ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
+        )}
+      >
+        <ul
+          // 접혔을 때 화면에서만 가리면 스크린리더·탭 이동에는 그대로 남는다.
+          // CSS 가 아니라 DOM 속성으로 숨겨야 실제로 빠진다.
+          aria-hidden={!open}
+          className={cn(
+            "flex flex-col gap-1 m-0 p-0 list-none overflow-hidden transition-opacity duration-200",
+            open ? "mt-1 opacity-100" : "opacity-0",
+          )}
+        >
           {safe.map((source, index) => (
             <li key={source.url}>
               <a
@@ -55,6 +73,7 @@ export function ResearchSourceLinks({ sources }: ResearchSourceLinksProps) {
                 target="_blank"
                 rel="noreferrer"
                 title={source.url}
+                tabIndex={open ? undefined : -1}
                 className="inline-flex items-center gap-1 max-w-full text-xs text-blue-600 hover:underline"
               >
                 <AppIcon name="arrow-top-right-on-square" size={12} className="shrink-0" />
@@ -63,7 +82,7 @@ export function ResearchSourceLinks({ sources }: ResearchSourceLinksProps) {
             </li>
           ))}
         </ul>
-      )}
+      </div>
     </div>
   );
 }
