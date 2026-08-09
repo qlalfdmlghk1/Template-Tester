@@ -18,6 +18,7 @@ import type {
 export {
   AI_PROVIDERS,
   CompanyResearchError,
+  isAbortError,
 } from "./research.shared";
 export type {
   AiProvider,
@@ -30,9 +31,10 @@ export type {
 export async function researchCompany({
   provider,
   apiKey,
+  signal,
   ...target
 }: CompanyResearchInput): Promise<CompanyResearchResult> {
   return provider === "gemini"
-    ? researchWithGemini(apiKey, target)
-    : researchWithAnthropic(apiKey, target);
+    ? researchWithGemini(apiKey, target, signal)
+    : researchWithAnthropic(apiKey, target, signal);
 }

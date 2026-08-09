@@ -11,6 +11,7 @@ import {
   CompanyResearchError,
   RESEARCH_SYSTEM_PROMPT,
   buildResearchPrompt,
+  isAbortError,
   networkError,
   parseResearchResult,
   readErrorBody,
@@ -103,6 +104,7 @@ function describeQuotaError(raw: string): string {
 export async function researchWithGemini(
   apiKey: string,
   target: CompanyResearchTarget,
+  signal?: AbortSignal,
 ): Promise<CompanyResearchResult> {
   let response: Response;
 
@@ -123,8 +125,11 @@ export async function researchWithGemini(
         // 응답 텍스트에서 직접 파싱한다
         tools: [{ google_search: {} }],
       }),
+      signal,
     });
-  } catch {
+  } catch (cause) {
+    // 취소는 실패가 아니므로 네트워크 오류로 바꾸지 않는다
+    if (isAbortError(cause)) throw cause;
     throw networkError();
   }
 
