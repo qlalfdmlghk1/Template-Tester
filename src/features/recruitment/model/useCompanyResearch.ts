@@ -1,41 +1,125 @@
-import { useCallback, useMemo, useState } from "react";
-import { useToast } from "@/shared/ui/molecules/AppToast";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import { useDebounce } from "@/shared/lib/useDebounce";
 import { useCompanies } from "@/entities/company/model/useCompanies";
-import { useApplications } from "@/entities/job-application/model/useApplications";
-import { deleteApplicationsByCompany } from "@/entities/job-application/api/application.api";
-import { hasResearch } from "@/entities/company/model/company.type";
-import type {
-  Company,
-  CompanyCategory,
-  CompanyInput,
+import {
+  COMPANY_CATEGORIES,
+  COMPANY_PREFERENCES,
+  hasResearch,
 } from "@/entities/company/model/company.type";
+import type {
+  CompanyCategory,
+  CompanyPreference,
+} from "@/entities/company/model/company.type";
+import { sortByPreference } from "@/entities/company/model/preference";
 
 /**
- * 기업 조사 화면.
- * 지원 여부와 무관하게 기업 단위로 직무 설명·자격 요건을 모아 보고 편집한다.
+ * 기업 조사 목록 화면.
+ *
+ * 보기·등록·수정은 별도 페이지에서 처리한다. 삭제도 편집 화면으로 옮겼다 —
+ * 목록 카드에 파괴적인 버튼을 두면 잘못 누르기 쉽다.
+ *
+ * 검색어·필터는 URL 쿼리에 둔다. 수정 페이지에 다녀와도 유지돼야 하고,
+ * 그 김에 필터가 걸린 목록을 링크로 공유할 수도 있다.
  */
 export function useCompanyResearch() {
-  const { companies, isLoading, error, addCompany, editCompany, removeCompany, reload } =
-    useCompanies();
-  // 기업을 지울 때 딸린 지원 건이 몇 건인지 보여주기 위해 함께 읽는다
-  const { applications, reload: reloadApplications } = useApplications();
-  const { showToast } = useToast();
+  const { companies, isLoading, error, reload } = useCompanies();
 
-  const [keyword, setKeyword] = useState("");
-  const [onlyResearched, setOnlyResearched] = useState(false);
-  const [selectedCategories, setSelectedCategories] = useState<CompanyCategory[]>([]);
-  /** undefined = 닫힘, null = 신규 등록, 객체 = 수정 */
-  const [formTarget, setFormTarget] = useState<Company | null | undefined>(undefined);
-  const [deleteTarget, setDeleteTarget] = useState<Company | null>(null);
-  /** 기업과 함께 딸린 지원 건도 지울지 */
-  const [cascadeDelete, setCascadeDelete] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const urlKeyword = searchParams.get("q") ?? "";
+  const onlyResearched = searchParams.get("researched") === "1";
+  const selectedPreferences = useMemo(() => {
+    const raw = searchParams.get("preference")?.split(",") ?? [];
+    return raw.filter((value): value is CompanyPreference =>
+      COMPANY_PREFERENCES.includes(value as CompanyPreference),
+    );
+  }, [searchParams]);
+
+  const selectedCategories = useMemo(() => {
+    const raw = searchParams.get("category")?.split(",") ?? [];
+    return raw.filter((value): value is CompanyCategory =>
+      COMPANY_CATEGORIES.includes(value as CompanyCategory),
+    );
+  }, [searchParams]);
+
+  /** 빈 값은 쿼리에서 빼서 주소가 지저분해지지 않게 한다 */
+  const updateParams = useCallback(
+    (patch: Record<string, string | null>) => {
+      setSearchParams(
+        (current) => {
+          const next = new URLSearchParams(current);
+          Object.entries(patch).forEach(([key, value]) => {
+            if (value) next.set(key, value);
+            else next.delete(key);
+          });
+          return next;
+        },
+        // 검색어는 타이핑마다 바뀌므로 기록을 쌓지 않는다
+        { replace: true },
+      );
+    },
+    [setSearchParams],
+  );
+
+  /**
+   * 입력창은 로컬 상태로 둔다.
+   *
+   * 타이핑마다 주소를 갱신하면 그때마다 리렌더가 일어나 한글 조합이 끊긴다
+   * ("삼성" → "ㅅ사삼ㅅ서성"). 입력은 즉시 로컬에 반영하고, 잠잠해진 뒤에만
+   * 주소·필터에 넘긴다.
+   */
+  const [keyword, setKeyword] = useState(urlKeyword);
+  const debouncedKeyword = useDebounce(keyword);
+
+  /** 우리가 방금 쓴 값인지 구분해, 되돌아온 주소로 입력창을 덮어쓰지 않는다 */
+  const lastWritten = useRef(urlKeyword);
+
+  useEffect(() => {
+    if (debouncedKeyword === lastWritten.current) return;
+
+    lastWritten.current = debouncedKeyword;
+    updateParams({ q: debouncedKeyword });
+  }, [debouncedKeyword, updateParams]);
+
+  // 뒤로가기 등으로 주소가 밖에서 바뀌면 입력창을 맞춘다.
+  // effect 로 하면 한 박자 늦게 반영되므로 렌더 중에 조정한다(React 권장 패턴).
+  const [syncedKeyword, setSyncedKeyword] = useState(urlKeyword);
+  if (syncedKeyword !== urlKeyword) {
+    setSyncedKeyword(urlKeyword);
+    setKeyword(urlKeyword);
+  }
+
+  const setOnlyResearched = useCallback(
+    (value: boolean) => updateParams({ researched: value ? "1" : null }),
+    [updateParams],
+  );
+
+  const setSelectedPreferences = useCallback(
+    (values: CompanyPreference[]) =>
+      updateParams({ preference: values.length > 0 ? values.join(",") : null }),
+    [updateParams],
+  );
+
+  const setSelectedCategories = useCallback(
+    (values: CompanyCategory[]) =>
+      updateParams({ category: values.length > 0 ? values.join(",") : null }),
+    [updateParams],
+  );
 
   const filtered = useMemo(() => {
-    const query = keyword.trim().toLowerCase();
+    // 타이핑 중 매 글자마다 전체 목록을 다시 거르지 않는다
+    const query = debouncedKeyword.trim().toLowerCase();
 
-    return companies.filter((company) => {
+    const matched = companies.filter((company) => {
       if (onlyResearched && !hasResearch(company)) return false;
+
+      if (
+        selectedPreferences.length > 0 &&
+        !(company.preference && selectedPreferences.includes(company.preference))
+      ) {
+        return false;
+      }
 
       // 분류는 여러 개 달 수 있으므로 하나라도 걸리면 통과시킨다
       if (
@@ -47,74 +131,28 @@ export function useCompanyResearch() {
 
       if (!query) return true;
 
+      // 인재상·사업 내용·최근 이슈는 일부러 뺐다.
+      // AI가 채우는 항목이라 문단 단위로 길어, 인덱스 없이 전건을 훑는 지금 방식에서는
+      // 부담이 커진다. 검색이 필요해지면 별도 색인을 두고 다시 검토한다.
       return [company.name, company.targetJob, company.jobDescription, company.requirements]
         .filter(Boolean)
         .some((value) => value!.toLowerCase().includes(query));
     });
-  }, [companies, keyword, onlyResearched, selectedCategories]);
+
+    // 가고 싶은 곳이 위로 — 목록의 목적이 "어디에 힘을 쏟을지 고르는 것"이다
+    return sortByPreference(matched);
+  }, [
+    companies,
+    debouncedKeyword,
+    onlyResearched,
+    selectedCategories,
+    selectedPreferences,
+  ]);
 
   const researchedCount = useMemo(
     () => companies.filter(hasResearch).length,
     [companies],
   );
-
-  const submitForm = useCallback(
-    async (input: CompanyInput) => {
-      setSaving(true);
-      try {
-        if (formTarget) {
-          await editCompany(formTarget.id, input);
-        } else {
-          await addCompany(input);
-        }
-        setFormTarget(undefined);
-        showToast(formTarget ? "기업 정보를 수정했습니다." : "기업을 추가했습니다.");
-      } catch (cause) {
-        console.error("기업 저장 실패:", cause);
-        showToast("저장하지 못했습니다. 잠시 후 다시 시도해 주세요.", "error");
-      } finally {
-        setSaving(false);
-      }
-    },
-    [formTarget, addCompany, editCompany, showToast],
-  );
-
-  /** 삭제하려는 기업에 걸린 지원 건 수 */
-  const deleteTargetApplicationCount = useMemo(
-    () =>
-      deleteTarget
-        ? applications.filter((application) => application.companyId === deleteTarget.id).length
-        : 0,
-    [deleteTarget, applications],
-  );
-
-  const confirmDelete = useCallback(async () => {
-    if (!deleteTarget) return;
-
-    setSaving(true);
-    try {
-      // 지원 건을 먼저 지운다 — 기업이 먼저 사라지면 참조가 끊긴 지원 건이 남는다
-      let removedApplications = 0;
-      if (cascadeDelete) {
-        removedApplications = await deleteApplicationsByCompany(deleteTarget.id);
-      }
-
-      await removeCompany(deleteTarget.id);
-      if (removedApplications > 0) await reloadApplications();
-
-      setDeleteTarget(null);
-      showToast(
-        removedApplications > 0
-          ? `기업과 지원 건 ${removedApplications}건을 삭제했습니다.`
-          : "기업을 삭제했습니다.",
-      );
-    } catch (cause) {
-      console.error("기업 삭제 실패:", cause);
-      showToast("삭제하지 못했습니다. 잠시 후 다시 시도해 주세요.", "error");
-    } finally {
-      setSaving(false);
-    }
-  }, [deleteTarget, cascadeDelete, removeCompany, reloadApplications, showToast]);
 
   return {
     companies: filtered,
@@ -130,25 +168,7 @@ export function useCompanyResearch() {
     setOnlyResearched,
     selectedCategories,
     setSelectedCategories,
-
-    formTarget,
-    openCreateForm: () => setFormTarget(null),
-    openEditForm: (company: Company) => setFormTarget(company),
-    closeForm: () => setFormTarget(undefined),
-    submitForm,
-
-    deleteTarget,
-    deleteTargetApplicationCount,
-    cascadeDelete,
-    setCascadeDelete,
-    requestDelete: (company: Company) => {
-      setDeleteTarget(company);
-      // 딸린 지원 건까지 지우는 것은 매번 새로 선택하게 둔다
-      setCascadeDelete(false);
-    },
-    cancelDelete: () => setDeleteTarget(null),
-    confirmDelete,
-
-    saving,
+    selectedPreferences,
+    setSelectedPreferences,
   };
 }

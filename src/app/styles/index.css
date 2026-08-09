@@ -89,6 +89,10 @@
     --color-yellow-800: #92400E;
     --color-yellow-900: #78350F;
 
+    /* Scrollbar */
+    --color-scrollbar-thumb: rgba(100, 116, 139, 0.35);
+    --color-scrollbar-thumb-hover: rgba(100, 116, 139, 0.6);
+
     color-scheme: light;
   }
 
@@ -178,6 +182,10 @@
     --color-yellow-800: #FEFCE8;
     --color-yellow-900: #FFFBEB;
 
+    /* Scrollbar */
+    --color-scrollbar-thumb: rgba(148, 163, 184, 0.35);
+    --color-scrollbar-thumb-hover: rgba(203, 213, 225, 0.55);
+
     color-scheme: dark;
   }
 
@@ -189,6 +197,43 @@
 
   html {
     overflow-y: scroll;
+  }
+
+  /* ===== Scrollbar ===== */
+  /* Chromium / WebKit
+     주의: 같은 요소에 scrollbar-width/scrollbar-color(표준 속성)를 함께 지정하면
+     Chrome은 ::-webkit-scrollbar 스타일을 무시하므로 아래 @supports로 분기한다. */
+  *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: var(--color-scrollbar-thumb);
+    /* 트랙 여백을 만들어 실제 두께보다 얇아 보이게 함 */
+    border: 1px solid transparent;
+    background-clip: padding-box;
+    border-radius: 9999px;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-scrollbar-thumb-hover);
+  }
+
+  *::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  /* Firefox 등 ::-webkit-scrollbar 미지원 브라우저 */
+  @supports not selector(::-webkit-scrollbar) {
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: var(--color-scrollbar-thumb) transparent;
+    }
   }
 
   body {
