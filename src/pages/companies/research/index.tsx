@@ -9,6 +9,9 @@ import {
   COMPANY_CATEGORIES,
   COMPANY_CATEGORY_CLASSES,
   COMPANY_CATEGORY_LABELS,
+  COMPANY_PREFERENCES,
+  COMPANY_PREFERENCE_CLASSES,
+  COMPANY_PREFERENCE_LABELS,
 } from "@/entities/company/model/company.type";
 import { useCompanyResearch } from "@/features/recruitment/model/useCompanyResearch";
 import { CompanyResearchCard } from "@/features/recruitment/ui/CompanyResearchCard/CompanyResearchCard";
@@ -101,6 +104,40 @@ export default function CompanyResearch() {
                       )}
                     >
                       {COMPANY_CATEGORY_LABELS[category]}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="flex flex-wrap gap-1.5" role="group" aria-label="지망 등급 필터">
+                {COMPANY_PREFERENCES.map((grade) => {
+                  const selected = page.selectedPreferences.includes(grade);
+
+                  return (
+                    <button
+                      key={grade}
+                      type="button"
+                      aria-pressed={selected}
+                      // 알파벳만으로는 뜻이 안 보이므로 등급 문구를 툴팁으로 붙인다
+                      title={COMPANY_PREFERENCE_LABELS[grade]}
+                      onClick={() =>
+                        page.setSelectedPreferences(
+                          selected
+                            ? page.selectedPreferences.filter((item) => item !== grade)
+                            : [...page.selectedPreferences, grade],
+                        )
+                      }
+                      className={cn(
+                        "w-7 py-1 text-xs font-bold rounded-sm border transition-colors",
+                        selected
+                          ? cn(
+                              COMPANY_PREFERENCE_CLASSES[grade],
+                              "border-blue-500 ring-1 ring-blue-500",
+                            )
+                          : "bg-surface text-textSecondary border-border hover:border-gray-400",
+                      )}
+                    >
+                      {grade}
                     </button>
                   );
                 })}

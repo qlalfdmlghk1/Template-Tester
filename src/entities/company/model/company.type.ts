@@ -43,6 +43,9 @@ export interface Company {
   /** 위 항목에 담기지 않는 자유 메모 */
   researchNote?: string;
 
+  /** 지망 등급 — 없으면 아직 정하지 않은 상태 */
+  preference?: CompanyPreference;
+
   // ── AI 자동 조사 대상 ────────────────────────────────────
   // 자소서·면접에서 바로 인용할 수 있게, 자유 메모에 뭉뚱그리지 않고 항목을 나눠 둔다.
 
@@ -64,6 +67,38 @@ export interface Company {
   createdAt: Date;
   updatedAt?: Date;
 }
+
+/**
+ * 지망 등급 — 본인이 매기는 "가고 싶은 정도".
+ *
+ * 조사 항목과 달리 **사실이 아니라 판단**이라 AI가 채우지 않고 채움률에도 넣지 않는다.
+ * 등급이 없는 상태(아직 안 정함)가 정상이므로 값을 강제하지 않는다.
+ */
+export const COMPANY_PREFERENCES = ["A", "B", "C", "D"] as const;
+
+export type CompanyPreference = (typeof COMPANY_PREFERENCES)[number];
+
+export const COMPANY_PREFERENCE_LABELS: Record<CompanyPreference, string> = {
+  A: "정말 가고 싶음",
+  B: "가고 싶음",
+  C: "애매함",
+  D: "지원 안 할 것 같음",
+};
+
+/** 선택 화면에서 등급의 뜻을 풀어 보여준다 */
+export const COMPANY_PREFERENCE_DESCRIPTIONS: Record<CompanyPreference, string> = {
+  A: "붙으면 무조건 감",
+  B: "붙으면 웬만하면 감",
+  C: "붙어도 갈지 말지 고민할 것 같음",
+  D: "예전에 지원한 적은 있지만 앞으로는 지원 안 할 것 같음",
+};
+
+export const COMPANY_PREFERENCE_CLASSES: Record<CompanyPreference, string> = {
+  A: "bg-green-100 text-green-800",
+  B: "bg-blue-100 text-blue-800",
+  C: "bg-orange-100 text-orange-800",
+  D: "bg-gray-200 text-gray-600",
+};
 
 /**
  * 조사 근거 한 건.
@@ -103,6 +138,7 @@ export type CompanyInput = Pick<Company, "name"> &
       | "jobDescription"
       | "requirements"
       | "researchNote"
+      | "preference"
       | "talentProfile"
       | "businessSummary"
       | "recentIssues"

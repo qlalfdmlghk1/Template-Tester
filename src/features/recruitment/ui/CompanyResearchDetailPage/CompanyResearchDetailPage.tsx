@@ -12,6 +12,7 @@ import {
 import type { Company, ResearchSource } from "@/entities/company/model/company.type";
 import { computeResearchProgress } from "@/entities/company/model/research";
 import { useCompanyDetail } from "../../model/useCompanyDetail";
+import { PreferenceBadge } from "../PreferenceBadge/PreferenceBadge";
 import { ResearchSourceLinks } from "../ResearchSourceLinks/ResearchSourceLinks";
 
 interface CompanyResearchDetailPageProps {
@@ -75,6 +76,7 @@ function DetailHeader({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
+            <PreferenceBadge preference={company.preference} withLabel />
             <h2 className="m-0 text-xl md:text-2xl font-bold text-text">{company.name}</h2>
             {company.categories?.map((category) => (
               <span

@@ -4,9 +4,14 @@ import { useDebounce } from "@/shared/lib/useDebounce";
 import { useCompanies } from "@/entities/company/model/useCompanies";
 import {
   COMPANY_CATEGORIES,
+  COMPANY_PREFERENCES,
   hasResearch,
 } from "@/entities/company/model/company.type";
-import type { CompanyCategory } from "@/entities/company/model/company.type";
+import type {
+  CompanyCategory,
+  CompanyPreference,
+} from "@/entities/company/model/company.type";
+import { sortByPreference } from "@/entities/company/model/preference";
 
 /**
  * 기업 조사 목록 화면.
@@ -24,6 +29,13 @@ export function useCompanyResearch() {
 
   const urlKeyword = searchParams.get("q") ?? "";
   const onlyResearched = searchParams.get("researched") === "1";
+  const selectedPreferences = useMemo(() => {
+    const raw = searchParams.get("preference")?.split(",") ?? [];
+    return raw.filter((value): value is CompanyPreference =>
+      COMPANY_PREFERENCES.includes(value as CompanyPreference),
+    );
+  }, [searchParams]);
+
   const selectedCategories = useMemo(() => {
     const raw = searchParams.get("category")?.split(",") ?? [];
     return raw.filter((value): value is CompanyCategory =>
@@ -83,6 +95,12 @@ export function useCompanyResearch() {
     [updateParams],
   );
 
+  const setSelectedPreferences = useCallback(
+    (values: CompanyPreference[]) =>
+      updateParams({ preference: values.length > 0 ? values.join(",") : null }),
+    [updateParams],
+  );
+
   const setSelectedCategories = useCallback(
     (values: CompanyCategory[]) =>
       updateParams({ category: values.length > 0 ? values.join(",") : null }),
@@ -93,8 +111,15 @@ export function useCompanyResearch() {
     // 타이핑 중 매 글자마다 전체 목록을 다시 거르지 않는다
     const query = debouncedKeyword.trim().toLowerCase();
 
-    return companies.filter((company) => {
+    const matched = companies.filter((company) => {
       if (onlyResearched && !hasResearch(company)) return false;
+
+      if (
+        selectedPreferences.length > 0 &&
+        !(company.preference && selectedPreferences.includes(company.preference))
+      ) {
+        return false;
+      }
 
       // 분류는 여러 개 달 수 있으므로 하나라도 걸리면 통과시킨다
       if (
@@ -113,7 +138,16 @@ export function useCompanyResearch() {
         .filter(Boolean)
         .some((value) => value!.toLowerCase().includes(query));
     });
-  }, [companies, debouncedKeyword, onlyResearched, selectedCategories]);
+
+    // 가고 싶은 곳이 위로 — 목록의 목적이 "어디에 힘을 쏟을지 고르는 것"이다
+    return sortByPreference(matched);
+  }, [
+    companies,
+    debouncedKeyword,
+    onlyResearched,
+    selectedCategories,
+    selectedPreferences,
+  ]);
 
   const researchedCount = useMemo(
     () => companies.filter(hasResearch).length,
@@ -134,5 +168,7 @@ export function useCompanyResearch() {
     setOnlyResearched,
     selectedCategories,
     setSelectedCategories,
+    selectedPreferences,
+    setSelectedPreferences,
   };
 }

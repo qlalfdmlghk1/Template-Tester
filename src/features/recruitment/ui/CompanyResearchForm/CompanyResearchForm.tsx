@@ -5,12 +5,17 @@ import {
   COMPANY_CATEGORIES,
   COMPANY_CATEGORY_CLASSES,
   COMPANY_CATEGORY_LABELS,
+  COMPANY_PREFERENCES,
+  COMPANY_PREFERENCE_CLASSES,
+  COMPANY_PREFERENCE_DESCRIPTIONS,
+  COMPANY_PREFERENCE_LABELS,
 } from "@/entities/company/model/company.type";
 import type {
   AiResearchField,
   Company,
   CompanyCategory,
   CompanyInput,
+  CompanyPreference,
 } from "@/entities/company/model/company.type";
 import { useCompanyAiResearch } from "../../model/useCompanyAiResearch";
 import { AiResearchPreview } from "../AiResearchPreview/AiResearchPreview";
@@ -53,6 +58,9 @@ export function CompanyResearchForm({
   );
   const [requirements, setRequirements] = useState(company?.requirements ?? "");
   const [researchNote, setResearchNote] = useState(company?.researchNote ?? "");
+  const [preference, setPreference] = useState<CompanyPreference | undefined>(
+    company?.preference,
+  );
   const [talentProfile, setTalentProfile] = useState(
     company?.talentProfile ?? "",
   );
@@ -127,6 +135,7 @@ export function CompanyResearchForm({
       jobDescription: jobDescription.trim() || undefined,
       requirements: requirements.trim() || undefined,
       researchNote: researchNote.trim() || undefined,
+      preference,
       talentProfile: talentProfile.trim() || undefined,
       businessSummary: businessSummary.trim() || undefined,
       recentIssues: recentIssues.trim() || undefined,
@@ -224,6 +233,52 @@ export function CompanyResearchForm({
                     )}
                   >
                     {COMPANY_CATEGORY_LABELS[category]}
+                  </button>
+                );
+              })}
+            </div>
+          </fieldset>
+
+          <fieldset className="m-0 p-0 border-0">
+            <legend className="mb-1 text-sm font-medium text-text">
+              지망 등급{" "}
+              <span className="font-normal text-textSecondary">(선택)</span>
+            </legend>
+            <div className="flex flex-col gap-1">
+              {COMPANY_PREFERENCES.map((grade) => {
+                const selected = preference === grade;
+
+                return (
+                  <button
+                    key={grade}
+                    type="button"
+                    // 한 번 더 누르면 해제 — 잘못 고른 뒤 되돌릴 방법이 있어야 한다
+                    onClick={() => setPreference(selected ? undefined : grade)}
+                    aria-pressed={selected}
+                    className={cn(
+                      "flex items-center gap-2 px-2 py-1.5 text-left rounded-sm border transition-colors",
+                      // 선택 표시는 테두리로만 — 배경까지 물들이면 등급 색과 헷갈린다
+                      selected
+                        ? "bg-surface border-blue-500 ring-1 ring-blue-500"
+                        : "bg-surface border-border hover:border-gray-400",
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "shrink-0 w-6 h-6 grid place-items-center rounded-sm text-xs font-bold",
+                        COMPANY_PREFERENCE_CLASSES[grade],
+                      )}
+                    >
+                      {grade}
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-xs font-medium text-text">
+                        {COMPANY_PREFERENCE_LABELS[grade]}
+                      </span>
+                      <span className="block text-xs text-textSecondary">
+                        {COMPANY_PREFERENCE_DESCRIPTIONS[grade]}
+                      </span>
+                    </span>
                   </button>
                 );
               })}
