@@ -6,37 +6,32 @@ import {
   COMPANY_CATEGORY_LABELS,
   hasResearch,
 } from "@/entities/company/model/company.type";
-import type { Company, ResearchSource } from "@/entities/company/model/company.type";
+import type { Company } from "@/entities/company/model/company.type";
 import { computeResearchProgress } from "@/entities/company/model/research";
-import { ResearchSourceLinks } from "../ResearchSourceLinks/ResearchSourceLinks";
 
 interface CompanyResearchCardProps {
   company: Company;
+  onOpen: () => void;
   onEdit: () => void;
   onDelete: () => void;
 }
 
-/** 조사 내용 한 덩어리 — 값이 없으면 통째로 숨긴다 */
-function ResearchSection({
-  title,
-  body,
-  sources,
-}: {
-  title: string;
-  body?: string;
-  /** AI가 채운 항목이면 근거 링크를 함께 보여준다 */
-  sources?: ResearchSource[];
-}) {
-  if (!body?.trim()) return null;
+/** 목록에서 훑기 좋게 줄이는 길이 — 전문은 보기 화면에서 읽는다 */
+const SUMMARY_LIMIT = 90;
 
-  return (
-    <section>
-      <h4 className="m-0 mb-1 text-xs font-semibold text-textSecondary">{title}</h4>
-      {/* AI가 채운 값이 섞여 있으므로 HTML 로 렌더링하지 않는다 */}
-      <p className="m-0 text-sm text-text whitespace-pre-wrap">{body}</p>
-      <ResearchSourceLinks sources={sources} />
-    </section>
-  );
+function summarize(company: Company): string {
+  // 자소서에 쓸 만한 순서대로 먼저 있는 것을 보여준다
+  const body =
+    company.businessSummary ??
+    company.talentProfile ??
+    company.recentIssues ??
+    company.jobDescription ??
+    company.requirements ??
+    company.researchNote ??
+    "";
+
+  const flat = body.trim().replace(/\s+/g, " ");
+  return flat.length > SUMMARY_LIMIT ? `${flat.slice(0, SUMMARY_LIMIT)}…` : flat;
 }
 
 /**
@@ -71,16 +66,29 @@ function ResearchProgressBar({ company }: { company: Company }) {
   );
 }
 
-export function CompanyResearchCard({ company, onEdit, onDelete }: CompanyResearchCardProps) {
+export function CompanyResearchCard({
+  company,
+  onOpen,
+  onEdit,
+  onDelete,
+}: CompanyResearchCardProps) {
   // 공고 링크는 사용자가 올린 xlsx에서 온 값이라 허용 스킴만 링크로 만든다
   const postingUrl = safeUrl(company.postingUrl);
+  const summary = summarize(company);
 
   return (
-    <li className="flex flex-col gap-3 p-4 bg-surface border border-border rounded-md">
+    <li className="flex flex-col gap-3 p-4 bg-surface border border-border rounded-md transition-colors hover:border-blue-400">
       <header className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-1.5">
-            <h3 className="m-0 text-base font-semibold text-text">{company.name}</h3>
+            {/* 카드 어디를 눌러도 열리게 하되, 접근성을 위해 제목을 버튼으로 둔다 */}
+            <button
+              type="button"
+              onClick={onOpen}
+              className="m-0 p-0 bg-transparent border-0 text-base font-semibold text-text text-left cursor-pointer hover:underline"
+            >
+              {company.name}
+            </button>
             {company.categories?.map((category) => (
               <span
                 key={category}
@@ -122,26 +130,8 @@ export function CompanyResearchCard({ company, onEdit, onDelete }: CompanyResear
       <ResearchProgressBar company={company} />
 
       {hasResearch(company) ? (
-        <div className="flex flex-col gap-3">
-          <ResearchSection title="직무 설명" body={company.jobDescription} />
-          <ResearchSection title="자격 요건" body={company.requirements} />
-          <ResearchSection
-            title="인재상"
-            body={company.talentProfile}
-            sources={company.researchSources?.talentProfile}
-          />
-          <ResearchSection
-            title="사업 내용"
-            body={company.businessSummary}
-            sources={company.researchSources?.businessSummary}
-          />
-          <ResearchSection
-            title="최근 이슈"
-            body={company.recentIssues}
-            sources={company.researchSources?.recentIssues}
-          />
-          <ResearchSection title="메모" body={company.researchNote} />
-        </div>
+        // 전문은 보기 화면에서 읽는다 — 목록에서는 어떤 기업인지 가늠할 만큼만
+        <p className="m-0 text-sm text-textSecondary line-clamp-2">{summary}</p>
       ) : (
         <p className="m-0 text-sm text-textSecondary">
           아직 조사 내용이 없습니다. 다음 반기에 지원할 기업이라면 미리 채워두세요.
