@@ -30,6 +30,17 @@ describe("ResearchSourceLinks — 접기", () => {
     expect(screen.queryAllByRole("link")).toHaveLength(0);
   });
 
+  it("접혀 있는 동안에는 링크가 탭 이동에 잡히지 않아야 한다", async () => {
+    // 여닫이 애니메이션 때문에 DOM 에는 남아 있다 — 속성으로 빼야 실제로 빠진다
+    render(<ResearchSourceLinks sources={[{ url: "https://a.example.com/x" }]} />);
+
+    const link = screen.getByRole("link", { hidden: true });
+    expect(link).toHaveAttribute("tabindex", "-1");
+
+    await expand();
+    expect(link).not.toHaveAttribute("tabindex");
+  });
+
   it("누르면 펼쳐지고 다시 누르면 접혀야 한다", async () => {
     render(<ResearchSourceLinks sources={[{ url: "https://a.example.com/x" }]} />);
 
