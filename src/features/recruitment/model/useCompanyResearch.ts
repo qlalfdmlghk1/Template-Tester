@@ -117,6 +117,9 @@ export function useCompanyResearch() {
 
       if (!query) return true;
 
+      // 인재상·사업 내용·최근 이슈는 일부러 뺐다.
+      // AI가 채우는 항목이라 문단 단위로 길어, 인덱스 없이 전건을 훑는 지금 방식에서는
+      // 부담이 커진다. 검색이 필요해지면 별도 색인을 두고 다시 검토한다.
       return [company.name, company.targetJob, company.jobDescription, company.requirements]
         .filter(Boolean)
         .some((value) => value!.toLowerCase().includes(query));
