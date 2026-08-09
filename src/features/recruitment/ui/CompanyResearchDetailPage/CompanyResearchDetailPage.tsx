@@ -11,6 +11,7 @@ import {
 } from "@/entities/company/model/company.type";
 import type { Company, ResearchSource } from "@/entities/company/model/company.type";
 import { computeResearchProgress } from "@/entities/company/model/research";
+import { formatSalary } from "@/entities/company/model/salary";
 import { useCompanyDetail } from "../../model/useCompanyDetail";
 import { PreferenceBadge } from "../PreferenceBadge/PreferenceBadge";
 import { ResearchSourceLinks } from "../ResearchSourceLinks/ResearchSourceLinks";
@@ -70,6 +71,7 @@ function DetailHeader({
 }) {
   const { filled, total, percent } = computeResearchProgress(company);
   const postingUrl = safeUrl(company.postingUrl);
+  const salary = formatSalary(company.salary);
 
   return (
     <header className="flex flex-col gap-4 p-5 md:p-6 bg-surface border border-border rounded-lg">
@@ -102,6 +104,12 @@ function DetailHeader({
               <span className="inline-flex items-center gap-1">
                 <AppIcon name="map-pin" size={14} />
                 {company.location}
+              </span>
+            )}
+            {salary && (
+              <span className="inline-flex items-center gap-1">
+                <AppIcon name="banknotes" size={14} />
+                {salary}
               </span>
             )}
             {postingUrl && (
