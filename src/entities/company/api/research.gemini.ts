@@ -72,7 +72,10 @@ function fallbackSources(data: GeminiResponse): ResearchSource[] {
     if (!url || seen.has(url)) continue;
 
     seen.add(url);
-    sources.push({ url, title: chunk.web?.title });
+    // title 키에 undefined 를 담으면 저장이 거부된다 —
+    // stripUndefined 는 배열 안쪽 객체까지 훑지 않는다
+    const title = chunk.web?.title;
+    sources.push(title ? { url, title } : { url });
     if (sources.length >= MAX_FALLBACK_SOURCES) break;
   }
 

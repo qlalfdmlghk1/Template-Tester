@@ -16,7 +16,7 @@
  */
 
 import { useCallback, useEffect, useState } from "react";
-import type { AiProvider } from "@/entities/company/api/research.shared";
+import type { AiProvider } from "@/shared/config/aiProvider";
 
 const PROVIDER_STORAGE_KEY = "ai-provider";
 

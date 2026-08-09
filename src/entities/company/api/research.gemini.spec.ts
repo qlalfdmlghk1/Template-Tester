@@ -102,11 +102,13 @@ describe("Gemini 조사 — 응답 처리", () => {
       name: "삼성전자",
     });
 
-    // 제목이 함께 저장돼야 화면에서 링크를 구분할 수 있다
+    // 제목이 함께 저장돼야 화면에서 링크를 구분할 수 있다.
+    // 제목이 없으면 키를 만들지 않는다 — undefined 가 섞이면 Firestore 저장이 거부된다
     expect(result.sources.businessSummary).toEqual([
       { url: "https://grounded.example/1", title: "출처 제목 1" },
-      { url: "https://grounded.example/2", title: undefined },
+      { url: "https://grounded.example/2" },
     ]);
+    expect(result.sources.businessSummary?.[1]).not.toHaveProperty("title");
   });
 
   it("내용이 없는 항목에는 출처를 붙이지 않아야 한다", async () => {
