@@ -1,6 +1,11 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
-import { useAiKey, maskApiKey, looksLikeApiKey } from "./useAiKey";
+import {
+  useAiKey,
+  maskApiKey,
+  looksLikeApiKey,
+  clearAllAiKeys,
+} from "./useAiKey";
 
 const STORAGE_KEY = "anthropic-api-key";
 const SAMPLE_KEY = "sk-ant-api03-abcdefghijklmnop1234";
@@ -132,5 +137,33 @@ describe("useAiKey — 키 보관", () => {
     act(() => a.result.current.saveApiKey(GEMINI_KEY));
 
     expect(b.result.current.hasApiKey).toBe(true);
+  });
+});
+
+describe("clearAllAiKeys", () => {
+  it("두 제공자의 키와 제공자 선택을 모두 지워야 한다", () => {
+    // 키는 계정이 아니라 브라우저에 붙어 있어, 로그아웃 때 지우지 않으면
+    // 공용 PC 에서 다음 사용자가 이전 사용자의 키를 쓰게 된다
+    localStorage.setItem("anthropic-api-key", SAMPLE_KEY);
+    localStorage.setItem("gemini-api-key", GEMINI_KEY);
+    localStorage.setItem("ai-provider", "anthropic");
+
+    clearAllAiKeys();
+
+    expect(localStorage.getItem("anthropic-api-key")).toBeNull();
+    expect(localStorage.getItem("gemini-api-key")).toBeNull();
+    expect(localStorage.getItem("ai-provider")).toBeNull();
+  });
+
+  it("이미 열려 있는 화면의 키 상태도 비워야 한다", () => {
+    localStorage.setItem("gemini-api-key", GEMINI_KEY);
+
+    const { result } = renderHook(() => useAiKey());
+    expect(result.current.hasApiKey).toBe(true);
+
+    act(() => clearAllAiKeys());
+
+    expect(result.current.hasApiKey).toBe(false);
+    expect(result.current.apiKey).toBeNull();
   });
 });

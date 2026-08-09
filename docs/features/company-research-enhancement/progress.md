@@ -702,3 +702,30 @@ Claude를 쓰려면 [console.anthropic.com](https://console.anthropic.com) → P
 **다음 작업**
 
 - 리뷰 수렴 결과 PR 코멘트 등록
+
+---
+
+### Commit — 2026-08-09 22:20
+
+- Message: `Fix:#81 로그아웃 시 AI 키 삭제 + 페이지 외곽을 라우트 파일로 이동`
+- Issue: `#81`
+- Jira: 미사용
+
+**변경 요약**
+
+- 리뷰에서 남겨뒀던 2건 처리
+  1. `logout()`이 AI 키를 지우지 않던 문제 — `clearAllAiKeys()` 추가해 두 제공자 키와 제공자 선택을 함께 삭제. 테스트 2건 추가
+  2. FSD 방향 위반 — 페이지 외곽(`Navbar`·컨테이너·`AiKeyDialog` 마운트)을 라우트 파일로 옮기고, feature 컴포넌트는 본문만 담당
+- 컴포넌트 이름 정정: `CompanyResearchDetailPage` → `CompanyResearchDetail`, `CompanyResearchFormPage` → `CompanyResearchEditor` (features 에 "Page"가 있으면 같은 실수가 반복된다)
+- 레이어 위반 재검사 0건 (`shared`→상위 0, `features`/`entities`→`widgets`·`pages`·`app` 0, 슬라이스 간 0)
+- 전체 476건 통과, build 통과
+
+**결정 로그**
+
+- **키는 계정이 아니라 브라우저에 붙어 있다** — 공용 PC 에서 A 가 로그아웃하고 B 가 로그인하면 B 의 조사가 A 계정에 과금되고, B 는 개발자도구에서 A 의 키 원문을 읽을 수 있었다. 같은 파일에서 풀이 기록 캐시는 이미 지우고 있었는데 키만 빠져 있었다
+- `clearAllAiKeys`를 훅이 아닌 **일반 함수**로 뺐다 — 로그아웃 처리는 컴포넌트가 아니라 훅을 쓸 수 없다. 화면이 열려 있는 경우를 위해 기존 `ai-key-change` 이벤트를 그대로 발행한다
+- **페이지 외곽 중복을 감수했다** — `new.tsx`·`edit.tsx`가 같은 외곽을 각각 두른다. 공통 컴포넌트로 빼려면 `Navbar`(widget)와 `AiKeyDialog`(feature)를 함께 쓰는 자리가 필요한데, `pages/` 하위 파일은 전부 라우트가 되고(`vite-plugin-pages`) `app/`은 `pages`에서 import 할 수 없다. 20줄 중복이 레이어를 뚫는 것보다 낫다
+
+**다음 작업**
+
+- 없음 (PR #83 리뷰 반영 완료)
