@@ -69,6 +69,28 @@ export function looksLikeApiKey(key: string, provider: AiProvider): boolean {
   return key.trim().length > 0;
 }
 
+/**
+ * 저장된 키를 모두 지운다. 로그아웃 시 호출한다.
+ *
+ * 키는 계정이 아니라 브라우저에 붙어 있어, 안 지우면 공용 PC 에서 다음 사용자가
+ * 이전 사용자의 키로 조사를 돌리게 된다 — 남의 계정에 과금되고, 개발자도구에서
+ * 원문을 그대로 읽을 수도 있다.
+ *
+ * 훅 밖(로그아웃 처리)에서 부르므로 컴포넌트가 아니어도 되게 함수로 둔다.
+ */
+export function clearAllAiKeys() {
+  try {
+    Object.values(KEY_STORAGE).forEach((storageKey) =>
+      localStorage.removeItem(storageKey),
+    );
+    localStorage.removeItem(PROVIDER_STORAGE_KEY);
+  } catch {
+    // 삭제 실패는 무시 — 아래 알림으로 화면 상태만이라도 비운다
+  }
+
+  window.dispatchEvent(new Event(CHANGE_EVENT));
+}
+
 export function useAiKey() {
   const [provider, setProviderState] = useState<AiProvider>(readProvider);
   const [keys, setKeys] = useState<Record<AiProvider, string | null>>(() => ({

@@ -1,4 +1,3 @@
-import Navbar from "@/widgets/Navbar/Navbar";
 import AppFallback from "@/shared/ui/molecules/AppFallback/AppFallback";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
 import AppIcon from "@/shared/ui/atoms/AppIcon/AppIcon";
@@ -16,7 +15,7 @@ import { useCompanyDetail } from "../../model/useCompanyDetail";
 import { PreferenceBadge } from "../PreferenceBadge/PreferenceBadge";
 import { ResearchSourceLinks } from "../ResearchSourceLinks/ResearchSourceLinks";
 
-interface CompanyResearchDetailPageProps {
+interface CompanyResearchDetailProps {
   companyId?: string;
 }
 
@@ -163,17 +162,12 @@ function DetailHeader({
   );
 }
 
-export function CompanyResearchDetailPage({
-  companyId,
-}: CompanyResearchDetailPageProps) {
+/** 기업 조사 보기 화면의 본문. 페이지 외곽(Navbar·컨테이너)은 라우트 파일이 두른다. */
+export function CompanyResearchDetail({ companyId }: CompanyResearchDetailProps) {
   const detail = useCompanyDetail(companyId);
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-
-      {/* 목록·편집과 같은 폭 — 화면을 오갈 때 폭이 출렁이지 않게 맞춘다 */}
-      <div className="max-w-[1400px] mx-auto px-4 py-4 sm:px-6 sm:py-6">
+    <>
         <AppButton
           variant="ghost"
           color="gray"
@@ -250,7 +244,6 @@ export function CompanyResearchDetailPage({
             </div>
           </div>
         )}
-      </div>
-    </div>
+    </>
   );
 }

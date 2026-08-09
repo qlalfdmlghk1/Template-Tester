@@ -1,40 +1,38 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "@/widgets/Navbar/Navbar";
 import PageHeader from "@/shared/ui/molecules/PageHeader/PageHeader";
 import AppFallback from "@/shared/ui/molecules/AppFallback/AppFallback";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
 import { AppConfirmDialog } from "@/shared/ui/molecules/AppConfirmDialog";
-import { AiKeyDialog } from "@/features/ai-key/ui/AiKeyDialog/AiKeyDialog";
 import { useCompanyForm } from "../../model/useCompanyForm";
 import { useCompanyDelete } from "../../model/useCompanyDelete";
 import { CompanyResearchForm } from "../CompanyResearchForm/CompanyResearchForm";
 
-interface CompanyResearchFormPageProps {
+interface CompanyResearchEditorProps {
   /** 없으면 신규 등록 */
   companyId?: string;
+  /** AI 키 설정 다이얼로그 열기 — 다이얼로그 자체는 라우트 파일이 띄운다 */
+  onOpenKeySettings: () => void;
 }
 
 /**
  * 기업 등록·수정 화면.
  *
  * 등록과 수정이 폼·동작이 같아 한 컴포넌트로 두고, 라우트 파일에서 id 만 넘긴다.
+ * 페이지 외곽(Navbar·컨테이너)과 AI 키 다이얼로그는 라우트 파일이 맡는다 —
+ * features 가 widgets 나 다른 feature 슬라이스를 import 하지 않게 하기 위함이다.
  */
-export function CompanyResearchFormPage({ companyId }: CompanyResearchFormPageProps) {
+export function CompanyResearchEditor({
+  companyId,
+  onOpenKeySettings,
+}: CompanyResearchEditorProps) {
   const form = useCompanyForm(companyId);
   const navigate = useNavigate();
   // 지운 기업의 보기 화면으로는 돌아갈 수 없으니 목록으로 보낸다
   const remove = useCompanyDelete(() => navigate("/companies/research"));
-  const [keyDialogOpen, setKeyDialogOpen] = useState(false);
-
   const isEdit = Boolean(companyId);
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-
-      {/* 목록·코테달력과 같은 폭 — 조사 내용을 2열로 펼치려면 넓이가 필요하다 */}
-      <div className="max-w-[1400px] mx-auto px-4 py-4 sm:px-6 sm:py-6">
+    <>
         {/* 수정이면 보기 화면으로, 신규면 목록으로 — 검색어·필터는 그대로 들고 간다 */}
         <AppButton
           variant="ghost"
@@ -87,12 +85,9 @@ export function CompanyResearchFormPage({ companyId }: CompanyResearchFormPagePr
             saving={form.saving}
             onSubmit={form.submit}
             onCancel={form.cancel}
-            onOpenKeySettings={() => setKeyDialogOpen(true)}
+            onOpenKeySettings={onOpenKeySettings}
           />
         )}
-      </div>
-
-      {keyDialogOpen && <AiKeyDialog onClose={() => setKeyDialogOpen(false)} />}
 
       <AppConfirmDialog
         open={remove.target !== null}
@@ -122,6 +117,6 @@ export function CompanyResearchFormPage({ companyId }: CompanyResearchFormPagePr
           </label>
         )}
       </AppConfirmDialog>
-    </div>
+    </>
   );
 }
