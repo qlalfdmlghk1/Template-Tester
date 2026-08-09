@@ -8,6 +8,7 @@ import {
   updateProfile,
 } from "firebase/auth";
 import { auth } from "@/shared/api/firebase";
+import { clearAllAiKeys } from "@/shared/lib/useAiKey";
 import { clearSolveLogCache } from "@/entities/solve-log/api/solveLog.api";
 
 export async function signInWithGoogle() {
@@ -37,6 +38,9 @@ export async function logout() {
     await signOut(auth);
     // 다음 사용자에게 이전 사용자의 기록이 세션에 남지 않게 한다
     clearSolveLogCache();
+    // AI 키는 계정이 아니라 브라우저에 붙어 있다 — 안 지우면 공용 PC 에서
+    // 다음 사용자가 이전 사용자의 키로 조사를 돌리게 된다
+    clearAllAiKeys();
   } catch (error) {
     console.error("로그아웃 실패:", error);
     throw error;
