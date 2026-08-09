@@ -8,6 +8,7 @@ import {
 } from "@/entities/company/model/company.type";
 import type { Company } from "@/entities/company/model/company.type";
 import { computeResearchProgress } from "@/entities/company/model/research";
+import { PreferenceBadge } from "../PreferenceBadge/PreferenceBadge";
 
 interface CompanyResearchCardProps {
   company: Company;
@@ -79,6 +80,7 @@ export function CompanyResearchCard({
       <header className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-1.5">
+            <PreferenceBadge preference={company.preference} />
             <h3 className="m-0 text-base font-semibold text-text">{company.name}</h3>
             {company.categories?.map((category) => (
               <span
