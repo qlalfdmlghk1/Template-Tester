@@ -132,7 +132,8 @@ export default function CompanyResearch() {
                   <CompanyResearchCard
                     key={company.id}
                     company={company}
-                    onEdit={() => goToForm(`/companies/research/${company.id}`)}
+                    onOpen={() => goToForm(`/companies/research/${company.id}`)}
+                    onEdit={() => goToForm(`/companies/research/${company.id}/edit`)}
                     onDelete={() => page.requestDelete(company)}
                   />
                 ))}

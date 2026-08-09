@@ -29,7 +29,7 @@ export function CompanyResearchFormPage({ companyId }: CompanyResearchFormPagePr
 
       {/* 목록·코테달력과 같은 폭 — 조사 내용을 2열로 펼치려면 넓이가 필요하다 */}
       <div className="max-w-[1400px] mx-auto px-4 py-4 sm:px-6 sm:py-6">
-        {/* 목록의 검색어·필터는 URL 쿼리에 있어, cancel 이 그대로 들고 돌아간다 */}
+        {/* 수정이면 보기 화면으로, 신규면 목록으로 — 검색어·필터는 그대로 들고 간다 */}
         <AppButton
           variant="ghost"
           color="gray"
@@ -37,7 +37,7 @@ export function CompanyResearchFormPage({ companyId }: CompanyResearchFormPagePr
           className="mb-2 -ml-2"
           onClick={form.cancel}
         >
-          ← 목록으로
+          {isEdit ? "← 돌아가기" : "← 목록으로"}
         </AppButton>
 
         <PageHeader
