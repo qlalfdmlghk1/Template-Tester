@@ -1,37 +1,26 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useDebounce } from "@/shared/lib/useDebounce";
-import { useToast } from "@/shared/ui/molecules/AppToast";
 import { useCompanies } from "@/entities/company/model/useCompanies";
-import { useApplications } from "@/entities/job-application/model/useApplications";
-import { deleteApplicationsByCompany } from "@/entities/job-application/api/application.api";
 import {
   COMPANY_CATEGORIES,
   hasResearch,
 } from "@/entities/company/model/company.type";
-import type { Company, CompanyCategory } from "@/entities/company/model/company.type";
+import type { CompanyCategory } from "@/entities/company/model/company.type";
 
 /**
  * 기업 조사 목록 화면.
  *
- * 등록·수정은 별도 페이지(`/companies/research/new`, `/:id`)에서 처리한다 —
- * 조사 항목이 많아 모달로는 좁다.
+ * 보기·등록·수정은 별도 페이지에서 처리한다. 삭제도 편집 화면으로 옮겼다 —
+ * 목록 카드에 파괴적인 버튼을 두면 잘못 누르기 쉽다.
  *
  * 검색어·필터는 URL 쿼리에 둔다. 수정 페이지에 다녀와도 유지돼야 하고,
  * 그 김에 필터가 걸린 목록을 링크로 공유할 수도 있다.
  */
 export function useCompanyResearch() {
-  const { companies, isLoading, error, removeCompany, reload } = useCompanies();
-  // 기업을 지울 때 딸린 지원 건이 몇 건인지 보여주기 위해 함께 읽는다
-  const { applications, reload: reloadApplications } = useApplications();
-  const { showToast } = useToast();
+  const { companies, isLoading, error, reload } = useCompanies();
 
   const [searchParams, setSearchParams] = useSearchParams();
-
-  const [deleteTarget, setDeleteTarget] = useState<Company | null>(null);
-  /** 기업과 함께 딸린 지원 건도 지울지 */
-  const [cascadeDelete, setCascadeDelete] = useState(false);
-  const [saving, setSaving] = useState(false);
 
   const urlKeyword = searchParams.get("q") ?? "";
   const onlyResearched = searchParams.get("researched") === "1";
@@ -81,13 +70,13 @@ export function useCompanyResearch() {
     updateParams({ q: debouncedKeyword });
   }, [debouncedKeyword, updateParams]);
 
-  // 뒤로가기 등으로 주소가 밖에서 바뀌면 입력창을 맞춘다
-  useEffect(() => {
-    if (urlKeyword === lastWritten.current) return;
-
-    lastWritten.current = urlKeyword;
+  // 뒤로가기 등으로 주소가 밖에서 바뀌면 입력창을 맞춘다.
+  // effect 로 하면 한 박자 늦게 반영되므로 렌더 중에 조정한다(React 권장 패턴).
+  const [syncedKeyword, setSyncedKeyword] = useState(urlKeyword);
+  if (syncedKeyword !== urlKeyword) {
+    setSyncedKeyword(urlKeyword);
     setKeyword(urlKeyword);
-  }, [urlKeyword]);
+  }
 
   const setOnlyResearched = useCallback(
     (value: boolean) => updateParams({ researched: value ? "1" : null }),
@@ -131,43 +120,6 @@ export function useCompanyResearch() {
     [companies],
   );
 
-  /** 삭제하려는 기업에 걸린 지원 건 수 */
-  const deleteTargetApplicationCount = useMemo(
-    () =>
-      deleteTarget
-        ? applications.filter((application) => application.companyId === deleteTarget.id).length
-        : 0,
-    [deleteTarget, applications],
-  );
-
-  const confirmDelete = useCallback(async () => {
-    if (!deleteTarget) return;
-
-    setSaving(true);
-    try {
-      // 지원 건을 먼저 지운다 — 기업이 먼저 사라지면 참조가 끊긴 지원 건이 남는다
-      let removedApplications = 0;
-      if (cascadeDelete) {
-        removedApplications = await deleteApplicationsByCompany(deleteTarget.id);
-      }
-
-      await removeCompany(deleteTarget.id);
-      if (removedApplications > 0) await reloadApplications();
-
-      setDeleteTarget(null);
-      showToast(
-        removedApplications > 0
-          ? `기업과 지원 건 ${removedApplications}건을 삭제했습니다.`
-          : "기업을 삭제했습니다.",
-      );
-    } catch (cause) {
-      console.error("기업 삭제 실패:", cause);
-      showToast("삭제하지 못했습니다. 잠시 후 다시 시도해 주세요.", "error");
-    } finally {
-      setSaving(false);
-    }
-  }, [deleteTarget, cascadeDelete, removeCompany, reloadApplications, showToast]);
-
   return {
     companies: filtered,
     totalCount: companies.length,
@@ -182,19 +134,5 @@ export function useCompanyResearch() {
     setOnlyResearched,
     selectedCategories,
     setSelectedCategories,
-
-    deleteTarget,
-    deleteTargetApplicationCount,
-    cascadeDelete,
-    setCascadeDelete,
-    requestDelete: (company: Company) => {
-      setDeleteTarget(company);
-      // 딸린 지원 건까지 지우는 것은 매번 새로 선택하게 둔다
-      setCascadeDelete(false);
-    },
-    cancelDelete: () => setDeleteTarget(null),
-    confirmDelete,
-
-    saving,
   };
 }
