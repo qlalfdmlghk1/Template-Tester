@@ -159,3 +159,32 @@
 **다음 작업**
 
 - 서비스명 확정 후 반영
+
+---
+
+### Commit — 2026-08-08 18:31
+
+- Message: `Refactor:#78 전역 스크롤바를 얇고 둥근 형태로 조정`
+- Issue: `#78`
+- Jira: 미사용
+
+**변경 요약**
+
+- `src/app/styles/index.css`에 전역 스크롤바 스타일 추가 (webkit 6px, thumb는 1px 투명 테두리 +
+  `background-clip: padding-box`로 실제 4px 두께처럼 보이게 하고 pill 형태로 라운딩)
+- 라이트/다크 테마별 토큰 `--color-scrollbar-thumb` / `--color-scrollbar-thumb-hover` 신설
+
+**결정 로그**
+
+- 처음엔 `html`에 `scrollbar-width: thin` + `scrollbar-color`를 함께 뒀는데 스크롤바가 전혀 얇아지지 않았다.
+  Chrome 121+ 는 한 요소에 표준 속성(`scrollbar-width`/`scrollbar-color`)이 지정되면 그 요소의
+  `::-webkit-scrollbar` 규칙을 통째로 무시하기 때문. 표준 속성을
+  `@supports not selector(::-webkit-scrollbar)`로 감싸 Firefox 전용으로 격리하고, Chromium은
+  `::-webkit-scrollbar` 커스텀 스타일을 타도록 분리했다.
+- `html { overflow-y: scroll }`은 유지 — 페이지 전환 시 가로 밀림 방지.
+- 기존 `scrollbar-hide` 유틸리티(`AppSelect` 드롭다운 등)는 Tailwind utilities 레이어라 base 레이어의
+  전역 규칙보다 우선순위가 높아 그대로 숨김이 유지된다.
+
+**다음 작업**
+
+- 서비스명 확정 후 반영

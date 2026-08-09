@@ -30,6 +30,11 @@ export interface Company {
   postingUrl?: string;
   /** 근무 위치 */
   location?: string;
+  /**
+   * 연봉 (만원 단위). 없으면 미정 — 공고 전에는 모르는 경우가 많다.
+   * 실제 제시액은 공고마다 다르므로 기업 단위 대략치로 본다.
+   */
+  salary?: number;
 
   // ── 비채용기간용 사전 조사 ────────────────────────────────
   // 기존 시트의 "채용 정보" 탭(기업명·직무·직무 설명·자격 요건)에 대응한다.
@@ -43,9 +48,88 @@ export interface Company {
   /** 위 항목에 담기지 않는 자유 메모 */
   researchNote?: string;
 
+  /** 지망 등급 — 없으면 아직 정하지 않은 상태 */
+  preference?: CompanyPreference;
+
+  // ── AI 자동 조사 대상 ────────────────────────────────────
+  // 자소서·면접에서 바로 인용할 수 있게, 자유 메모에 뭉뚱그리지 않고 항목을 나눠 둔다.
+
+  /** 인재상 — 기업이 공표한 인재상·핵심 가치 */
+  talentProfile?: string;
+  /** 사업 내용 — 주요 사업 영역·제품·서비스 */
+  businessSummary?: string;
+  /** 최근 이슈 — 실적·조직 개편·신사업 등 최근 소식 */
+  recentIssues?: string;
+
+  /**
+   * AI 자동 조사가 채운 항목의 출처.
+   * AI 결과는 초안일 뿐이므로 사용자가 직접 사실 확인할 수 있게 남긴다.
+   */
+  researchSources?: Partial<Record<AiResearchField, ResearchSource[]>>;
+  /** AI 자동 조사를 마지막으로 실행한 시각 — 내용이 언제 기준인지 판단용 */
+  researchedAt?: Date;
+
   createdAt: Date;
   updatedAt?: Date;
 }
+
+/**
+ * 지망 등급 — 본인이 매기는 "가고 싶은 정도".
+ *
+ * 조사 항목과 달리 **사실이 아니라 판단**이라 AI가 채우지 않고 채움률에도 넣지 않는다.
+ * 등급이 없는 상태(아직 안 정함)가 정상이므로 값을 강제하지 않는다.
+ */
+export const COMPANY_PREFERENCES = ["A", "B", "C", "D"] as const;
+
+export type CompanyPreference = (typeof COMPANY_PREFERENCES)[number];
+
+export const COMPANY_PREFERENCE_LABELS: Record<CompanyPreference, string> = {
+  A: "정말 가고 싶음",
+  B: "가고 싶음",
+  C: "애매함",
+  D: "지원 안 할 것 같음",
+};
+
+/** 선택 화면에서 등급의 뜻을 풀어 보여준다 */
+export const COMPANY_PREFERENCE_DESCRIPTIONS: Record<CompanyPreference, string> = {
+  A: "붙으면 무조건 감",
+  B: "붙으면 웬만하면 감",
+  C: "붙어도 갈지 말지 고민할 것 같음",
+  D: "예전에 지원한 적은 있지만 앞으로는 지원 안 할 것 같음",
+};
+
+export const COMPANY_PREFERENCE_CLASSES: Record<CompanyPreference, string> = {
+  A: "bg-green-100 text-green-800",
+  B: "bg-blue-100 text-blue-800",
+  C: "bg-orange-100 text-orange-800",
+  D: "bg-gray-200 text-gray-600",
+};
+
+/**
+ * 조사 근거 한 건.
+ *
+ * URL 만으로는 라벨을 만들 수 없다 — Gemini 는 검색 결과를 리다이렉트 주소로 주기 때문에
+ * 호스트가 전부 같다. 제공자가 함께 주는 제목을 보관해 표시에 쓴다.
+ */
+export interface ResearchSource {
+  url: string;
+  title?: string;
+}
+
+/** AI 자동 조사가 채우는 항목 */
+export const AI_RESEARCH_FIELDS = [
+  "talentProfile",
+  "businessSummary",
+  "recentIssues",
+] as const;
+
+export type AiResearchField = (typeof AI_RESEARCH_FIELDS)[number];
+
+export const AI_RESEARCH_FIELD_LABELS: Record<AiResearchField, string> = {
+  talentProfile: "인재상",
+  businessSummary: "사업 내용",
+  recentIssues: "최근 이슈",
+};
 
 /** 기업 생성·수정 입력값 */
 export type CompanyInput = Pick<Company, "name"> &
@@ -55,19 +139,37 @@ export type CompanyInput = Pick<Company, "name"> &
       | "categories"
       | "postingUrl"
       | "location"
+      | "salary"
       | "targetJob"
       | "jobDescription"
       | "requirements"
       | "researchNote"
+      | "preference"
+      | "talentProfile"
+      | "businessSummary"
+      | "recentIssues"
+      | "researchSources"
+      | "researchedAt"
     >
   >;
 
-/** 사전 조사 내용이 하나라도 채워져 있는가 */
+/**
+ * 사전 조사 내용이 하나라도 채워져 있는가.
+ *
+ * AI 조사 항목도 함께 본다 — 안 그러면 AI 로만 채운 기업이 카드에서
+ * "조사 내용 없음"으로 뜨면서 진행바는 3/7 을 그리는 모순이 생기고,
+ * "조사 완료만" 필터에서도 사라진다.
+ *
+ * OR 판정이라 항목을 늘려도 기존에 완료였던 기업이 미완료로 바뀌지는 않는다.
+ */
 export function hasResearch(company: Company): boolean {
   return Boolean(
     company.targetJob?.trim() ||
       company.jobDescription?.trim() ||
       company.requirements?.trim() ||
-      company.researchNote?.trim(),
+      company.researchNote?.trim() ||
+      company.talentProfile?.trim() ||
+      company.businessSummary?.trim() ||
+      company.recentIssues?.trim(),
   );
 }
