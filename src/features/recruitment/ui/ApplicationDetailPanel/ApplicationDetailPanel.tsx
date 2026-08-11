@@ -24,6 +24,8 @@ interface ApplicationDetailPanelProps {
   onSelectStage: (stageKey: StageKey) => void;
   onEdit: () => void;
   onDelete: () => void;
+  /** 이 기업의 조사 노트로 이동. 참조가 끊긴 지원 건에는 넘기지 않는다 */
+  onOpenResearch?: () => void;
 }
 
 /** 지원 건 상세 — 공고 링크, 메모, 전형 타임라인 */
@@ -33,6 +35,7 @@ export function ApplicationDetailPanel({
   onSelectStage,
   onEdit,
   onDelete,
+  onOpenResearch,
 }: ApplicationDetailPanelProps) {
   const { application, company, status } = row;
   // 공고 링크는 사용자가 올린 xlsx에서 온 값이라 허용 스킴만 링크로 만든다
@@ -179,13 +182,24 @@ export function ApplicationDetailPanel({
         </ol>
       </section>
 
-      <footer className="flex justify-end gap-2 pt-1 border-t border-border">
-        <AppButton variant="outline" color="gray" size="sm" onClick={onEdit}>
-          수정
-        </AppButton>
-        <AppButton variant="outline" color="red" size="sm" onClick={onDelete}>
-          삭제
-        </AppButton>
+      {/* 기업 조사는 지원 건이 아니라 기업을 다루므로 수정·삭제와 반대편에 둔다 */}
+      <footer className="flex items-center justify-between gap-2 pt-1 border-t border-border">
+        <div>
+          {onOpenResearch && (
+            <AppButton variant="ghost" color="primary" size="sm" onClick={onOpenResearch}>
+              기업 조사
+            </AppButton>
+          )}
+        </div>
+
+        <div className="flex gap-2">
+          <AppButton variant="outline" color="gray" size="sm" onClick={onEdit}>
+            수정
+          </AppButton>
+          <AppButton variant="outline" color="red" size="sm" onClick={onDelete}>
+            삭제
+          </AppButton>
+        </div>
       </footer>
     </aside>
   );
