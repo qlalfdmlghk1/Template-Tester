@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import Navbar from "@/widgets/Navbar/Navbar";
 import PageHeader from "@/shared/ui/molecules/PageHeader/PageHeader";
 import AppFallback from "@/shared/ui/molecules/AppFallback/AppFallback";
@@ -15,8 +16,11 @@ import { XlsxImportDialog } from "@/features/recruitment/ui/XlsxImportDialog/Xls
 export default function Companies() {
   const page = useRecruitmentPage();
 
+  const navigate = useNavigate();
+
   // 콜백 안에서도 좁혀진 타입을 유지하기 위해 지역 변수로 꺼낸다
   const selectedRow = page.selectedRow;
+  const researchCompanyId = selectedRow?.company?.id;
 
   return (
     <div className="min-h-screen bg-background">
@@ -97,7 +101,12 @@ export default function Companies() {
                 </div>
 
                 {selectedRow && (
-                  <div className="lg:w-[340px] lg:shrink-0">
+                  // 목록이 길어지면 아래쪽 행을 선택했을 때 패널이 화면 위로 밀려나 보이지 않는다.
+                  // sticky 로 따라붙여 어느 행을 골라도 옆에 남게 한다.
+                  // top-20 은 sticky 인 Navbar(약 73px) 아래로 내리기 위한 값이고,
+                  // self-start 가 없으면 flex 가 높이를 늘여 sticky 가 동작하지 않는다.
+                  // 전형 단계가 많아 패널이 뷰포트를 넘길 수 있어 내부 스크롤도 함께 둔다.
+                  <div className="lg:w-[340px] lg:shrink-0 lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto">
                     <ApplicationDetailPanel
                       row={selectedRow}
                       onClose={() => page.toggleRow(selectedRow.application.id)}
@@ -106,6 +115,12 @@ export default function Companies() {
                       }
                       onEdit={() => page.openEditForm(selectedRow.application)}
                       onDelete={() => page.requestDelete(selectedRow.application)}
+                      onOpenResearch={
+                        // 참조가 끊긴 지원 건은 갈 곳이 없어 버튼 자체를 띄우지 않는다
+                        researchCompanyId
+                          ? () => navigate(`/companies/research/${researchCompanyId}`)
+                          : undefined
+                      }
                     />
                   </div>
                 )}
