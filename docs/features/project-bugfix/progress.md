@@ -98,3 +98,29 @@
 **다음 작업**
 
 - 지원현황 UI 개선(sticky·기업 조사 바로가기·AI 결과 강조)을 다음 커밋으로
+
+### Commit — 2026-08-12
+
+- Message: `Feat:#85 지원 건 상세 패널 고정·기업 조사 바로가기·AI 결과 핵심구 강조`
+- Issue: `#85`
+- Jira: 미사용
+
+**변경 요약**
+
+- 지원 건 상세 패널을 sticky로 고정 (`pages/companies/index.tsx`) — 목록이 길어지면 아래쪽 행을 선택했을 때 패널이 화면 위로 밀려나 보이지 않던 문제
+- 상세 패널에 해당 기업의 조사 노트 바로가기 추가 (`ApplicationDetailPanel` → `/companies/research/{companyId}`)
+- AI 조사 결과의 핵심 문구를 서비스 색으로 강조 — `shared/lib/emphasis.ts` 파서 + `ResearchText` 컴포넌트 + `RESEARCH_SYSTEM_PROMPT` 규칙
+
+**결정 로그**
+
+- sticky는 `lg:` 에서만 건다. 모바일은 패널이 그리드 아래 세로 배치라 불필요하고, `self-start` 가 없으면 flex stretch 때문에 동작하지 않는다
+- 라우팅은 페이지가 담당한다 — `ApplicationDetailPanel`은 `onOpenResearch` 콜백만 받고 `useNavigate`를 직접 쓰지 않는다. 기업 참조가 끊긴 건에는 `undefined`를 넘겨 버튼 자체를 감춘다
+- 강조는 "AI가 `**…**` 표기 → FE가 그 구간만 색칠" 방식. 저장 스키마 변경이 없고 프롬프트가 한 곳이라 두 제공자에 동시 적용된다
+- 짝이 맞지 않는 `**`는 강조하지 않고 글자 그대로 남긴다 — 닫는 표기를 빠뜨렸을 때 뒷부분이 통째로 물드는 것보다 원인이 드러나는 편이 낫다
+- 문자열을 조각내 React 엘리먼트로 조립한다. AI가 만든 값이라 `dangerouslySetInnerHTML`은 쓰지 않는다
+- `ResearchText`는 `p`가 아니라 `block span` — 미리보기에서 `label > span` 안쪽에 들어가기 때문
+
+**다음 작업**
+
+- PR 생성 후 브라우저에서 수동 확인
+- 이미 저장된 조사 결과에는 `**` 마커가 없어 재조사해야 강조가 보임
