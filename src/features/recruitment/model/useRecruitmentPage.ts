@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import { useToast } from "@/shared/ui/molecules/AppToast";
 import { deleteAllCompanies } from "@/entities/company/api/company.api";
 import { deleteAllApplications } from "@/entities/job-application/api/application.api";
-import { parseHalfId } from "@/entities/job-application/model/half";
+import { getCurrentHalfId, parseHalfId } from "@/entities/job-application/model/half";
 import { useRecruitmentBoard } from "./useRecruitmentBoard";
 import { useXlsxImport } from "./useXlsxImport";
 import type { StageKey } from "@/entities/job-application/model/stage";
@@ -32,7 +32,8 @@ export function useRecruitmentPage() {
   const [resetOpen, setResetOpen] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  const { rows, addCompany, addApplication, editApplication, removeApplication, editStage } = board;
+  const { rows, addCompany, addApplication, editApplication, removeApplication, editStage, selectHalf } =
+    board;
 
   const xlsxImport = useXlsxImport({ companies: board.companies, onDone: board.reload });
 
@@ -78,6 +79,10 @@ export function useRecruitmentPage() {
           await editApplication(formTarget.id, payload);
         } else {
           await addApplication(payload);
+          // 등록 폼에는 날짜 입력이 없어 새 건은 등록 시점 반기로 귀속된다.
+          // 다른 반기를 보고 있었다면 방금 만든 건이 목록에 없어 사라진 것처럼 보이므로
+          // 그 건이 있는 반기로 옮겨 준다.
+          selectHalf(getCurrentHalfId());
         }
 
         setFormTarget(undefined);
@@ -89,7 +94,7 @@ export function useRecruitmentPage() {
         setSaving(false);
       }
     },
-    [formTarget, addCompany, addApplication, editApplication, showToast],
+    [formTarget, addCompany, addApplication, editApplication, selectHalf, showToast],
   );
 
   const saveStage = useCallback(
