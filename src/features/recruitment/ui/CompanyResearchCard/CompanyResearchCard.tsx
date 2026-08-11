@@ -1,6 +1,7 @@
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
 import { cn } from "@/shared/lib/cn";
 import { safeUrl } from "@/shared/lib/safeUrl";
+import { toPlainText } from "@/shared/lib/emphasis";
 import {
   COMPANY_CATEGORY_CLASSES,
   COMPANY_CATEGORY_LABELS,
@@ -30,7 +31,9 @@ function summarize(company: Company): string {
     company.researchNote ??
     "";
 
-  const flat = body.trim().replace(/\s+/g, " ");
+  // AI 조사 결과에는 **핵심 문구** 표기가 섞여 있다. 카드 요약은 강조를 표현하지
+  // 않으므로 걷어낸다 — 안 걷으면 별표가 글자로 보이고, 길이를 자를 때 마커 중간이 잘린다.
+  const flat = toPlainText(body).trim().replace(/\s+/g, " ");
   return flat.length > SUMMARY_LIMIT ? `${flat.slice(0, SUMMARY_LIMIT)}…` : flat;
 }
 

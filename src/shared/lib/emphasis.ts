@@ -50,3 +50,15 @@ export function parseEmphasis(text: string): TextSegment[] {
 
   return segments;
 }
+
+/**
+ * 강조 표기를 걷어낸 평문.
+ *
+ * 목록 요약처럼 강조를 표현할 수 없는 자리에 쓴다. 표기를 그대로 두면 별표가
+ * 글자로 보이고, 길이를 잘라 붙이는 자리에서는 마커 중간이 잘려 더 지저분해진다.
+ */
+export function toPlainText(text: string): string {
+  return parseEmphasis(text)
+    .map((segment) => segment.text)
+    .join("");
+}
