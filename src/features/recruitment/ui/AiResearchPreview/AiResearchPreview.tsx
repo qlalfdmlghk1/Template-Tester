@@ -88,7 +88,8 @@ export function AiResearchPreview({
                     )}
                   </span>
                   {/* AI 응답은 HTML 로 렌더링하지 않는다 — ResearchText 가 조각내 조립 */}
-                  <ResearchText text={result[field] ?? ""} className="mt-1 text-sm text-text" />
+                  {/* label > span 안쪽이라 문단 대신 span 으로 감싼다 */}
+                  <ResearchText as="span" text={result[field] ?? ""} className="mt-1 text-sm text-text" />
                   <ResearchSourceLinks sources={result.sources[field]} />
                 </span>
               </label>

@@ -28,7 +28,7 @@ export const UNASSIGNED_HALF_ID: HalfId = "unassigned";
 /**
  * 반기를 가리지 않고 모든 지원 건을 보는 선택지.
  * 반기 판정 결과가 아니라 화면의 선택값으로만 쓰이며,
- * 자소서 일정이 없어 미분류로 떨어진 건도 여기에 포함된다.
+ * 판정 불가로 미분류에 남은 예외 케이스도 여기에 포함된다.
  */
 export const ALL_HALF_ID: HalfId = "all";
 
