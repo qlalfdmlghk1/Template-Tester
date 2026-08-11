@@ -14,6 +14,7 @@ import { formatSalary } from "@/entities/company/model/salary";
 import { useCompanyDetail } from "../../model/useCompanyDetail";
 import { PreferenceBadge } from "../PreferenceBadge/PreferenceBadge";
 import { ResearchSourceLinks } from "../ResearchSourceLinks/ResearchSourceLinks";
+import { ResearchText } from "../ResearchText/ResearchText";
 
 interface CompanyResearchDetailProps {
   companyId?: string;
@@ -46,10 +47,8 @@ function Section({ icon, title, body, sources, aiField }: SectionProps) {
 
       {filled ? (
         <>
-          {/* AI가 채운 값이 섞여 있으므로 HTML 로 렌더링하지 않는다 */}
-          <p className="m-0 text-base leading-7 text-text whitespace-pre-wrap break-words">
-            {body}
-          </p>
+          {/* AI가 채운 값이 섞여 있으므로 HTML 로 렌더링하지 않는다 (ResearchText 가 조각내 조립) */}
+          <ResearchText text={body ?? ""} className="text-base leading-7 text-text" />
           <ResearchSourceLinks sources={sources} />
         </>
       ) : (

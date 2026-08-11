@@ -7,6 +7,7 @@ import {
 import type { AiResearchField } from "@/entities/company/model/company.type";
 import type { CompanyResearchResult } from "@/entities/company/api/research.api";
 import { ResearchSourceLinks } from "../ResearchSourceLinks/ResearchSourceLinks";
+import { ResearchText } from "../ResearchText/ResearchText";
 
 interface AiResearchPreviewProps {
   result: CompanyResearchResult;
@@ -86,10 +87,8 @@ export function AiResearchPreview({
                       </span>
                     )}
                   </span>
-                  {/* AI 응답은 HTML 로 렌더링하지 않는다 — 텍스트로만 출력 */}
-                  <span className="block mt-1 text-sm text-text whitespace-pre-wrap">
-                    {result[field]}
-                  </span>
+                  {/* AI 응답은 HTML 로 렌더링하지 않는다 — ResearchText 가 조각내 조립 */}
+                  <ResearchText text={result[field] ?? ""} className="mt-1 text-sm text-text" />
                   <ResearchSourceLinks sources={result.sources[field]} />
                 </span>
               </label>
