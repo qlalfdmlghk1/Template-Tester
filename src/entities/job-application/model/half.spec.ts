@@ -14,7 +14,11 @@ import type { StageKey } from "./stage";
 import type { JobApplication, StageEntry } from "./application.type";
 import type { Schedule } from "./schedule";
 
-function makeApplication(resumeSchedule: Schedule | null, id = "app-1"): JobApplication {
+function makeApplication(
+  resumeSchedule: Schedule | null,
+  id = "app-1",
+  createdAt = new Date(2026, 0, 1),
+): JobApplication {
   const stages = {} as Record<StageKey, StageEntry>;
   for (const key of STAGE_KEYS) {
     stages[key] = { status: "PENDING", schedule: null };
@@ -29,7 +33,7 @@ function makeApplication(resumeSchedule: Schedule | null, id = "app-1"): JobAppl
     jobTag: "FE",
     headcount: null,
     stages,
-    createdAt: new Date(2026, 0, 1),
+    createdAt,
   };
 }
 
@@ -84,8 +88,23 @@ describe("getApplicationHalfId", () => {
     expect(getApplicationHalfId(application)).toBe("2026-H1");
   });
 
-  it("자소서 일정이 없으면 미분류다", () => {
-    expect(getApplicationHalfId(makeApplication(null))).toBe(UNASSIGNED_HALF_ID);
+  it("자소서 일정이 없으면 등록 시점 반기로 귀속된다", () => {
+    expect(getApplicationHalfId(makeApplication(null, "a", new Date(2026, 2, 5)))).toBe("2026-H1");
+    expect(getApplicationHalfId(makeApplication(null, "b", new Date(2026, 8, 5)))).toBe("2026-H2");
+  });
+
+  it("자소서 일정이 생기면 등록 시점이 아니라 그 날짜를 따른다", () => {
+    const application = makeApplication(
+      { kind: "exact", at: "2026-09-01", hasTime: false },
+      "a",
+      new Date(2026, 0, 1),
+    );
+    expect(getApplicationHalfId(application)).toBe("2026-H2");
+  });
+
+  it("등록 시점을 읽을 수 없으면 미분류로 남는다", () => {
+    const application = makeApplication(null, "a", new Date("깨진 값"));
+    expect(getApplicationHalfId(application)).toBe(UNASSIGNED_HALF_ID);
   });
 });
 
@@ -105,10 +124,19 @@ describe("collectHalfIds", () => {
     ]);
   });
 
-  it("미분류는 선택지로 노출하지 않는다 — 전체에서 함께 보인다", () => {
+  it("일정이 없는 건도 등록 시점 반기로 선택지에 잡힌다", () => {
     const applications = [
       makeApplication({ kind: "exact", at: "2026-03-11", hasTime: false }, "a"),
-      makeApplication(null, "b"),
+      makeApplication(null, "b", new Date(2026, 8, 1)),
+    ];
+
+    expect(collectHalfIds(applications)).toEqual([ALL_HALF_ID, "2026-H2", "2026-H1"]);
+  });
+
+  it("미분류는 선택지로 노출하지 않는다 — 전체에서만 보인다", () => {
+    const applications = [
+      makeApplication({ kind: "exact", at: "2026-03-11", hasTime: false }, "a"),
+      makeApplication(null, "b", new Date("깨진 값")),
     ];
 
     expect(collectHalfIds(applications)).toEqual([ALL_HALF_ID, "2026-H1"]);
