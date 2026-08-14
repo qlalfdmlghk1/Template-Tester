@@ -144,6 +144,19 @@ export function emptySourceError(target: PostingExtractTarget): PostingExtractEr
   );
 }
 
+/**
+ * 응답이 길이 상한에 걸려 잘린 경우.
+ *
+ * 그냥 parse 실패로 두면 "다시 시도해 주세요"가 뜨는데, 다시 해도 같은 지점에서 잘려
+ * 사용자가 빠져나갈 길이 없다. 자료를 줄이라고 알려 줘야 한다.
+ */
+export function truncatedError(): PostingExtractError {
+  return new PostingExtractError(
+    "공고가 길어 내용을 끝까지 읽지 못했습니다. 모집요강 부분만 잘라서 캡처하거나 나눠서 넣어 주세요.",
+    "parse",
+  );
+}
+
 /** fetch 자체가 실패한 경우 — 네트워크·CORS 문제 */
 export function networkError(): PostingExtractError {
   return new PostingExtractError(
@@ -279,13 +292,19 @@ export function parsePostingResult(text: string): PostingExtractResult {
 
   for (const candidate of candidates) {
     try {
-      const parsed = JSON.parse(candidate) as PostingExtractResult & {
-        schedules?: unknown;
-      };
+      const parsed = JSON.parse(candidate) as Record<string, unknown>;
+
+      // 모델이 문자열 대신 배열·숫자를 줄 수 있다. 그대로 통과시키면 뒤에서
+      // `.trim()` 이 TypeError 로 터져 parse 가 아닌 unknown 실패로 흘러간다.
+      const text = (value: unknown) =>
+        typeof value === "string" && value.trim() ? value : undefined;
+
       // 모델은 프롬프트대로 URL 문자열을 주므로 표시·저장용 형태로 맞춘다.
       // 일정은 기준 연도가 있어야 정규화할 수 있어 원본 그대로 넘긴다.
       return {
-        ...parsed,
+        jobDescription: text(parsed.jobDescription),
+        requirements: text(parsed.requirements),
+        preferredQualifications: text(parsed.preferredQualifications),
         sources: normalizeSources<PostingField>(parsed.sources),
         rawSchedules: parsed.schedules,
       };

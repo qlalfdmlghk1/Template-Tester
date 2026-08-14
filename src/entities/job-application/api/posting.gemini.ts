@@ -23,12 +23,12 @@ import {
   parsePostingResult,
   readErrorBody,
 } from "./posting.shared";
+import type { ResearchSource } from "@/shared/model/aiSource";
 import type {
   PostingExtractResult,
   PostingExtractTarget,
 } from "./posting.shared";
 import { POSTING_FIELDS } from "../model/application.type";
-import type { ResearchSource } from "@/shared/model/aiSource";
 
 const BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models";
 

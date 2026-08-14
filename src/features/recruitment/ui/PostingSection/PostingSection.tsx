@@ -54,7 +54,7 @@ export function PostingSection({
 
   const handleExtract = (source?: { pastedText?: string; images?: PostingImage[] }) => {
     setSaveError(null);
-    extract.run({
+    void extract.run({
       // 사용자가 준 자료가 있으면 그게 정본이라 링크는 넘기지 않는다
       url: source ? undefined : postingUrl,
       ...source,
@@ -63,13 +63,22 @@ export function PostingSection({
     });
   };
 
-  /** 초안을 저장하고 성공하면 미리보기를 닫는다 */
-  const applyPatch = async (patch: Partial<JobApplicationInput>) => {
+  /**
+   * 초안을 저장하고 성공하면 **반영한 쪽 미리보기만** 닫는다.
+   *
+   * 텍스트와 일정은 반영 단위가 나뉘어 있으므로 닫는 단위도 나뉘어야 한다.
+   * 한쪽을 반영했다고 다른 쪽 초안까지 지우면, 남은 항목을 반영하려고
+   * 유료 AI 호출을 다시 해야 한다.
+   */
+  const applyPatch = async (
+    patch: Partial<JobApplicationInput>,
+    dismissApplied: () => void,
+  ) => {
     if (Object.keys(patch).length === 0) return;
 
     try {
       await onSave(patch);
-      extract.dismiss();
+      dismissApplied();
       setPasteOpen(false);
     } catch {
       setSaveError("반영 내용을 저장하지 못했습니다. 다시 시도해 주세요.");
@@ -81,6 +90,7 @@ export function PostingSection({
 
     await applyPatch(
       mergePostingDraft(application, extract.result, extract.selectedFields, new Date()),
+      extract.dismissFields,
     );
   };
 
@@ -88,6 +98,7 @@ export function PostingSection({
   const handleApplySchedules = async () => {
     await applyPatch(
       mergePostingSchedules(application, extract.scheduleDrafts, extract.selectedStages),
+      extract.dismissSchedules,
     );
   };
 

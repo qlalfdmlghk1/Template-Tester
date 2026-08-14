@@ -164,3 +164,31 @@
 
 - 캡처 경로 실측 — 실제 공고로 인식률·숫자 정확도 확인 (`실측 표` 채우기)
 - 결과에 따라 캡처 장수 상한(현재 4장)·안내 문구 조정
+
+---
+
+### Commit — 2026-08-15 02:20
+
+- Message: `Fix:#92 리뷰 Blocker 반영 — 수정 시 전형 단계 삭제·반영 단위 혼선`
+- Issue: `#92`
+
+**변경 요약**
+
+- `useRecruitmentPage` — `stages` 키를 값이 있을 때만 payload 에 싣는다
+- `useJobPostingExtract` — `dismiss` 를 `dismissFields`/`dismissSchedules` 로 분리
+- `useApplicationForm` 훅 신설 — `ApplicationFormDialog` 의 상태·추출·payload 조립을 이관
+- 폼 경로의 출처 반영 규칙을 `mergePostingDraft` 와 일치시킴 (채운 항목만)
+- `parsePostingResult` 무검증 캐스팅 제거, Anthropic `max_tokens` 분기 추가
+- `PostingPasteDialog` 캡처 장수 판정을 함수형 업데이터로 이동, effect 의존성 고정
+- 테스트 12개 추가 (585개 통과)
+
+**결정 로그**
+
+- **`stages: undefined` 가 `deleteField()` 로 변환돼 전형 단계가 통째로 지워지는 회귀**를 리뷰에서 발견. 지원 건을 열어 메모만 고쳐도 상태·일정·단계 메모가 사라지고 합격률 집계까지 틀어졌다. `stages` 는 폼이 들고 있는 필드가 아니라 추출이 채웠을 때만 생기므로 키 자체를 조건부로 실었다.
+- **텍스트와 일정의 반영 단위를 나눠 놓고 닫는 단위는 하나였다** — 한쪽을 반영하면 다른 쪽 초안이 사라져 유료 호출을 다시 해야 했다. 훅의 닫기를 둘로 나눴다.
+- `ApplicationFormDialog` 로직 130줄은 컨벤션 [MUST] 위반이었고, 위 두 버그가 실제로 그 안에서 났다. `useApplicationForm` 으로 이관하면서 출처 반영 규칙도 엔티티 계층과 일치시켰다.
+- **남긴 항목**(자동 반영 안 함): 출처 링크 라벨에 호스트 병기(표시 정책), 프롬프트 인젝션 방어 문구(프롬프트 정책), 기업 조사 쪽 출처 정규화 3중 구현 정리(이번 범위 밖), `MAX_IMAGE_BYTES` base64 팽창(실측 후 튜닝), UI 컴포넌트 테스트.
+
+**다음 작업**
+
+- 캡처 인식률 실측

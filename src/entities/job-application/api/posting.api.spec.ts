@@ -153,6 +153,17 @@ describe("extractPosting — Anthropic", () => {
     expect(result.jobDescription).toBe("웹 서비스 개발");
   });
 
+  it("출력이 잘리면 자료를 줄이라고 안내해야 한다", async () => {
+    // 재시도해도 같은 지점에서 잘리므로 "다시 시도해 주세요"로 두면 빠져나갈 길이 없다
+    fetchMock.mockResolvedValue(
+      jsonResponse(anthropicPayload('{"jobDescription":"웹 개발', [], "max_tokens")),
+    );
+
+    await expect(
+      extractPosting({ ...URL_TARGET, provider: "anthropic", apiKey: ANTHROPIC_KEY }),
+    ).rejects.toThrowError(/나눠서|잘라서/);
+  });
+
   it("401 이면 키 문제로 안내해야 한다", async () => {
     fetchMock.mockResolvedValue(jsonResponse({}, 401));
 

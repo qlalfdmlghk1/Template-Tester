@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
 import AppIcon from "@/shared/ui/atoms/AppIcon/AppIcon";
 import { cn } from "@/shared/lib/cn";
@@ -79,17 +79,18 @@ export function PostingPasteDialog({
     else textRef.current?.focus();
   }, [mode]);
 
-  const addFiles = async (files: File[]) => {
+  /**
+   * 읽어 들인 캡처를 목록에 더한다.
+   *
+   * 장수 상한은 **함수형 업데이터 안에서** 판정한다. 클로저의 `images.length` 로
+   * 판정하면 비동기 읽기 중 두 번 붙여넣을 때 두 호출이 같은 값을 보고 상한을 넘긴다.
+   */
+  // setter 만 참조하므로 의존성이 없다 — 덕분에 아래 paste 리스너를 한 번만 등록한다
+  const addFiles = useCallback(async (files: File[]) => {
     if (files.length === 0) return;
 
-    const room = MAX_IMAGES - images.length;
-    if (room <= 0) {
-      setImageError(`캡처는 최대 ${MAX_IMAGES}장까지 붙일 수 있습니다.`);
-      return;
-    }
-
     const results = await Promise.all(
-      files.slice(0, room).map((file) =>
+      files.slice(0, MAX_IMAGES).map((file) =>
         readImageFile(file, {
           allowedTypes: SUPPORTED_IMAGE_TYPES,
           maxBytes: MAX_IMAGE_BYTES,
@@ -104,8 +105,14 @@ export function PostingPasteDialog({
       (item): item is ReadImageFailure => typeof item === "string",
     );
 
+    let overflowed = files.length > MAX_IMAGES;
+
     if (added.length > 0) {
-      setImages((current) => [...current, ...added]);
+      setImages((current) => {
+        const next = [...current, ...added];
+        overflowed = overflowed || next.length > MAX_IMAGES;
+        return next.slice(0, MAX_IMAGES);
+      });
       // 본문 탭에서 캡처를 붙여넣었으면 그쪽으로 데려간다 — 붙였는데 안 보이면 안 된다
       setMode("image");
     }
@@ -113,11 +120,11 @@ export function PostingPasteDialog({
     setImageError(
       failure
         ? READ_IMAGE_MESSAGES[failure]
-        : files.length > room
+        : overflowed
           ? `캡처는 최대 ${MAX_IMAGES}장까지 붙일 수 있습니다.`
           : null,
     );
-  };
+  }, []);
 
   /**
    * 붙여넣기는 문서 전체에서 받는다.
@@ -138,9 +145,7 @@ export function PostingPasteDialog({
 
     document.addEventListener("paste", onPaste);
     return () => document.removeEventListener("paste", onPaste);
-    // 의존성 배열을 두지 않는다 — addFiles 가 현재 캡처 장수를 봐야 해서
-    // 매 렌더마다 최신 핸들러로 갈아 끼운다
-  });
+  }, [addFiles]);
 
   const handleDrop = (event: React.DragEvent) => {
     event.preventDefault();

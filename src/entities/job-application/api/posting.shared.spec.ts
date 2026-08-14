@@ -84,6 +84,23 @@ describe("parsePostingResult", () => {
     expect(result.sources.jobDescription).toEqual([]);
   });
 
+  it("문자열이 아닌 값을 주면 그 항목을 비워야 한다", () => {
+    // 배열·숫자를 그대로 통과시키면 뒤에서 .trim() 이 TypeError 로 터진다
+    const result = parsePostingResult(
+      '{"jobDescription":["a","b"],"requirements":3,"preferredQualifications":"React","sources":{}}',
+    );
+
+    expect(result.jobDescription).toBeUndefined();
+    expect(result.requirements).toBeUndefined();
+    expect(result.preferredQualifications).toBe("React");
+  });
+
+  it("공백뿐인 값도 비워야 한다", () => {
+    const result = parsePostingResult('{"jobDescription":"   ","sources":{}}');
+
+    expect(result.jobDescription).toBeUndefined();
+  });
+
   it("JSON 이 아니면 parse 종류의 에러를 던져야 한다", () => {
     expect(() => parsePostingResult("공고를 찾을 수 없습니다")).toThrowError(
       PostingExtractError,
