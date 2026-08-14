@@ -6,6 +6,7 @@ import {
   formatHalfId,
   getApplicationHalfId,
   getHalfOfDate,
+  getStagesHalfId,
   parseHalfId,
   toHalfId,
 } from "./half";
@@ -18,10 +19,11 @@ function makeApplication(
   resumeSchedule: Schedule | null,
   id = "app-1",
   createdAt = new Date(2026, 0, 1),
+  otherStages: Partial<Record<StageKey, Schedule>> = {},
 ): JobApplication {
   const stages = {} as Record<StageKey, StageEntry>;
   for (const key of STAGE_KEYS) {
-    stages[key] = { status: "PENDING", schedule: null };
+    stages[key] = { status: "PENDING", schedule: otherStages[key] ?? null };
   }
   stages.resume = { status: "PENDING", schedule: resumeSchedule };
 
@@ -36,6 +38,29 @@ function makeApplication(
     createdAt,
   };
 }
+
+describe("getStagesHalfId", () => {
+  it("자소서 마감일의 반기를 준다", () => {
+    const { stages } = makeApplication({ kind: "exact", at: "2026-03-11", hasTime: false });
+
+    expect(getStagesHalfId(stages)).toBe("2026-H1");
+  });
+
+  it("자소서가 비면 가장 이른 다른 일정을 본다", () => {
+    const { stages } = makeApplication(null, "app-1", new Date(2026, 0, 1), {
+      codingTest: { kind: "exact", at: "2026-09-02", hasTime: false },
+    });
+
+    expect(getStagesHalfId(stages)).toBe("2026-H2");
+  });
+
+  it("아는 날짜가 없으면 null 이어야 한다", () => {
+    // 등록 직후 반기를 정할 때 "일정으로는 모른다"를 구분해야 한다
+    const { stages } = makeApplication(null);
+
+    expect(getStagesHalfId(stages)).toBeNull();
+  });
+});
 
 describe("getHalfOfDate", () => {
   it("1~6월은 상반기다", () => {
@@ -88,7 +113,33 @@ describe("getApplicationHalfId", () => {
     expect(getApplicationHalfId(application)).toBe("2026-H1");
   });
 
-  it("자소서 일정이 없으면 등록 시점 반기로 귀속된다", () => {
+  it("자소서가 비어 있으면 다른 전형 단계의 일정을 본다 — 등록 시점보다 우선", () => {
+    const application = makeApplication(null, "a", new Date(2026, 0, 1), {
+      codingTest: { kind: "exact", at: "2025-09-20", hasTime: false },
+    });
+    expect(getApplicationHalfId(application)).toBe("2025-H2");
+  });
+
+  it("전형 단계가 여럿이면 가장 이른 일정을 쓴다", () => {
+    const application = makeApplication(null, "a", new Date(2026, 0, 1), {
+      interview1: { kind: "exact", at: "2025-11-10", hasTime: false },
+      codingTest: { kind: "exact", at: "2025-09-20", hasTime: false },
+      finalResult: { kind: "exact", at: "2025-12-01", hasTime: false },
+    });
+    expect(getApplicationHalfId(application)).toBe("2025-H2");
+  });
+
+  it("자소서가 있으면 다른 단계가 더 일러도 자소서를 따른다", () => {
+    const application = makeApplication(
+      { kind: "exact", at: "2026-03-11", hasTime: false },
+      "a",
+      new Date(2026, 0, 1),
+      { codingTest: { kind: "exact", at: "2025-09-20", hasTime: false } },
+    );
+    expect(getApplicationHalfId(application)).toBe("2026-H1");
+  });
+
+  it("자소서도 다른 일정도 없으면 등록 시점 반기로 귀속된다", () => {
     expect(getApplicationHalfId(makeApplication(null, "a", new Date(2026, 2, 5)))).toBe("2026-H1");
     expect(getApplicationHalfId(makeApplication(null, "b", new Date(2026, 8, 5)))).toBe("2026-H2");
   });

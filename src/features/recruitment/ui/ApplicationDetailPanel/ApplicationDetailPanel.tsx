@@ -16,7 +16,9 @@ import {
   COMPANY_CATEGORY_LABELS,
 } from "@/entities/company/model/company.type";
 import type { StageKey } from "@/entities/job-application/model/stage";
+import type { JobApplicationInput } from "@/entities/job-application/model/application.type";
 import type { RecruitmentRow } from "../../model/useRecruitmentBoard";
+import { PostingSection } from "../PostingSection/PostingSection";
 
 interface ApplicationDetailPanelProps {
   row: RecruitmentRow;
@@ -26,6 +28,12 @@ interface ApplicationDetailPanelProps {
   onDelete: () => void;
   /** 이 기업의 조사 노트로 이동. 참조가 끊긴 지원 건에는 넘기지 않는다 */
   onOpenResearch?: () => void;
+  /** 공고에 연도가 없을 때 채울 기준 연도 — 보고 있는 반기의 연도 */
+  referenceYear: number;
+  /** 공고 추출 결과를 지원 건에 반영한다 */
+  onSavePosting: (patch: Partial<JobApplicationInput>) => Promise<void>;
+  /** AI 키가 없을 때 등록 화면으로 보낸다 */
+  onRequestApiKey?: () => void;
 }
 
 /** 지원 건 상세 — 공고 링크, 메모, 전형 타임라인 */
@@ -36,10 +44,14 @@ export function ApplicationDetailPanel({
   onEdit,
   onDelete,
   onOpenResearch,
+  referenceYear,
+  onSavePosting,
+  onRequestApiKey,
 }: ApplicationDetailPanelProps) {
   const { application, company, status } = row;
-  // 공고 링크는 사용자가 올린 xlsx에서 온 값이라 허용 스킴만 링크로 만든다
-  const postingUrl = safeUrl(company?.postingUrl);
+  // 공고 링크는 지원 건에 붙은 값이 우선이고, 없으면 기업의 대표 링크로 대체한다.
+  // 사용자가 올린 xlsx에서 온 값일 수 있어 허용 스킴만 링크로 만든다
+  const postingUrl = safeUrl(application.postingUrl ?? company?.postingUrl);
 
   return (
     <aside className="flex flex-col gap-4 p-4 bg-surface border border-border rounded-md">
@@ -137,6 +149,15 @@ export function ApplicationDetailPanel({
           </p>
         </section>
       )}
+
+      <PostingSection
+        application={application}
+        companyName={company?.name ?? ""}
+        postingUrl={postingUrl ?? undefined}
+        referenceYear={referenceYear}
+        onSave={onSavePosting}
+        onRequestApiKey={onRequestApiKey}
+      />
 
       <section>
         <h3 className="m-0 mb-2 text-sm font-semibold text-text">전형 진행</h3>

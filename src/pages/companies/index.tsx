@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/widgets/Navbar/Navbar";
+import { AiKeyDialog } from "@/features/ai-key/ui/AiKeyDialog/AiKeyDialog";
 import PageHeader from "@/shared/ui/molecules/PageHeader/PageHeader";
 import AppFallback from "@/shared/ui/molecules/AppFallback/AppFallback";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
@@ -17,6 +19,7 @@ export default function Companies() {
   const page = useRecruitmentPage();
 
   const navigate = useNavigate();
+  const [keyDialogOpen, setKeyDialogOpen] = useState(false);
 
   // 콜백 안에서도 좁혀진 타입을 유지하기 위해 지역 변수로 꺼낸다
   const selectedRow = page.selectedRow;
@@ -121,6 +124,11 @@ export default function Companies() {
                           ? () => navigate(`/companies/research/${researchCompanyId}`)
                           : undefined
                       }
+                      referenceYear={page.defaultYear}
+                      onSavePosting={(patch) =>
+                        page.editApplication(selectedRow.application.id, patch)
+                      }
+                      onRequestApiKey={() => setKeyDialogOpen(true)}
                     />
                   </div>
                 )}
@@ -135,10 +143,14 @@ export default function Companies() {
           application={page.formTarget}
           companies={page.companies}
           saving={page.saving}
+          referenceYear={page.defaultYear}
+          onRequestApiKey={() => setKeyDialogOpen(true)}
           onSubmit={page.submitForm}
           onClose={page.closeForm}
         />
       )}
+
+      {keyDialogOpen && <AiKeyDialog onClose={() => setKeyDialogOpen(false)} />}
 
       {page.stageTarget && page.stageRow && (
         <StageEditDialog
