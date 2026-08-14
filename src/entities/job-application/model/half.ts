@@ -2,12 +2,13 @@
  * 반기 귀속.
  *
  * 경계는 1~6월 상반기 / 7~12월 하반기이며, 지원 건은 자소서 마감일 기준으로
- * 자동 귀속된다. 마감일이 아직 없으면 등록 시점을 대신 쓴다.
+ * 자동 귀속된다. 마감일이 없으면 다른 전형 단계의 가장 이른 일정을, 그것도
+ * 없으면 등록 시점을 대신 쓴다.
  * 별도의 "반기 생성" 동작은 없고, 지원 건이 추가되면 해당 반기가 선택지에 자연히 생긴다.
  */
 
 import { getScheduleAnchor } from "./schedule";
-import { HALF_ANCHOR_STAGE } from "./stage";
+import { HALF_ANCHOR_STAGE, STAGE_KEYS } from "./stage";
 import type { JobApplication } from "./application.type";
 
 export interface Half {
@@ -58,18 +59,55 @@ export function getHalfOfDate(date: Date): Half {
 }
 
 /**
+ * 전형 단계 중 가장 이른 일정.
+ *
+ * 자소서 마감일이 비어 있어도 코딩테스트·면접 일정은 적혀 있는 경우가 많다
+ * (특히 시트에서 가져온 건). 그런 건까지 "날짜를 모르는 건"으로 취급하면
+ * 실제로 아는 날짜를 두고 등록 시점으로 떨어뜨리게 된다.
+ */
+function getEarliestStageAnchor(stages: JobApplication["stages"]): Date | null {
+  let earliest: Date | null = null;
+
+  for (const stageKey of STAGE_KEYS) {
+    const anchor = getScheduleAnchor(stages[stageKey]?.schedule ?? null);
+    if (!anchor) continue;
+    if (!earliest || anchor < earliest) earliest = anchor;
+  }
+
+  return earliest;
+}
+
+/**
+ * 단계 일정만으로 판정한 반기. 아는 날짜가 없으면 null.
+ *
+ * 아직 저장하지 않은 지원 건에도 쓴다 — 등록 폼에서 공고 추출로 자소서 마감일을
+ * 채우면 그 건은 등록 시점이 아니라 그 날짜의 반기로 귀속되므로, 저장 직후
+ * 어느 반기를 보여줘야 하는지 미리 알아야 한다.
+ */
+export function getStagesHalfId(stages: JobApplication["stages"]): HalfId | null {
+  const anchor =
+    getScheduleAnchor(stages[HALF_ANCHOR_STAGE]?.schedule ?? null) ??
+    getEarliestStageAnchor(stages);
+
+  return anchor ? toHalfId(getHalfOfDate(anchor)) : null;
+}
+
+/**
  * 지원 건이 속한 반기.
  *
- * 자소서 일정이 있으면 그 날짜가 기준이고, 없으면 등록 시점으로 판정한다.
- * 등록 폼에 날짜 입력이 없어 신규 건은 항상 일정이 빈 채로 만들어지는데,
- * 이때 미분류로 두면 반기 선택지에 잡히지 않아 방금 등록한 건이 화면에서 사라진다.
+ * 판정 순서는 "그 건에 대해 아는 가장 이른 날짜"다:
+ * 자소서 마감일 → 다른 전형 단계 중 가장 이른 일정 → 등록 시점.
  *
- * 등록 반기를 문서에 저장하지 않고 매번 계산하므로, 나중에 자소서 마감일을
- * 채우면 그 날짜의 반기로 자연히 옮겨간다 — 날짜가 있으면 날짜가 우선이다.
+ * 자소서를 먼저 보는 것은 그것이 보통 전형의 출발점이라서다. 등록 폼에는 날짜
+ * 입력이 없어 수기 등록 건은 일정이 빈 채로 만들어지는데, 이때 미분류로 두면
+ * 반기 선택지에 잡히지 않아 방금 등록한 건이 화면에서 사라진다.
+ *
+ * 반기를 문서에 저장하지 않고 매번 계산하므로, 나중에 일정을 채우면 그 날짜의
+ * 반기로 자연히 옮겨간다 — 날짜를 알게 되면 날짜가 우선이다.
  */
 export function getApplicationHalfId(application: JobApplication): HalfId {
-  const anchor = getScheduleAnchor(application.stages[HALF_ANCHOR_STAGE]?.schedule ?? null);
-  if (anchor) return toHalfId(getHalfOfDate(anchor));
+  const fromStages = getStagesHalfId(application.stages);
+  if (fromStages) return fromStages;
 
   // createdAt 은 필수 필드지만, 옛 문서를 읽다 값이 깨지면 Invalid Date 가 될 수 있다.
   // 그 경우까지 반기로 환산하면 "NaN-HNaN" 같은 식별자가 선택지에 섞이므로 미분류로 남긴다.

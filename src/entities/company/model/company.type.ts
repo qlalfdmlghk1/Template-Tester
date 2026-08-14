@@ -1,3 +1,5 @@
+import type { ResearchSource } from "@/shared/model/aiSource";
+
 /**
  * 기업 유형.
  * IBK 기업은행처럼 공기업이면서 금융권인 곳이 있어 한 기업에 여러 개를 달 수 있다.
@@ -105,16 +107,9 @@ export const COMPANY_PREFERENCE_CLASSES: Record<CompanyPreference, string> = {
   D: "bg-gray-200 text-gray-600",
 };
 
-/**
- * 조사 근거 한 건.
- *
- * URL 만으로는 라벨을 만들 수 없다 — Gemini 는 검색 결과를 리다이렉트 주소로 주기 때문에
- * 호스트가 전부 같다. 제공자가 함께 주는 제목을 보관해 표시에 쓴다.
- */
-export interface ResearchSource {
-  url: string;
-  title?: string;
-}
+// 조사 근거 한 건. 공고 추출(`entities/job-application`)과 공유하므로 shared 에 둔다.
+// 기존 import 경로를 깨지 않도록 여기서 다시 내보낸다.
+export type { ResearchSource };
 
 /** AI 자동 조사가 채우는 항목 */
 export const AI_RESEARCH_FIELDS = [
