@@ -51,7 +51,7 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="bg-surface border-b border-border sticky top-0 z-[1000]">
+    <nav className="bg-surface border-b border-border sticky top-0 z-navbar">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
         <div className="flex w-full justify-between items-center gap-6">
           <div onClick={() => navigate("/")} className="flex items-center gap-2 shrink-0 cursor-pointer">
@@ -125,7 +125,7 @@ export default function Navbar() {
               </div>
 
               {isDropdownOpen && (
-                <div className="absolute top-full right-0 mt-2 bg-surface rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)] border border-border py-1 px-2 z-50 min-w-[120px] whitespace-nowrap">
+                <div className="absolute top-full right-0 mt-2 bg-surface rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)] border border-border py-1 px-2 z-dropdown min-w-[120px] whitespace-nowrap">
                   <button
                     onClick={handleMyTemplates}
                     className="w-full px-3 py-2.5 text-left text-sm text-text hover:bg-blue-50 transition-colors rounded-md"
