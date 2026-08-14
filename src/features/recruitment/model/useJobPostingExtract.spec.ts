@@ -118,6 +118,50 @@ describe("useJobPostingExtract", () => {
     expect(result.current.selectedFields).toEqual(["jobDescription"]);
   });
 
+  it("텍스트만 닫아도 일정 초안은 남아야 한다", async () => {
+    // 반영 단위가 나뉘어 있으므로 닫는 단위도 나뉘어야 한다 —
+    // 한쪽을 반영했다고 다른 쪽 초안까지 지우면 유료 호출을 다시 해야 한다
+    extractPostingMock.mockResolvedValue({
+      jobDescription: "웹 서비스 개발",
+      sources: {},
+      rawSchedules: { resume: { kind: "exact", at: "03-11" } },
+    });
+
+    const { result } = renderHook(() => useJobPostingExtract(OPTIONS));
+
+    await act(async () => {
+      await result.current.run(TARGET);
+    });
+
+    await waitFor(() => expect(result.current.scheduleDrafts).toHaveLength(1));
+
+    act(() => result.current.dismissFields());
+
+    expect(result.current.result).toBeNull();
+    expect(result.current.scheduleDrafts).toHaveLength(1);
+  });
+
+  it("일정만 닫아도 텍스트 결과는 남아야 한다", async () => {
+    extractPostingMock.mockResolvedValue({
+      jobDescription: "웹 서비스 개발",
+      sources: {},
+      rawSchedules: { resume: { kind: "exact", at: "03-11" } },
+    });
+
+    const { result } = renderHook(() => useJobPostingExtract(OPTIONS));
+
+    await act(async () => {
+      await result.current.run(TARGET);
+    });
+
+    await waitFor(() => expect(result.current.scheduleDrafts).toHaveLength(1));
+
+    act(() => result.current.dismissSchedules());
+
+    expect(result.current.scheduleDrafts).toEqual([]);
+    expect(result.current.result).not.toBeNull();
+  });
+
   it("닫으면 결과와 에러가 모두 지워져야 한다", async () => {
     extractPostingMock.mockRejectedValue(
       new PostingExtractError("공고 페이지를 읽지 못했습니다.", "fetchBlocked"),

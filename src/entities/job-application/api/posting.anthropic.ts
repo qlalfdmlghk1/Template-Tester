@@ -21,6 +21,7 @@ import {
   networkError,
   parsePostingResult,
   readErrorBody,
+  truncatedError,
 } from "./posting.shared";
 import type {
   PostingExtractResult,
@@ -216,6 +217,12 @@ export async function extractWithAnthropic(
     if (data.stop_reason === "pause_turn") {
       messages.push({ role: "assistant", content: data.content });
       continue;
+    }
+
+    // 출력 상한에 걸려 JSON 이 잘린 경우. 재시도해도 같은 지점에서 잘리므로
+    // 파싱을 시도하지 않고 자료를 줄이라고 안내한다.
+    if (data.stop_reason === "max_tokens") {
+      throw truncatedError();
     }
 
     const result = parsePostingResult(extractText(data.content));

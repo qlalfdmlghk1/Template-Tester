@@ -80,11 +80,6 @@ export const POSTING_FIELD_LABELS: Record<PostingField, string> = {
   preferredQualifications: "우대사항",
 };
 
-/** 공고 내용이 하나라도 채워져 있는가 */
-export function hasPostingDetail(application: JobApplication): boolean {
-  return POSTING_FIELDS.some((field) => application[field]?.trim());
-}
-
 /** 지원 건 생성·수정 입력값 */
 export type JobApplicationInput = Pick<
   JobApplication,

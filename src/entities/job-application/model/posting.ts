@@ -1,8 +1,12 @@
 import type { ResearchSource } from "@/shared/model/aiSource";
-import type { JobApplication, JobApplicationInput, PostingField } from "./application.type";
-import type { PostingScheduleDraft } from "./postingSchedule";
 import { STAGE_KEYS } from "./stage";
-import type { StageEntry } from "./application.type";
+import type {
+  JobApplication,
+  JobApplicationInput,
+  PostingField,
+  StageEntry,
+} from "./application.type";
+import type { PostingScheduleDraft } from "./postingSchedule";
 import type { StageKey } from "./stage";
 
 /** 추출 결과 중 반영에 필요한 부분만 — 호출 계층 타입에 묶이지 않게 최소로 받는다 */

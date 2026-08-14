@@ -156,14 +156,30 @@ export function useJobPostingExtract({
     );
   }, []);
 
-  const dismiss = useCallback(() => {
+  /**
+   * 텍스트 초안만 닫는다.
+   *
+   * 일정과 반영 단위를 나눠 뒀으므로 닫는 단위도 나눠야 한다 — 한쪽을 반영했다고
+   * 다른 쪽 초안까지 지우면 남은 항목을 반영하려고 유료 호출을 다시 해야 한다.
+   */
+  const dismissFields = useCallback(() => {
     setResult(null);
-    setError(null);
-    setErrorKind(null);
     setSelectedFields([]);
+  }, []);
+
+  /** 일정 초안만 닫는다 */
+  const dismissSchedules = useCallback(() => {
     setScheduleDrafts([]);
     setSelectedStages([]);
   }, []);
+
+  /** 결과·에러를 통째로 닫는다 (다시 실행하거나 화면을 정리할 때) */
+  const dismiss = useCallback(() => {
+    setError(null);
+    setErrorKind(null);
+    dismissFields();
+    dismissSchedules();
+  }, [dismissFields, dismissSchedules]);
 
   return {
     hasApiKey,
@@ -178,6 +194,8 @@ export function useJobPostingExtract({
     run,
     toggleField,
     toggleStage,
+    dismissFields,
+    dismissSchedules,
     dismiss,
   };
 }
