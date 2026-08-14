@@ -38,8 +38,9 @@ export function ApplicationDetailPanel({
   onOpenResearch,
 }: ApplicationDetailPanelProps) {
   const { application, company, status } = row;
-  // 공고 링크는 사용자가 올린 xlsx에서 온 값이라 허용 스킴만 링크로 만든다
-  const postingUrl = safeUrl(company?.postingUrl);
+  // 공고 링크는 지원 건에 붙은 값이 우선이고, 없으면 기업의 대표 링크로 대체한다.
+  // 사용자가 올린 xlsx에서 온 값일 수 있어 허용 스킴만 링크로 만든다
+  const postingUrl = safeUrl(application.postingUrl ?? company?.postingUrl);
 
   return (
     <aside className="flex flex-col gap-4 p-4 bg-surface border border-border rounded-md">

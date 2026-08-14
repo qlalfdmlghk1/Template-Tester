@@ -22,6 +22,14 @@ export interface JobApplication {
   companyId: string;
   /** 같은 기업 복수 지원 건을 구분하는 공고명 */
   postingTitle: string;
+  /**
+   * 이 공고의 링크.
+   *
+   * 기업이 아니라 지원 건에 둔다 — 같은 기업에 상·하반기로 두 번 지원하면 공고가 둘이고
+   * 링크도 둘이다. 기업 단위로 두면 나중 지원 건이 앞의 링크를 덮어쓴다.
+   * 비어 있으면 화면에서 기업의 대표 링크(`Company.postingUrl`)로 대체한다.
+   */
+  postingUrl?: string;
   jobTag: JobTag;
   /** 채용 인원. 공고에 "00명"처럼 미공개인 경우가 있어 null을 허용한다 */
   headcount: number | null;
@@ -39,7 +47,7 @@ export type JobApplicationInput = Pick<
   JobApplication,
   "companyId" | "postingTitle" | "jobTag" | "headcount"
 > &
-  Partial<Pick<JobApplication, "notAppliedReason" | "memo" | "stages">>;
+  Partial<Pick<JobApplication, "postingUrl" | "notAppliedReason" | "memo" | "stages">>;
 
 /** 단계 상태에서 파생되는 지원 건 전체 상태 — 별도 입력 필드가 아니다 */
 export const APPLICATION_STATUSES = [
