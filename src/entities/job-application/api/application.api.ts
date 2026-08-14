@@ -89,6 +89,7 @@ export async function getApplications(): Promise<JobApplication[]> {
         userId: data.userId,
         companyId: data.companyId ?? "",
         postingTitle: data.postingTitle ?? "",
+        postingUrl: data.postingUrl,
         jobTag: data.jobTag ?? "IT",
         headcount: typeof data.headcount === "number" ? data.headcount : null,
         notAppliedReason: data.notAppliedReason,

@@ -81,6 +81,7 @@ export function useRecruitmentPage() {
         const payload = {
           companyId,
           postingTitle: value.postingTitle,
+          postingUrl: value.postingUrl,
           jobTag: value.jobTag,
           headcount: value.headcount,
           notAppliedReason: value.notAppliedReason,

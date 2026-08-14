@@ -12,6 +12,8 @@ export interface ApplicationFormValue {
   companyId: string | null;
   newCompany: { name: string; postingUrl?: string; location?: string } | null;
   postingTitle: string;
+  /** 이 공고의 링크 — 기업이 아니라 지원 건에 붙는다 */
+  postingUrl?: string;
   jobTag: JobTag;
   headcount: number | null;
   notAppliedReason?: string;
@@ -45,10 +47,10 @@ export function ApplicationFormDialog({
     application?.companyId ?? companies[0]?.id ?? NEW_COMPANY_VALUE,
   );
   const [companyName, setCompanyName] = useState("");
-  const [postingUrl, setPostingUrl] = useState("");
   const [location, setLocation] = useState("");
 
   const [postingTitle, setPostingTitle] = useState(application?.postingTitle ?? "");
+  const [postingUrl, setPostingUrl] = useState(application?.postingUrl ?? "");
   const [jobTag, setJobTag] = useState<JobTag>(application?.jobTag ?? "IT");
   // 빈 문자열은 "미정"을 뜻한다 — 공고에 "00명"처럼 인원이 없는 경우가 있다
   const [headcount, setHeadcount] = useState(
@@ -71,11 +73,13 @@ export function ApplicationFormDialog({
       newCompany: isNewCompany
         ? {
             name: companyName.trim(),
+            // 새 기업의 대표 링크는 이 공고 링크로 시작한다 — 기업 조사 화면에서도 바로 열 수 있게
             postingUrl: postingUrl.trim() || undefined,
             location: location.trim() || undefined,
           }
         : null,
       postingTitle: postingTitle.trim(),
+      postingUrl: postingUrl.trim() || undefined,
       jobTag,
       headcount: headcount.trim() === "" ? null : Number(headcount),
       notAppliedReason: notAppliedReason.trim() || undefined,
@@ -137,19 +141,6 @@ export function ApplicationFormDialog({
               />
             </div>
             <div>
-              <label htmlFor="posting-url" className="block mb-1 text-sm font-medium text-text">
-                공고 링크
-              </label>
-              <input
-                id="posting-url"
-                type="url"
-                value={postingUrl}
-                onChange={(event) => setPostingUrl(event.target.value)}
-                placeholder="https://"
-                className={inputClass}
-              />
-            </div>
-            <div>
               <label htmlFor="location" className="block mb-1 text-sm font-medium text-text">
                 위치
               </label>
@@ -175,6 +166,23 @@ export function ApplicationFormDialog({
             placeholder="같은 기업에 여러 번 지원할 때 구분합니다 (예: 2026 상반기 수시)"
             className={inputClass}
           />
+        </div>
+
+        <div>
+          <label htmlFor="posting-url" className="block mb-1 text-sm font-medium text-text">
+            공고 링크
+          </label>
+          <input
+            id="posting-url"
+            type="url"
+            value={postingUrl}
+            onChange={(event) => setPostingUrl(event.target.value)}
+            placeholder="https://"
+            className={inputClass}
+          />
+          <p className="m-0 mt-1 text-xs text-textSecondary">
+            공고마다 따로 저장됩니다. 비워두면 기업에 등록된 링크를 대신 보여줍니다.
+          </p>
         </div>
 
         <fieldset className="m-0 p-0 border-0">
