@@ -55,9 +55,8 @@ describe("useApplicationForm — buildValue", () => {
     // 수정만 해도 전형 상태·일정·메모가 통째로 지워진다
     const { result } = renderForm(makeApplication());
 
-    expect(result.current.buildValue().stages).toBeUndefined();
-    expect("stages" in result.current.buildValue()).toBe(true);
-    // 값이 undefined 인지까지 확인 — 소비처(useRecruitmentPage)가 이 값으로 키를 뺀다
+    // 소비처(useRecruitmentPage)가 이 값이 없을 때 payload 에서 키를 뺀다.
+    // 실제 가드는 거기 있으므로 이 단언만으로는 회귀를 못 잡는다 — 별도 테스트 필요.
     expect(result.current.buildValue().stages).toBeUndefined();
   });
 

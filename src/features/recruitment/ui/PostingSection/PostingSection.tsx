@@ -179,7 +179,9 @@ export function PostingSection({
           selectedFields={extract.selectedFields}
           onToggleField={extract.toggleField}
           onApply={handleApply}
-          onDismiss={extract.dismiss}
+          // 텍스트 초안만 닫는다 — 통째로 닫으면 아직 반영하지 않은 일정 초안까지
+          // 사라지고, 일정 쪽에는 닫기 버튼이 없어 되살릴 방법도 없다
+          onDismiss={extract.dismissFields}
         />
       )}
 
