@@ -2,7 +2,8 @@ import { useState } from "react";
 import AppIcon from "@/shared/ui/atoms/AppIcon/AppIcon";
 import { cn } from "@/shared/lib/cn";
 import { safeUrl } from "@/shared/lib/safeUrl";
-import type { ResearchSource } from "@/entities/company/model/company.type";
+// 기업 조사와 공고 추출이 함께 쓰는 공용 컴포넌트라 타입도 shared 에서 가져온다
+import type { ResearchSource } from "@/shared/model/aiSource";
 
 interface ResearchSourceLinksProps {
   sources?: ResearchSource[];
