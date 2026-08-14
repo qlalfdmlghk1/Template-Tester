@@ -102,6 +102,13 @@ export function PostingPasteDialog({
     async (files: File[]) => {
       if (files.length === 0) return;
 
+      // 자리가 없으면 읽지 않는다 — 어차피 버릴 파일을 base64 로 읽을 이유가 없다.
+      // 안내는 탭 패널 밖에 렌더되므로 어느 탭에서 붙여넣어도 보인다.
+      if (imagesRef.current.length >= MAX_IMAGES) {
+        setImageError(`캡처는 최대 ${MAX_IMAGES}장까지 붙일 수 있습니다.`);
+        return;
+      }
+
       const results = await Promise.all(
         files.slice(0, MAX_IMAGES).map((file) =>
           readImageFile(file, {
@@ -361,9 +368,6 @@ export function PostingPasteDialog({
                 </ul>
               )}
 
-              {imageError && (
-                <span className="text-xs text-red-600">{imageError}</span>
-              )}
             </section>
           ) : (
             <section
@@ -397,6 +401,12 @@ export function PostingPasteDialog({
                 </span>
               )}
             </section>
+          )}
+
+          {/* 탭 패널 밖에 둔다 — 캡처가 꽉 찬 상태로 본문 탭에서 붙여넣으면 탭 전환이
+              일어나지 않아, 패널 안에 두면 방금 띄운 안내가 아무 데도 보이지 않는다 */}
+          {imageError && (
+            <span className="text-xs text-red-600">{imageError}</span>
           )}
         </div>
 
