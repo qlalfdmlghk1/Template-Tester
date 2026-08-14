@@ -67,6 +67,23 @@ export function PostingPasteDialog({
   const dropRef = useRef<HTMLButtonElement>(null);
   const textRef = useRef<HTMLTextAreaElement>(null);
 
+  /**
+   * 붙어 있는 캡처의 정본.
+   *
+   * 상한 판정에 state 를 쓸 수 없다 — 비동기로 파일을 읽는 동안 두 번 붙여넣으면
+   * 두 호출이 같은 `images.length` 를 보고 상한을 넘긴다. state 업데이터 안에서
+   * 판정하는 것도 안 된다: 업데이터는 렌더 시점까지 미뤄질 수 있어, 바깥에서
+   * 안내 문구를 쓰는 시점에는 아직 판정 전이다(붙인 캡처가 조용히 버려진다).
+   * ref 는 즉시 반영되므로 판정과 안내를 같은 시점에 끝낼 수 있다.
+   */
+  const imagesRef = useRef<Attached[]>([]);
+
+  /** ref 를 정본으로 두고 state 를 맞춘다 */
+  const commitImages = useCallback((next: Attached[]) => {
+    imagesRef.current = next;
+    setImages(next);
+  }, []);
+
   const trimmed = text.trim();
   const textTooShort = trimmed.length > 0 && trimmed.length < MIN_TEXT_LENGTH;
   // 보내는 것은 지금 보고 있는 탭의 내용뿐이다
@@ -79,52 +96,49 @@ export function PostingPasteDialog({
     else textRef.current?.focus();
   }, [mode]);
 
-  /**
-   * 읽어 들인 캡처를 목록에 더한다.
-   *
-   * 장수 상한은 **함수형 업데이터 안에서** 판정한다. 클로저의 `images.length` 로
-   * 판정하면 비동기 읽기 중 두 번 붙여넣을 때 두 호출이 같은 값을 보고 상한을 넘긴다.
-   */
-  // setter 만 참조하므로 의존성이 없다 — 덕분에 아래 paste 리스너를 한 번만 등록한다
-  const addFiles = useCallback(async (files: File[]) => {
-    if (files.length === 0) return;
+  /** 읽어 들인 캡처를 목록에 더한다. 상한을 넘긴 만큼은 버리고 그 사실을 알린다 */
+  // ref 와 setter 만 참조하므로 의존성이 없다 — 덕분에 아래 paste 리스너를 한 번만 등록한다
+  const addFiles = useCallback(
+    async (files: File[]) => {
+      if (files.length === 0) return;
 
-    const results = await Promise.all(
-      files.slice(0, MAX_IMAGES).map((file) =>
-        readImageFile(file, {
-          allowedTypes: SUPPORTED_IMAGE_TYPES,
-          maxBytes: MAX_IMAGE_BYTES,
-        }),
-      ),
-    );
+      const results = await Promise.all(
+        files.slice(0, MAX_IMAGES).map((file) =>
+          readImageFile(file, {
+            allowedTypes: SUPPORTED_IMAGE_TYPES,
+            maxBytes: MAX_IMAGE_BYTES,
+          }),
+        ),
+      );
 
-    const added = results.filter(
-      (item): item is Attached => typeof item !== "string",
-    );
-    const failure = results.find(
-      (item): item is ReadImageFailure => typeof item === "string",
-    );
+      const added = results.filter(
+        (item): item is Attached => typeof item !== "string",
+      );
+      const failure = results.find(
+        (item): item is ReadImageFailure => typeof item === "string",
+      );
 
-    let overflowed = files.length > MAX_IMAGES;
+      // 읽기가 끝난 지금 시점의 정본으로 자리를 계산한다
+      const room = Math.max(0, MAX_IMAGES - imagesRef.current.length);
+      const accepted = added.slice(0, room);
+      const overflowed = files.length > MAX_IMAGES || added.length > accepted.length;
 
-    if (added.length > 0) {
-      setImages((current) => {
-        const next = [...current, ...added];
-        overflowed = overflowed || next.length > MAX_IMAGES;
-        return next.slice(0, MAX_IMAGES);
-      });
-      // 본문 탭에서 캡처를 붙여넣었으면 그쪽으로 데려간다 — 붙였는데 안 보이면 안 된다
-      setMode("image");
-    }
+      if (accepted.length > 0) {
+        commitImages([...imagesRef.current, ...accepted]);
+        // 본문 탭에서 캡처를 붙여넣었으면 그쪽으로 데려간다 — 붙였는데 안 보이면 안 된다
+        setMode("image");
+      }
 
-    setImageError(
-      failure
-        ? READ_IMAGE_MESSAGES[failure]
-        : overflowed
-          ? `캡처는 최대 ${MAX_IMAGES}장까지 붙일 수 있습니다.`
-          : null,
-    );
-  }, []);
+      setImageError(
+        failure
+          ? READ_IMAGE_MESSAGES[failure]
+          : overflowed
+            ? `캡처는 최대 ${MAX_IMAGES}장까지 붙일 수 있습니다.`
+            : null,
+      );
+    },
+    [commitImages],
+  );
 
   /**
    * 붙여넣기는 문서 전체에서 받는다.
@@ -333,8 +347,8 @@ export function PostingPasteDialog({
                       <button
                         type="button"
                         onClick={() =>
-                          setImages((current) =>
-                            current.filter((_, i) => i !== index),
+                          commitImages(
+                            imagesRef.current.filter((_, i) => i !== index),
                           )
                         }
                         aria-label={`캡처 ${index + 1} 제거`}
