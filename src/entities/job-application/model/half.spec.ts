@@ -6,6 +6,7 @@ import {
   formatHalfId,
   getApplicationHalfId,
   getHalfOfDate,
+  getStagesHalfId,
   parseHalfId,
   toHalfId,
 } from "./half";
@@ -37,6 +38,29 @@ function makeApplication(
     createdAt,
   };
 }
+
+describe("getStagesHalfId", () => {
+  it("자소서 마감일의 반기를 준다", () => {
+    const { stages } = makeApplication({ kind: "exact", at: "2026-03-11", hasTime: false });
+
+    expect(getStagesHalfId(stages)).toBe("2026-H1");
+  });
+
+  it("자소서가 비면 가장 이른 다른 일정을 본다", () => {
+    const { stages } = makeApplication(null, "app-1", new Date(2026, 0, 1), {
+      codingTest: { kind: "exact", at: "2026-09-02", hasTime: false },
+    });
+
+    expect(getStagesHalfId(stages)).toBe("2026-H2");
+  });
+
+  it("아는 날짜가 없으면 null 이어야 한다", () => {
+    // 등록 직후 반기를 정할 때 "일정으로는 모른다"를 구분해야 한다
+    const { stages } = makeApplication(null);
+
+    expect(getStagesHalfId(stages)).toBeNull();
+  });
+});
 
 describe("getHalfOfDate", () => {
   it("1~6월은 상반기다", () => {

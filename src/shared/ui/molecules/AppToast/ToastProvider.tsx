@@ -50,7 +50,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       <div
         role="status"
         aria-live="polite"
-        className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-[calc(100vw-2rem)] w-[320px]"
+        className="fixed bottom-4 right-4 z-toast flex flex-col gap-2 max-w-[calc(100vw-2rem)] w-[320px]"
       >
         {toasts.map((toast) => (
           <AppToast

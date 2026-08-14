@@ -65,16 +65,31 @@ export function getHalfOfDate(date: Date): Half {
  * (특히 시트에서 가져온 건). 그런 건까지 "날짜를 모르는 건"으로 취급하면
  * 실제로 아는 날짜를 두고 등록 시점으로 떨어뜨리게 된다.
  */
-function getEarliestStageAnchor(application: JobApplication): Date | null {
+function getEarliestStageAnchor(stages: JobApplication["stages"]): Date | null {
   let earliest: Date | null = null;
 
   for (const stageKey of STAGE_KEYS) {
-    const anchor = getScheduleAnchor(application.stages[stageKey]?.schedule ?? null);
+    const anchor = getScheduleAnchor(stages[stageKey]?.schedule ?? null);
     if (!anchor) continue;
     if (!earliest || anchor < earliest) earliest = anchor;
   }
 
   return earliest;
+}
+
+/**
+ * 단계 일정만으로 판정한 반기. 아는 날짜가 없으면 null.
+ *
+ * 아직 저장하지 않은 지원 건에도 쓴다 — 등록 폼에서 공고 추출로 자소서 마감일을
+ * 채우면 그 건은 등록 시점이 아니라 그 날짜의 반기로 귀속되므로, 저장 직후
+ * 어느 반기를 보여줘야 하는지 미리 알아야 한다.
+ */
+export function getStagesHalfId(stages: JobApplication["stages"]): HalfId | null {
+  const anchor =
+    getScheduleAnchor(stages[HALF_ANCHOR_STAGE]?.schedule ?? null) ??
+    getEarliestStageAnchor(stages);
+
+  return anchor ? toHalfId(getHalfOfDate(anchor)) : null;
 }
 
 /**
@@ -91,10 +106,8 @@ function getEarliestStageAnchor(application: JobApplication): Date | null {
  * 반기로 자연히 옮겨간다 — 날짜를 알게 되면 날짜가 우선이다.
  */
 export function getApplicationHalfId(application: JobApplication): HalfId {
-  const anchor =
-    getScheduleAnchor(application.stages[HALF_ANCHOR_STAGE]?.schedule ?? null) ??
-    getEarliestStageAnchor(application);
-  if (anchor) return toHalfId(getHalfOfDate(anchor));
+  const fromStages = getStagesHalfId(application.stages);
+  if (fromStages) return fromStages;
 
   // createdAt 은 필수 필드지만, 옛 문서를 읽다 값이 깨지면 Invalid Date 가 될 수 있다.
   // 그 경우까지 반기로 환산하면 "NaN-HNaN" 같은 식별자가 선택지에 섞이므로 미분류로 남긴다.

@@ -5,6 +5,7 @@ import { deleteAllApplications } from "@/entities/job-application/api/applicatio
 import {
   ALL_HALF_ID,
   getCurrentHalfId,
+  getStagesHalfId,
   parseHalfId,
 } from "@/entities/job-application/model/half";
 import { useRecruitmentBoard } from "./useRecruitmentBoard";
@@ -86,19 +87,35 @@ export function useRecruitmentPage() {
           headcount: value.headcount,
           notAppliedReason: value.notAppliedReason,
           memo: value.memo,
+          jobDescription: value.jobDescription,
+          requirements: value.requirements,
+          preferredQualifications: value.preferredQualifications,
+          postingSources: value.postingSources,
+          extractedAt: value.extractedAt,
+          // 단계 맵은 폼이 들고 있는 필드가 아니라 공고 추출이 채웠을 때만 생긴다.
+          // 키를 항상 실으면 추출 없이 저장한 수정에서 undefined 가 넘어가고,
+          // toUpdatePayload 가 그걸 deleteField() 로 바꿔 전형 상태·일정·메모가 통째로 지워진다.
+          ...(value.stages ? { stages: value.stages } : {}),
         };
 
         if (formTarget) {
           await editApplication(formTarget.id, payload);
         } else {
           await addApplication(payload);
-          // 등록 폼에는 날짜 입력이 없어 새 건은 등록 시점 반기로 귀속된다.
+          // 새 건이 어느 반기에 붙는지는 일정이 정한다. 공고 추출로 자소서 마감일이
+          // 채워졌다면 등록 시점이 아니라 그 날짜의 반기로 귀속되므로, 일정에서 먼저
+          // 계산하고 없을 때만 등록 시점으로 떨어뜨린다.
+          //
           // 다른 반기를 보고 있었다면 방금 만든 건이 목록에 없어 사라진 것처럼 보이므로
           // 그 건이 있는 반기로 옮겨 준다.
           //
           // "전체"를 보고 있을 때는 옮기지 않는다 — 새 건이 이미 목록에 있는데
           // 반기를 지정하면 사용자가 일부러 넓혀 둔 시야를 도로 좁히게 된다.
-          if (activeHalfId !== ALL_HALF_ID) selectHalf(getCurrentHalfId());
+          if (activeHalfId !== ALL_HALF_ID) {
+            const half =
+              (value.stages ? getStagesHalfId(value.stages) : null) ?? getCurrentHalfId();
+            selectHalf(half);
+          }
         }
 
         setFormTarget(undefined);
