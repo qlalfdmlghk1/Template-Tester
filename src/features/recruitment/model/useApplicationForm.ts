@@ -5,6 +5,7 @@ import type {
   PostingField,
 } from "@/entities/job-application/model/application.type";
 import { mergePostingSchedules } from "@/entities/job-application/model/posting";
+import { formatHalfId, getDraftHalfId } from "@/entities/job-application/model/half";
 import type { PostingScheduleDraft } from "@/entities/job-application/model/postingSchedule";
 import type { PostingImage } from "@/entities/job-application/api/posting.api";
 import { createEmptyStages } from "@/entities/job-application/model/stage";
@@ -159,38 +160,51 @@ export function useApplicationForm({
   const removeSchedule = (draft: PostingScheduleDraft) =>
     setSchedules((current) => current.filter((item) => item.stage !== draft.stage));
 
-  /** 저장 버튼이 넘길 값 */
-  const buildValue = (): ApplicationFormValue => ({
-    companyId: isNewCompany ? null : companyId,
-    newCompany: isNewCompany
-      ? {
-          name: companyName.trim(),
-          // 새 기업의 대표 링크는 이 공고 링크로 시작한다 — 기업 조사 화면에서도 바로 열 수 있게
-          postingUrl: postingUrl.trim() || undefined,
-          location: location.trim() || undefined,
-        }
-      : null,
-    postingTitle: postingTitle.trim(),
-    postingUrl: postingUrl.trim() || undefined,
-    jobTag,
-    headcount: headcount.trim() === "" ? null : Number(headcount),
-    notAppliedReason: notAppliedReason.trim() || undefined,
-    memo: memo.trim() || undefined,
+  /**
+   * 공고명을 비워 둔 채 저장하면 그 건이 귀속될 반기 이름을 대신 넣는다 (예: "2026 하반기").
+   *
+   * 같은 기업에 여러 번 지원하면 목록에서 서로 구분되지 않는데, 실제로 가장 자주 적는
+   * 구분이 반기다. 빈 값을 그대로 두는 대신 그 값을 채워 준다.
+   */
+  const defaultPostingTitle = (stages?: JobApplication["stages"]) =>
+    formatHalfId(getDraftHalfId(stages ?? application?.stages ?? null, application));
 
-    jobDescription: posting.jobDescription.trim() || undefined,
-    requirements: posting.requirements.trim() || undefined,
-    preferredQualifications: posting.preferredQualifications.trim() || undefined,
-    postingSources,
-    extractedAt,
+  /** 저장 버튼이 넘길 값 */
+  const buildValue = (): ApplicationFormValue => {
     // 일정은 단계 맵으로 옮겨 담는다. 기존 건이면 손대지 않은 칸에만 들어간다
-    stages: schedules.length
+    const stages = schedules.length
       ? mergePostingSchedules(
           application ?? { stages: createEmptyStages() },
           schedules,
           schedules.map((draft) => draft.stage),
         ).stages
-      : undefined,
-  });
+      : undefined;
+
+    return {
+      companyId: isNewCompany ? null : companyId,
+      newCompany: isNewCompany
+        ? {
+            name: companyName.trim(),
+            // 새 기업의 대표 링크는 이 공고 링크로 시작한다 — 기업 조사 화면에서도 바로 열 수 있게
+            postingUrl: postingUrl.trim() || undefined,
+            location: location.trim() || undefined,
+          }
+        : null,
+      postingTitle: postingTitle.trim() || defaultPostingTitle(stages),
+      postingUrl: postingUrl.trim() || undefined,
+      jobTag,
+      headcount: headcount.trim() === "" ? null : Number(headcount),
+      notAppliedReason: notAppliedReason.trim() || undefined,
+      memo: memo.trim() || undefined,
+
+      jobDescription: posting.jobDescription.trim() || undefined,
+      requirements: posting.requirements.trim() || undefined,
+      preferredQualifications: posting.preferredQualifications.trim() || undefined,
+      postingSources,
+      extractedAt,
+      stages,
+    };
+  };
 
   return {
     isEdit,

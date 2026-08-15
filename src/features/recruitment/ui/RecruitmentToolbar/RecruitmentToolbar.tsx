@@ -46,7 +46,10 @@ export function RecruitmentToolbar({
   onResetFilter,
 }: RecruitmentToolbarProps) {
   const hasFilter =
-    filter.jobTags.length > 0 || filter.statuses.length > 0 || filter.categories.length > 0;
+    filter.jobTags.length > 0 ||
+    filter.statuses.length > 0 ||
+    filter.categories.length > 0 ||
+    filter.keyword.trim().length > 0;
 
   const handleJobTagChange = (value: SelectValue | SelectValue[]) => {
     onChangeFilter({ ...filter, jobTags: toArray(value) as JobTag[] });
@@ -65,6 +68,16 @@ export function RecruitmentToolbar({
     // 고정 px 너비(160/150)를 주면 줄바꿈됐을 때 열 오른쪽 끝이 어긋나므로,
     // 너비는 레이아웃이 정하고 AppSelect는 fullWidth로 칸을 채우게 한다.
     <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
+      {/* 좁은 폭에서는 한 줄을 통째로 쓴다 — 셀렉트와 나란히 두면 검색어가 잘려 보인다 */}
+      <input
+        type="search"
+        value={filter.keyword}
+        onChange={(event) => onChangeFilter({ ...filter, keyword: event.target.value })}
+        placeholder="기업명 검색"
+        aria-label="기업명 검색"
+        className="col-span-2 sm:col-span-1 sm:w-48 px-2.5 py-1.5 text-sm bg-surface text-text border border-border rounded-sm"
+      />
+
       <AppSelect
         size="sm"
         fullWidth
