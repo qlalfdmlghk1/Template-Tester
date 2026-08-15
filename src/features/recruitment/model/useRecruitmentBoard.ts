@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
+import { useDebounce } from "@/shared/lib/useDebounce";
 import { useCompanies } from "@/entities/company/model/useCompanies";
 import { useApplications } from "@/entities/job-application/model/useApplications";
 import {
@@ -39,9 +40,19 @@ export interface RecruitmentFilter {
   statuses: ApplicationStatus[];
   /** 기업 유형 — 지원 건이 아니라 참조하는 기업의 속성으로 거른다 */
   categories: CompanyCategory[];
+  /** 기업명 검색어 */
+  keyword: string;
 }
 
-const EMPTY_FILTER: RecruitmentFilter = { jobTags: [], statuses: [], categories: [] };
+/** 검색어를 목록에 반영하기까지 기다리는 시간 — 테스트가 이 값을 전제로 한다 */
+const KEYWORD_DEBOUNCE_MS = 300;
+
+const EMPTY_FILTER: RecruitmentFilter = {
+  jobTags: [],
+  statuses: [],
+  categories: [],
+  keyword: "",
+};
 
 /**
  * 채용 현황 보드.
@@ -70,6 +81,23 @@ export function useRecruitmentBoard() {
 
   const [selectedHalfId, setSelectedHalfId] = useState<HalfId | null>(null);
   const [filter, setFilter] = useState<RecruitmentFilter>(EMPTY_FILTER);
+
+  /**
+   * 검색어는 잠잠해진 뒤에만 목록에 반영한다.
+   *
+   * 입력값(`filter.keyword`) 자체는 즉시 반영해야 한글 조합이 끊기지 않으므로,
+   * 걸러내는 쪽만 늦춘다.
+   */
+  const debouncedKeyword = useDebounce(filter.keyword, KEYWORD_DEBOUNCE_MS);
+
+  /**
+   * 실제로 목록을 거를 검색어.
+   *
+   * **지우는 쪽은 기다리지 않는다.** "필터 초기화"를 눌렀는데 목록이 잠깐 이전
+   * 결과로 남아 있으면 클릭이 안 먹은 것처럼 보인다. 되돌리는 동작은 즉시,
+   * 좁히는 동작만 늦춘다.
+   */
+  const activeKeyword = filter.keyword.trim() === "" ? "" : debouncedKeyword;
 
   const halfIds = useMemo(() => collectHalfIds(applications), [applications]);
 
@@ -122,12 +150,25 @@ export function useRecruitmentBoard() {
   );
 
   const rows = useMemo(() => {
-    const filtered =
-      filter.statuses.length > 0
-        ? scopedApplications.filter((application) =>
-            filter.statuses.includes(getApplicationStatus(application)),
-          )
-        : scopedApplications;
+    // 기업명 검색은 합격률 모수에서 뺀다 — 특정 기업을 찾아보는 조회이지
+    // "이 조건의 합격률"처럼 물을 수 있는 구분이 아니다(상태 필터와 같은 이유).
+    const query = activeKeyword.trim().toLowerCase();
+
+    const filtered = scopedApplications.filter((application) => {
+      if (
+        filter.statuses.length > 0 &&
+        !filter.statuses.includes(getApplicationStatus(application))
+      ) {
+        return false;
+      }
+
+      if (!query) return true;
+
+      // 참조가 끊긴 지원 건은 기업명을 알 수 없어 검색어가 있으면 걸러진다
+      return (companyMap.get(application.companyId)?.name ?? "")
+        .toLowerCase()
+        .includes(query);
+    });
 
     const sorted = [...filtered].sort((a, b) =>
       compareSchedules(a.stages[HALF_ANCHOR_STAGE]?.schedule, b.stages[HALF_ANCHOR_STAGE]?.schedule),
@@ -140,7 +181,7 @@ export function useRecruitmentBoard() {
       currentStage: getCurrentStage(application),
       upcoming: getUpcomingSchedule(application),
     }));
-  }, [scopedApplications, filter.statuses, companyMap]);
+  }, [scopedApplications, filter.statuses, activeKeyword, companyMap]);
 
   const passRates = useMemo(() => calcPassRates(scopedApplications), [scopedApplications]);
 

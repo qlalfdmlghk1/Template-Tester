@@ -16,9 +16,7 @@ import {
   COMPANY_CATEGORY_LABELS,
 } from "@/entities/company/model/company.type";
 import type { StageKey } from "@/entities/job-application/model/stage";
-import type { JobApplicationInput } from "@/entities/job-application/model/application.type";
 import type { RecruitmentRow } from "../../model/useRecruitmentBoard";
-import { PostingSection } from "../PostingSection/PostingSection";
 
 interface ApplicationDetailPanelProps {
   row: RecruitmentRow;
@@ -28,15 +26,15 @@ interface ApplicationDetailPanelProps {
   onDelete: () => void;
   /** 이 기업의 조사 노트로 이동. 참조가 끊긴 지원 건에는 넘기지 않는다 */
   onOpenResearch?: () => void;
-  /** 공고에 연도가 없을 때 채울 기준 연도 — 보고 있는 반기의 연도 */
-  referenceYear: number;
-  /** 공고 추출 결과를 지원 건에 반영한다 */
-  onSavePosting: (patch: Partial<JobApplicationInput>) => Promise<void>;
-  /** AI 키가 없을 때 등록 화면으로 보낸다 */
-  onRequestApiKey?: () => void;
 }
 
-/** 지원 건 상세 — 공고 링크, 메모, 전형 타임라인 */
+/**
+ * 지원 건 상세 — 상태·채용 인원·공고 링크와 전형 타임라인.
+ *
+ * 모집 요강(직무 설명·자격 요건·우대사항)은 여기서 다루지 않는다. 문단이 길어
+ * 목록 옆 패널을 밀어내는 데다, 읽기보다 채워 넣는 작업에 가까워
+ * 등록·수정 모달에서 공고 추출과 함께 편집한다.
+ */
 export function ApplicationDetailPanel({
   row,
   onClose,
@@ -44,9 +42,6 @@ export function ApplicationDetailPanel({
   onEdit,
   onDelete,
   onOpenResearch,
-  referenceYear,
-  onSavePosting,
-  onRequestApiKey,
 }: ApplicationDetailPanelProps) {
   const { application, company, status } = row;
   // 공고 링크는 지원 건에 붙은 값이 우선이고, 없으면 기업의 대표 링크로 대체한다.
@@ -150,15 +145,6 @@ export function ApplicationDetailPanel({
         </section>
       )}
 
-      <PostingSection
-        application={application}
-        companyName={company?.name ?? ""}
-        postingUrl={postingUrl ?? undefined}
-        referenceYear={referenceYear}
-        onSave={onSavePosting}
-        onRequestApiKey={onRequestApiKey}
-      />
-
       <section>
         <h3 className="m-0 mb-2 text-sm font-semibold text-text">전형 진행</h3>
         <ol className="flex flex-col gap-1">
@@ -207,7 +193,15 @@ export function ApplicationDetailPanel({
       <footer className="flex items-center justify-between gap-2 pt-1 border-t border-border">
         <div>
           {onOpenResearch && (
-            <AppButton variant="ghost" color="primary" size="sm" onClick={onOpenResearch}>
+            <AppButton
+              variant="ghost"
+              color="primary"
+              size="sm"
+              onClick={onOpenResearch}
+              // 다른 화면으로 나간다는 신호 — 문구 뒤에 화살표를 붙인다.
+              // 간격은 AppButton 이 사이즈별로 정하므로 직접 감싸지 않는다
+              iconRight={<AppIcon name="chevron-right" size={14} />}
+            >
               기업 조사
             </AppButton>
           )}

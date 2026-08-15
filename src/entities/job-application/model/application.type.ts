@@ -1,4 +1,3 @@
-import type { ResearchSource } from "@/shared/model/aiSource";
 import type { JobTag, StageKey, StageStatus } from "./stage";
 import type { Schedule } from "./schedule";
 
@@ -53,11 +52,11 @@ export interface JobApplication {
   /** 우대사항 */
   preferredQualifications?: string;
 
-  /**
-   * 공고 추출이 채운 항목의 출처.
-   * AI 결과는 초안일 뿐이므로 사용자가 직접 사실 확인할 수 있게 남긴다.
-   */
-  postingSources?: Partial<Record<PostingField, ResearchSource[]>>;
+  // 공고 추출이 채운 항목의 출처(`postingSources`)는 두지 않는다.
+  // 모집 요강을 상세 패널에서 내리면서 출처를 펼쳐 볼 자리가 없어졌고,
+  // 볼 수 없는 값을 저장만 하면 다음 사람이 쓰임새를 되짚느라 시간을 쓴다.
+  // 기업 조사(`Company.researchSources`)는 자체 화면이 있어 그대로 둔다.
+
   /** 공고 추출을 마지막으로 실행한 시각 — 내용이 언제 기준인지 판단용 */
   extractedAt?: Date;
 
@@ -95,7 +94,6 @@ export type JobApplicationInput = Pick<
       | "jobDescription"
       | "requirements"
       | "preferredQualifications"
-      | "postingSources"
       | "extractedAt"
     >
   >;

@@ -5,6 +5,7 @@ import {
   collectHalfIds,
   formatHalfId,
   getApplicationHalfId,
+  getDraftHalfId,
   getHalfOfDate,
   getStagesHalfId,
   parseHalfId,
@@ -156,6 +157,41 @@ describe("getApplicationHalfId", () => {
   it("등록 시점을 읽을 수 없으면 미분류로 남는다", () => {
     const application = makeApplication(null, "a", new Date("깨진 값"));
     expect(getApplicationHalfId(application)).toBe(UNASSIGNED_HALF_ID);
+  });
+});
+
+describe("getDraftHalfId", () => {
+  const TODAY = new Date(2026, 8, 15);
+
+  it("폼이 들고 있는 일정이 있으면 그 날짜의 반기를 쓴다", () => {
+    const { stages } = makeApplication({ kind: "exact", at: "2026-03-11", hasTime: false });
+
+    expect(getDraftHalfId(stages, null, TODAY)).toBe("2026-H1");
+  });
+
+  it("신규 등록이고 일정도 없으면 오늘의 반기로 떨어진다", () => {
+    expect(getDraftHalfId(null, null, TODAY)).toBe("2026-H2");
+  });
+
+  it("수정 중이면 그 건의 기존 귀속을 따른다 — 오늘이 아니다", () => {
+    // 지난 반기의 건을 고치는데 오늘 반기를 쓰면 목록에서 잡히는 반기와 어긋난다
+    const application = makeApplication(null, "a", new Date(2025, 2, 5));
+
+    expect(getDraftHalfId(null, application, TODAY)).toBe("2025-H1");
+  });
+
+  it("폼의 일정이 기존 귀속보다 우선한다", () => {
+    const application = makeApplication(null, "a", new Date(2025, 2, 5));
+    const { stages } = makeApplication({ kind: "exact", at: "2026-08-09", hasTime: false });
+
+    expect(getDraftHalfId(stages, application, TODAY)).toBe("2026-H2");
+  });
+
+  it("미분류로 떨어지는 건은 오늘의 반기로 대신한다", () => {
+    // 사람에게 보여줄 이름을 만드는 용도라 "미분류"를 그대로 흘릴 수 없다
+    const application = makeApplication(null, "a", new Date("깨진 값"));
+
+    expect(getDraftHalfId(null, application, TODAY)).toBe("2026-H2");
   });
 });
 
