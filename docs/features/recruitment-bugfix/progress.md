@@ -101,3 +101,56 @@
 **다음 작업**
 
 - 리뷰에서 남긴 항목(PostingSection 죽은 코드, postingSources 노출 등) 사용자 판단
+
+### Review — 2026-08-15 18:20
+
+- `/review-converge origin/dev...HEAD` 1라운드 — ⛔ 중단(정책·제품 판단 필요). **Blocker 0건**
+- 자동 반영 3건(커밋 `0531c8b`), 남긴 항목 8건
+- PR 코멘트: https://github.com/qlalfdmlghk1/Template-Tester/pull/96#issuecomment-5301522541
+- GitHub 이슈 #95 작업 항목 7건 체크 완료 (종료는 머지 시 자동)
+
+**사용자 결정 (2026-08-15)**
+
+1. `PostingSection`·`PostingSchedulePreview` → **삭제**
+2. `postingSources`(AI 출처 링크) → **필드까지 제거** (저장도 안 함)
+3. 검색의 반기 스코프 → **현재 동작 유지**
+4. "조사 된 기업" → **"조사된 기업"으로 맞춤법 교정** + 옆 카운터도 같은 용어로 통일
+
+**사람 판단이 필요했던 항목 (원문)**
+
+1. `PostingSection`·`PostingSchedulePreview` 도달 불가 — 삭제할지 남길지
+2. `postingSources`(AI 출처 링크) 렌더 지점 소실 — 수정 모달에 복구할지, 접을지
+3. 검색이 선택된 반기 안으로만 한정됨 — 전역 검색이 스펙인지
+4. "조사 된 기업" 표기 — 맞춤법상 "조사된"이며 옆 카운터는 "조사 완료"로 용어 불일치
+5. `getDraftHalfId` 호출부 중복 폴백 / 공고명 기본값 이중 구현(폼 vs 시트 임포트)
+6. 테스트 보강 — 신규 등록 경로(시계 고정), `RecruitmentToolbar` 컴포넌트 스펙
+7. 검색 입력 마크업 3벌 → `shared/ui/molecules/SearchInput` 승격 검토
+
+### Commit — 2026-08-15 18:30
+
+- Message: `Refactor:#95 미연결 공고 추출 UI와 출처 필드 제거`
+- Issue: `#95`
+- Jira: 미사용
+
+**변경 요약**
+
+- `PostingSection`(227줄)·`PostingSchedulePreview`(107줄) 삭제 — 상세 패널에서 내린 뒤 참조 0건
+- `mergePostingDraft`·`PostingDraft` 삭제 — 프로덕션 호출자가 `PostingSection` 뿐이라 함께 죽음
+  (spec 6건도 제거)
+- `postingSources` 필드 제거 — 타입 / Firestore 읽기(`application.api.ts`) / 폼 상태·저장 값
+  (`useApplicationForm`) / 저장 페이로드(`useRecruitmentPage`)
+- 기업 조사 토글 "조사 된 기업" → "조사된 기업", 옆 카운터도 "조사된 기업 N건"으로 통일
+- 테스트: 출처 관련 단언 제거, "출처를 지원 건에 싣지 않는다" 회귀 테스트 추가 → 604건 통과
+
+**결정 로그**
+
+- 출처는 **필드까지 제거**(선택지 C). 볼 화면이 없는 값을 저장만 하면 다음 사람이 쓰임새를
+  되짚느라 시간을 쓴다. 근거는 `application.type.ts`의 `postingSources` 자리에 주석으로 남김
+- 기업 조사(`Company.researchSources`)는 자체 화면이 있어 **그대로 둔다** — 지원 건 쪽만 제거
+- 이미 저장된 문서의 `postingSources` 값은 읽지 않으므로 무해하게 남는다 (마이그레이션 없음)
+
+**다음 작업**
+
+- 확인 필요: `useJobPostingExtract`의 반환값 중 `result`·`selectedFields`·`toggleField`·
+  `scheduleDrafts`·`selectedStages`·`toggleStage`·`dismissFields`·`dismissSchedules`가
+  `PostingSection` 삭제로 사용처를 잃음. 훅 정리는 spec 11건에 영향이 있어 별도 판단

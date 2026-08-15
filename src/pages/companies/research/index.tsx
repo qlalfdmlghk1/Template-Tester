@@ -156,12 +156,12 @@ export default function CompanyResearch() {
               <AppSwitch
                 checked={page.onlyResearched}
                 onChange={page.setOnlyResearched}
-                label="조사 된 기업"
+                label="조사된 기업"
                 size="sm"
               />
 
               <span className="text-sm text-textSecondary">
-                전체 {page.totalCount}건 · 조사 완료 {page.researchedCount}건
+                전체 {page.totalCount}건 · 조사된 기업 {page.researchedCount}건
               </span>
             </div>
 
