@@ -221,6 +221,9 @@ export function ApplicationFormDialog({
               placeholder="같은 기업에 여러 번 지원할 때 구분합니다 (예: 2026 상반기 수시)"
               className={inputClass}
             />
+            <p className="m-0 mt-1 text-xs text-textSecondary">
+              비워두면 이 건이 속한 반기로 채워집니다.
+            </p>
           </div>
 
           <div>

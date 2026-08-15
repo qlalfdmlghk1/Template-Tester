@@ -120,6 +120,32 @@ export function getApplicationHalfId(application: JobApplication): HalfId {
 }
 
 /**
+ * 아직 저장하지 않은 폼 값이 귀속될 반기.
+ *
+ * 판정 순서는 저장된 건과 같은 기준을 따른다: 폼이 들고 있는 일정 →
+ * (수정 중이면) 그 건의 기존 귀속 → 오늘. 폼에서 계산한 반기가 저장 후
+ * 목록에서 잡히는 반기와 어긋나면, 반기 이름으로 만든 값들이 곧바로 틀린 값이 된다.
+ *
+ * 미분류로 떨어지는 예외 케이스는 오늘로 대신한다 — 사람에게 보여줄 값을
+ * 만드는 용도라 "미분류"를 그대로 흘리면 이름으로 쓸 수 없다.
+ */
+export function getDraftHalfId(
+  stages: JobApplication["stages"] | null,
+  application: JobApplication | null,
+  today: Date = new Date(),
+): HalfId {
+  const fromStages = stages ? getStagesHalfId(stages) : null;
+  if (fromStages) return fromStages;
+
+  if (application) {
+    const fromApplication = getApplicationHalfId(application);
+    if (fromApplication !== UNASSIGNED_HALF_ID) return fromApplication;
+  }
+
+  return getCurrentHalfId(today);
+}
+
+/**
  * 목록에 존재하는 반기 선택지.
  * "전체"가 맨 앞에 오고 그 뒤로 최신 반기 순으로 붙는다.
  *
