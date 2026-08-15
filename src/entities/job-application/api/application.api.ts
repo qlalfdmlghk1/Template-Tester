@@ -11,13 +11,11 @@ import {
 } from "firebase/firestore";
 import { auth, db } from "@/shared/api/firebase";
 import { stripUndefined, toUpdatePayload } from "@/shared/lib/firestore";
-import { normalizeSources } from "@/shared/model/aiSource";
 import { STAGE_KEYS, createEmptyStages } from "../model/stage";
 import type { StageKey } from "../model/stage";
 import type {
   JobApplication,
   JobApplicationInput,
-  PostingField,
   StageEntry,
 } from "../model/application.type";
 
@@ -100,7 +98,6 @@ export async function getApplications(): Promise<JobApplication[]> {
         jobDescription: data.jobDescription,
         requirements: data.requirements,
         preferredQualifications: data.preferredQualifications,
-        postingSources: normalizeSources<PostingField>(data.postingSources),
         extractedAt: data.extractedAt?.toDate(),
         createdAt: data.createdAt?.toDate() ?? new Date(),
         updatedAt: data.updatedAt?.toDate(),

@@ -90,7 +90,6 @@ export function useRecruitmentPage() {
           jobDescription: value.jobDescription,
           requirements: value.requirements,
           preferredQualifications: value.preferredQualifications,
-          postingSources: value.postingSources,
           extractedAt: value.extractedAt,
           // 단계 맵은 폼이 들고 있는 필드가 아니라 공고 추출이 채웠을 때만 생긴다.
           // 키를 항상 실으면 추출 없이 저장한 수정에서 undefined 가 넘어가고,
