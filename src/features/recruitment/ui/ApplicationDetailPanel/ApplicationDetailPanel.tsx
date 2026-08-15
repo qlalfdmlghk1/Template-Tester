@@ -193,12 +193,16 @@ export function ApplicationDetailPanel({
       <footer className="flex items-center justify-between gap-2 pt-1 border-t border-border">
         <div>
           {onOpenResearch && (
-            <AppButton variant="ghost" color="primary" size="sm" onClick={onOpenResearch}>
-              {/* 다른 화면으로 나간다는 신호 — 문구 뒤에 화살표를 붙인다 */}
-              <span className="inline-flex items-center gap-0.5">
-                기업 조사
-                <AppIcon name="chevron-right" size={14} />
-              </span>
+            <AppButton
+              variant="ghost"
+              color="primary"
+              size="sm"
+              onClick={onOpenResearch}
+              // 다른 화면으로 나간다는 신호 — 문구 뒤에 화살표를 붙인다.
+              // 간격은 AppButton 이 사이즈별로 정하므로 직접 감싸지 않는다
+              iconRight={<AppIcon name="chevron-right" size={14} />}
+            >
+              기업 조사
             </AppButton>
           )}
         </div>
