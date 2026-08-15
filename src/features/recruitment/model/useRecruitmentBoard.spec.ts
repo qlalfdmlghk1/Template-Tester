@@ -133,14 +133,25 @@ describe("useRecruitmentBoard — 기업명 검색", () => {
     expect(rendered.result.current.rows).toHaveLength(0);
   });
 
-  it("필터 초기화는 검색어도 비운다", () => {
+  it("필터 초기화는 검색어도 비우고, 목록을 기다리지 않고 되돌린다", () => {
+    // 입력창은 즉시 비는데 목록만 300ms 남아 있으면 클릭이 안 먹은 것처럼 보인다
     const rendered = renderBoard();
 
     search(rendered, "네이버");
     act(() => rendered.result.current.resetFilter());
-    act(() => void vi.advanceTimersByTime(300));
 
     expect(rendered.result.current.filter.keyword).toBe("");
+    expect(rendered.result.current.rows).toHaveLength(2);
+  });
+
+  it("검색어를 직접 지워도 즉시 되돌아온다", () => {
+    const rendered = renderBoard();
+
+    search(rendered, "네이버");
+    act(() =>
+      rendered.result.current.setFilter({ ...rendered.result.current.filter, keyword: "" }),
+    );
+
     expect(rendered.result.current.rows).toHaveLength(2);
   });
 });
@@ -159,6 +170,27 @@ describe("useRecruitmentBoard — 검색어 디바운스", () => {
 
   it("타이핑이 잠잠해지기 전에는 목록을 다시 거르지 않는다", () => {
     const rendered = renderBoard();
+
+    act(() =>
+      rendered.result.current.setFilter({ ...rendered.result.current.filter, keyword: "네이버" }),
+    );
+    act(() => void vi.advanceTimersByTime(200));
+
+    expect(rendered.result.current.rows).toHaveLength(2);
+
+    act(() => void vi.advanceTimersByTime(100));
+
+    expect(rendered.result.current.rows).toHaveLength(1);
+  });
+
+  it("타이핑이 이어지면 대기 시간이 다시 시작된다", () => {
+    // 단순 지연이면 첫 입력 300ms 시점에 중간 결과가 한 번 깜빡인다
+    const rendered = renderBoard();
+
+    act(() =>
+      rendered.result.current.setFilter({ ...rendered.result.current.filter, keyword: "네" }),
+    );
+    act(() => void vi.advanceTimersByTime(200));
 
     act(() =>
       rendered.result.current.setFilter({ ...rendered.result.current.filter, keyword: "네이버" }),

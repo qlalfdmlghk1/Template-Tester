@@ -75,7 +75,8 @@ export function RecruitmentToolbar({
         onChange={(event) => onChangeFilter({ ...filter, keyword: event.target.value })}
         placeholder="기업명 검색"
         aria-label="기업명 검색"
-        className="col-span-2 sm:col-span-1 sm:w-48 px-2.5 py-1.5 text-sm bg-surface text-text border border-border rounded-sm"
+        // 높이·좌우 여백은 옆에 서는 AppSelect(size="sm")와 맞춘다 — 한 줄에 나란히 놓이므로
+        className="col-span-2 sm:col-span-1 sm:w-48 h-9 px-3 text-sm bg-surface text-text border border-border rounded-sm"
       />
 
       <AppSelect
