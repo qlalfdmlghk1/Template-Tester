@@ -29,7 +29,6 @@ export interface ApplicationFormValue {
   jobDescription?: string;
   requirements?: string;
   preferredQualifications?: string;
-  postingSources?: JobApplication["postingSources"];
   extractedAt?: Date;
   /** 공고에서 뽑은 전형 일정을 반영한 단계 맵. 추출을 돌렸을 때만 값이 있다 */
   stages?: JobApplication["stages"];
@@ -84,7 +83,6 @@ export function useApplicationForm({
     requirements: application?.requirements ?? "",
     preferredQualifications: application?.preferredQualifications ?? "",
   });
-  const [postingSources, setPostingSources] = useState(application?.postingSources);
   const [extractedAt, setExtractedAt] = useState(application?.extractedAt);
   const [schedules, setSchedules] = useState<PostingScheduleDraft[]>([]);
   const [pasteOpen, setPasteOpen] = useState(false);
@@ -105,12 +103,11 @@ export function useApplicationForm({
   /**
    * 추출 결과를 폼에 채운다.
    *
-   * 상세 패널과 달리 항목별 체크 단계를 두지 않는다 — 저장 전이라 폼 자체가 미리보기이고,
+   * 항목별 체크 단계를 두지 않는다 — 저장 전이라 폼 자체가 미리보기이고,
    * 값이 마음에 안 들면 그 자리에서 고치거나 지우면 된다.
    *
-   * **사용자가 이미 적어 둔 칸은 덮지 않고, 그 칸의 출처도 갈지 않는다.**
-   * 본문은 사용자 것인데 출처만 AI 것으로 바뀌면 근거가 내용과 어긋나기 때문이다
-   * (엔티티 계층 `mergePostingDraft` 와 같은 규칙).
+   * **사용자가 이미 적어 둔 칸은 덮지 않는다.** 한 번의 실행으로 직접 쓴 내용을
+   * 통째로 날려버리지 않기 위해서다.
    */
   const runExtract = async (source?: {
     pastedText?: string;
@@ -135,17 +132,6 @@ export function useApplicationForm({
         ...current,
         ...Object.fromEntries(
           applied.map((field) => [field, result[field]?.trim() ?? ""]),
-        ),
-      }));
-
-      // 실제로 채운 항목의 출처만 병합한다. 모델이 준 객체를 통째로 넣으면
-      // 반영하지 않은 항목·정의되지 않은 키까지 저장 페이로드로 흘러간다.
-      setPostingSources((current) => ({
-        ...current,
-        ...Object.fromEntries(
-          applied
-            .map((field) => [field, result.sources[field] ?? []] as const)
-            .filter(([, sources]) => sources.length > 0),
         ),
       }));
       setExtractedAt(new Date());
@@ -200,7 +186,6 @@ export function useApplicationForm({
       jobDescription: posting.jobDescription.trim() || undefined,
       requirements: posting.requirements.trim() || undefined,
       preferredQualifications: posting.preferredQualifications.trim() || undefined,
-      postingSources,
       extractedAt,
       stages,
     };

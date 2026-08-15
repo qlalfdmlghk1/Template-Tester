@@ -1,68 +1,11 @@
-import type { ResearchSource } from "@/shared/model/aiSource";
 import { STAGE_KEYS } from "./stage";
 import type {
   JobApplication,
   JobApplicationInput,
-  PostingField,
   StageEntry,
 } from "./application.type";
 import type { PostingScheduleDraft } from "./postingSchedule";
 import type { StageKey } from "./stage";
-
-/** 추출 결과 중 반영에 필요한 부분만 — 호출 계층 타입에 묶이지 않게 최소로 받는다 */
-export interface PostingDraft {
-  jobDescription?: string;
-  requirements?: string;
-  preferredQualifications?: string;
-  sources: Partial<Record<PostingField, ResearchSource[]>>;
-}
-
-/**
- * 선택한 항목만 지원 건에 반영할 입력값으로 만든다.
- *
- * AI 결과는 초안이므로 고르지 않은 항목은 건드리지 않는다 — 사용자가 직접 적어 둔
- * 내용을 한 번의 실행으로 통째로 날려버리지 않기 위해서다.
- *
- * 출처도 같은 규칙을 따른다. 고른 항목만 새 출처로 갈고 나머지는 기존 값을 남기는데,
- * 안 그러면 반영하지 않은 항목의 근거 링크가 사라져 나중에 사실 확인을 못 하게 된다.
- */
-export function mergePostingDraft(
-  application: JobApplication,
-  draft: PostingDraft,
-  selectedFields: PostingField[],
-  extractedAt: Date,
-): Partial<JobApplicationInput> {
-  if (selectedFields.length === 0) return {};
-
-  const patch: Partial<JobApplicationInput> = {};
-  const sources: Partial<Record<PostingField, ResearchSource[]>> = {
-    ...application.postingSources,
-  };
-
-  for (const field of selectedFields) {
-    const value = draft[field]?.trim();
-    if (!value) continue;
-
-    patch[field] = value;
-
-    const fieldSources = draft.sources[field];
-    if (fieldSources?.length) {
-      sources[field] = fieldSources;
-    } else {
-      // 붙여넣은 본문에서 뽑은 경우엔 URL 근거가 없다.
-      // 이전 실행의 출처를 그대로 두면 지금 내용의 근거인 것처럼 보이므로 지운다.
-      delete sources[field];
-    }
-  }
-
-  // 반영된 항목이 없으면(전부 빈 값이었으면) 실행 시각도 남기지 않는다
-  if (Object.keys(patch).length === 0) return {};
-
-  patch.postingSources = sources;
-  patch.extractedAt = extractedAt;
-
-  return patch;
-}
 
 /**
  * 사용자에게 제안해도 되는 일정만 남긴다.
