@@ -31,8 +31,8 @@ export default function Companies() {
 
       <div className="max-w-[1400px] mx-auto px-6 py-6">
         <PageHeader
-          title="채용"
-          description="지원 현황을 전형 단계별로 관리하고, 비채용기간에는 관심 기업을 미리 조사합니다."
+          title="지원 현황"
+          description="지원한 공고를 전형 단계별로 관리합니다."
           actions={
             // ml-auto 로 넓은 폭에서는 종전처럼 오른쪽 끝에 붙이고,
             // 좁은 폭에서는 flex-wrap 으로 버튼이 줄을 넘긴다.
@@ -80,7 +80,7 @@ export default function Companies() {
               <AppFallback
                 type="empty"
                 title="조건에 맞는 지원 건이 없습니다."
-                description="반기 선택이나 필터를 바꿔보세요."
+                description="검색어나 반기 선택, 필터를 바꿔보세요."
                 onAction={page.resetFilter}
               />
             ) : (
@@ -124,11 +124,6 @@ export default function Companies() {
                           ? () => navigate(`/companies/research/${researchCompanyId}`)
                           : undefined
                       }
-                      referenceYear={page.defaultYear}
-                      onSavePosting={(patch) =>
-                        page.editApplication(selectedRow.application.id, patch)
-                      }
-                      onRequestApiKey={() => setKeyDialogOpen(true)}
                     />
                   </div>
                 )}
