@@ -75,7 +75,13 @@ export default function CompanyResearch() {
                 className="flex-1 min-w-[200px] max-w-[360px] px-3 py-1.5 text-sm bg-surface text-text border border-border rounded-sm"
               />
 
-              <div className="flex flex-wrap gap-1.5">
+              {/* 분류와 지망 등급은 서로 다른 축의 필터다. 같은 간격으로 늘어놓으면
+                  한 줄의 버튼 묶음처럼 보여, 각각 옅은 판 위에 올려 경계를 만든다 */}
+              <div
+                className="flex flex-wrap gap-1.5 p-1 bg-gray-100 rounded-sm"
+                role="group"
+                aria-label="기업 분류 필터"
+              >
                 {COMPANY_CATEGORIES.map((category) => {
                   const selected = page.selectedCategories.includes(category);
 
@@ -109,7 +115,11 @@ export default function CompanyResearch() {
                 })}
               </div>
 
-              <div className="flex flex-wrap gap-1.5" role="group" aria-label="지망 등급 필터">
+              <div
+                className="flex flex-wrap gap-1.5 p-1 bg-gray-100 rounded-sm"
+                role="group"
+                aria-label="지망 등급 필터"
+              >
                 {COMPANY_PREFERENCES.map((grade) => {
                   const selected = page.selectedPreferences.includes(grade);
 
@@ -146,7 +156,7 @@ export default function CompanyResearch() {
               <AppSwitch
                 checked={page.onlyResearched}
                 onChange={page.setOnlyResearched}
-                label="조사 완료만"
+                label="조사 된 기업"
                 size="sm"
               />
 
