@@ -4,7 +4,7 @@
 
 - 이슈: #98 (Refactor)
 - 브랜치: refactor/98-ds-migration
-- 단계: 컴포넌트 어댑터 교체 중 (Toast·ConfirmDialog·Switch 완료)
+- 단계: 컴포넌트 어댑터 교체 중 (Toast·ConfirmDialog·Switch·Select 완료)
 - 마지막 업데이트: 2026-11-22
 
 ---
@@ -22,10 +22,11 @@
 - [x] DS 오버레이 z-index를 프로젝트 레이어(navbar 1000·modal 1100·toast 1200)에 맞춤
 - [x] AppConfirmDialog → DS `ConfirmModal` 어댑터
 - [x] AppSwitch → DS `Switch` 어댑터
+- [x] AppSelect → DS `Select` / `MultiSelect` 어댑터
 
 ### 🚧 진행 중
 
-- [ ] AppSelect → DS `Select` / `MultiSelect` 어댑터
+- [ ] DS v0.3.0 업데이트 + 메인 색
 
 ### 📝 결정 로그
 
@@ -37,6 +38,7 @@
 - [2026-11-22] DS 오버레이 z-index(modal·drawer 100, toaster 200, tooltip 300)가 프로젝트 navbar(1000)보다 낮아 모달이 네비게이션 아래로, 토스트가 프로젝트 모달(AiKeyDialog 등, 1100) 뒤로 깔림 → `index.css`에서 `html .cds-*`로 `tailwind.config.js` zIndex 스케일에 맞춤. content에 없는 클래스라 `@layer` 밖에 둠(안에 두면 Tailwind가 purge). DS에 z-index 토큰이 생기면 그쪽으로 이전 (DS 레포 이슈 후보)
 - [2026-11-22] AppConfirmDialog: DS `ConfirmModal`이 포커스(danger면 취소)·Esc·처리 중 닫기 차단을 맡으므로 자체 구현 제거. 동작 차이 — 바깥 클릭으로 닫히지 않음(DS alertdialog 정책 채택), 처리 중 Esc 무시(기존엔 닫힘). 설명의 `\n` 줄바꿈은 `whitespace-pre-wrap` span으로 유지
 - [2026-11-22] AppSwitch: DS `Switch`(input checkbox 기반)로 교체. 동작 차이 — 라벨이 스위치 **왼쪽**(DS 정책), 크기 md 44×24→36×20 · sm 32×18→28×16
+- [2026-11-22] AppSelect: DS `Select`/`MultiSelect`로 교체. DS는 string value만 받아 문자열 키로 넘기고 원래 값(number 포함)으로 복원. `width`/`fullWidth` 없으면 부모 너비를 채우는 기존 동작은 래퍼 div로 유지. 다중 선택은 `maxTagCount={1}`(태그 1개 + N). 대응 없고 사용처 없는 `showSelectAll`·`ariaDescribedby` 제거, `state="error"`는 `hint`가 있어야 표시. 드롭다운은 portal 없이 트리거 아래에 그림(모달 안 스크롤 영역에 갇힘 — 사용자 결정으로 DS 그대로 적용, DS 이슈 cws-ds#3). 높이 sm 36→32 · md 44→40 · lg 50→48
 - [2026-11-22] `@choi/ds/fonts.css`(Pretendard)는 import하지 않음 — 프로젝트 본문이 시스템 폰트라 DS 컴포넌트만 Pretendard가 되면 혼재. DS `--font-sans` 폴백(system-ui)으로 렌더. 폰트 통일은 토큰 통일 이슈에서 함께 처리
 
 ### 🐛 트러블슈팅
@@ -155,3 +157,24 @@
 **다음 작업**
 
 - AppSelect → DS Select / MultiSelect
+
+### Commit — 2026-11-22 03:10
+
+- Message: `Refactor:#98 AppSelect를 DS Select·MultiSelect 기반으로 교체`
+- Issue: `#98`
+- Jira: `미사용`
+
+**변경 요약**
+
+- `AppSelect`: 자체 드롭다운(포털·키보드·위치 계산 등)을 DS `Select`/`MultiSelect` 래퍼로 교체. 사용처 8개 파일 수정 없음
+- 문자열 키 변환으로 숫자 value(월 선택 등) 유지, 비제어 전환을 막기 위해 빈 값은 `""`/`[]`로 전달
+- 타입에서 `showSelectAll`·`ariaDescribedby` 제거, 관련 스토리 정리. 어댑터 테스트 6건 추가
+
+**결정 로그**
+
+- 드롭다운 portal 없음은 DS 그대로 채택 (cws-ds#3)
+- 스토리 파일의 기존 eslint 에러(render 안 useState, 20→17건)는 범위 밖이라 유지
+
+**다음 작업**
+
+- DS v0.3.0 업데이트 + 메인 색
