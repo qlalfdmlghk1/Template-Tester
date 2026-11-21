@@ -4,7 +4,7 @@
 
 - 이슈: #98 (Refactor)
 - 브랜치: refactor/98-ds-migration
-- 단계: 컴포넌트 어댑터 교체 중 (Toast·ConfirmDialog 완료)
+- 단계: 컴포넌트 어댑터 교체 중 (Toast·ConfirmDialog·Switch 완료)
 - 마지막 업데이트: 2026-11-22
 
 ---
@@ -21,10 +21,11 @@
 - [x] AppToast → DS `ToastProvider` / `useToast` 어댑터
 - [x] DS 오버레이 z-index를 프로젝트 레이어(navbar 1000·modal 1100·toast 1200)에 맞춤
 - [x] AppConfirmDialog → DS `ConfirmModal` 어댑터
+- [x] AppSwitch → DS `Switch` 어댑터
 
 ### 🚧 진행 중
 
-- [ ] AppSwitch → DS `Switch` 어댑터
+- [ ] AppSelect → DS `Select` / `MultiSelect` 어댑터
 
 ### 📝 결정 로그
 
@@ -34,8 +35,8 @@
 - [2026-11-22] 사전 확인: React 19 환경에서 git 설치·`prepare` 빌드 정상. CSS 변수(`--brand` vs `--color-*`)·클래스(`.cds-*`) 충돌 없음. 단 `styles.css`에 전역 `body` 규칙 포함
 - [2026-11-22] CSS 로드 순서: DS `styles.css`를 `index.css` **뒤에** import. Tailwind preflight의 `[type='button']{background-color:transparent}`가 `.cds-btn--*`와 specificity(0,1,0)가 같아, DS가 앞에 오면 DS 버튼 배경이 투명해짐. 대신 DS 전역 `body` 규칙이 프로젝트 것을 덮으므로 프로젝트 쪽을 `html body`로 올리고 `word-break`/`overflow-wrap`도 `normal`로 고정해 기존 화면 유지 (DS의 `keep-all`/`anywhere` 채택은 토큰 통일 이슈에서 재검토)
 - [2026-11-22] DS 오버레이 z-index(modal·drawer 100, toaster 200, tooltip 300)가 프로젝트 navbar(1000)보다 낮아 모달이 네비게이션 아래로, 토스트가 프로젝트 모달(AiKeyDialog 등, 1100) 뒤로 깔림 → `index.css`에서 `html .cds-*`로 `tailwind.config.js` zIndex 스케일에 맞춤. content에 없는 클래스라 `@layer` 밖에 둠(안에 두면 Tailwind가 purge). DS에 z-index 토큰이 생기면 그쪽으로 이전 (DS 레포 이슈 후보)
-- [2026-11-22] AppConfirmDialog: DS `ConfirmModal`이 포커스(danger면 취소)·Esc·처리 중 닫기 차단을 맡으므로 자체 구현 제거. 동작 차이 — 바깥 클릭으로 닫히지 않음(DS alertdialog 정책 채택), 처리 중 Esc 무시(기존엔 닫힘). 설명의 `
-` 줄바꿈은 `whitespace-pre-wrap` span으로 유지
+- [2026-11-22] AppConfirmDialog: DS `ConfirmModal`이 포커스(danger면 취소)·Esc·처리 중 닫기 차단을 맡으므로 자체 구현 제거. 동작 차이 — 바깥 클릭으로 닫히지 않음(DS alertdialog 정책 채택), 처리 중 Esc 무시(기존엔 닫힘). 설명의 `\n` 줄바꿈은 `whitespace-pre-wrap` span으로 유지
+- [2026-11-22] AppSwitch: DS `Switch`(input checkbox 기반)로 교체. 동작 차이 — 라벨이 스위치 **왼쪽**(DS 정책), 크기 md 44×24→36×20 · sm 32×18→28×16
 - [2026-11-22] `@choi/ds/fonts.css`(Pretendard)는 import하지 않음 — 프로젝트 본문이 시스템 폰트라 DS 컴포넌트만 Pretendard가 되면 혼재. DS `--font-sans` 폴백(system-ui)으로 렌더. 폰트 통일은 토큰 통일 이슈에서 함께 처리
 
 ### 🐛 트러블슈팅
@@ -46,7 +47,7 @@
 
 ### ⏭️ 남은 작업
 
-- [ ] AppChip / AppPagination / AppSelect / AppButton 어댑터 교체
+- [ ] AppChip / AppPagination / AppButton 어댑터 교체
 - [ ] Storybook 스토리 갱신
 - [ ] 영향받는 테스트 수정
 
@@ -128,9 +129,29 @@
 **결정 로그**
 
 - 바깥 클릭으로 닫히지 않음(DS alertdialog 정책 채택), 처리 중 Esc 무시
-- 설명의 `
-` 줄바꿈은 `whitespace-pre-wrap` span으로 유지
+- 설명의 `\n` 줄바꿈은 `whitespace-pre-wrap` span으로 유지
 
 **다음 작업**
 
 - AppSwitch → DS Switch
+
+### Commit — 2026-11-22 01:00
+
+- Message: `Refactor:#98 AppSwitch를 DS Switch 기반으로 교체`
+- Issue: `#98`
+- Jira: `미사용`
+
+**변경 요약**
+
+- `AppSwitch`: DS `Switch` 래퍼로 교체. `onChange(checked)` 시그니처 유지(이벤트 → boolean 변환) → 사용처(기업 조사 "조사된 기업" 필터) 수정 없음
+- 어댑터 테스트 `AppSwitch.test.tsx` 4건 추가, 스토리 라벨 설명 갱신
+- progress 결정 로그의 깨진 줄바꿈(`
+`) 표기 수정
+
+**결정 로그**
+
+- 라벨 위치(왼쪽)·크기는 DS 기본값 채택
+
+**다음 작업**
+
+- AppSelect → DS Select / MultiSelect

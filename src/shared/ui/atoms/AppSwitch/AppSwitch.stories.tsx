@@ -8,7 +8,7 @@ const meta: Meta<typeof AppSwitch> = {
   tags: ["autodocs"],
   argTypes: {
     checked: { control: "boolean", description: "켜짐 여부" },
-    label: { control: "text", description: "옆에 붙는 라벨. 누르면 함께 토글된다" },
+    label: { control: "text", description: "왼쪽에 붙는 라벨. 누르면 함께 토글된다" },
     size: {
       control: "select",
       options: ["sm", "md"],
