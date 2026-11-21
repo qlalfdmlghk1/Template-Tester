@@ -17,6 +17,7 @@
     "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
+    "@choi/ds": "github:qlalfdmlghk1/cws-ds#v0.2.0",
     "@iconify/react": "^6.0.2",
     "@monaco-editor/react": "^4.7.0",
     "clsx": "^2.1.1",

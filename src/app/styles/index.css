@@ -236,8 +236,12 @@
     }
   }
 
-  body {
+  /* @choi/ds/styles.css가 이 파일보다 뒤에 로드되며 전역 body(배경·글자색·폰트·줄바꿈)를 덮어쓰므로
+     `html body`로 specificity를 올려 프로젝트 기본값을 유지한다. */
+  html body {
     @apply m-0 min-h-screen bg-background text-text;
+    word-break: normal;
+    overflow-wrap: normal;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans",
       "Droid Sans", "Helvetica Neue", sans-serif;
     -webkit-font-smoothing: antialiased;
