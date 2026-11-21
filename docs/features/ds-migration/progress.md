@@ -24,10 +24,11 @@
 - [x] AppSwitch → DS `Switch` 어댑터
 - [x] AppSelect → DS `Select` / `MultiSelect` 어댑터
 - [x] DS v0.3.0 업데이트 + 메인 색(`#3B82F6`)
+- [x] DS 입력창 회색·테두리·hover 색을 앱에 맞춤
 
 ### 🚧 진행 중
 
-- [ ] DS 입력창 회색·테두리·hover 색을 앱에 맞춤
+- [ ] AppTextInput·AppDatePicker 추가 + 앱 전체 입력창 교체
 
 ### 📝 결정 로그
 
@@ -41,6 +42,8 @@
 - [2026-11-22] AppSwitch: DS `Switch`(input checkbox 기반)로 교체. 동작 차이 — 라벨이 스위치 **왼쪽**(DS 정책), 크기 md 44×24→36×20 · sm 32×18→28×16
 - [2026-11-22] AppSelect: DS `Select`/`MultiSelect`로 교체. DS는 string value만 받아 문자열 키로 넘기고 원래 값(number 포함)으로 복원. `width`/`fullWidth` 없으면 부모 너비를 채우는 기존 동작은 래퍼 div로 유지. 다중 선택은 `maxTagCount={1}`(태그 1개 + N). 대응 없고 사용처 없는 `showSelectAll`·`ariaDescribedby` 제거, `state="error"`는 `hint`가 있어야 표시. 드롭다운은 portal 없이 트리거 아래에 그림(모달 안 스크롤 영역에 갇힘 — 사용자 결정으로 DS 그대로 적용, DS 이슈 cws-ds#3). 높이 sm 36→32 · md 44→40 · lg 50→48
 - [2026-11-22] DS v0.3.0(브랜드 색 기능) 적용. 메인 색은 앱 primary `#3B82F6` — DS가 흰 글자 4.5:1을 맞추려 라이트에서 `#2B72E5`로 보정, 다크 `#6CA4FF` 자동 생성. 보정된 색 채택(사용자 결정). 값은 `shared/config/brand.ts` 한 곳에 두고 앱은 `<BrandStyle>`(main.tsx), Storybook은 `applyBrandTheme`(preview.ts)으로 적용
+- [2026-11-22] DS 회색이 앱보다 진해 튐: `--line-strong`→`--color-gray-400`, `--ink-muted`→`--color-gray-500`로 연결(`html:root`, 앱 gray 변수가 다크에서 바뀌어 한 규칙으로 두 테마). DS 입력창 테두리만 앱 입력창과 같은 `--color-border`(#E5E7EB) — 토큰 전체에 걸면 스위치 꺼짐 트랙까지 흐려져서 `.cds-input`에 한정. 대비는 DS 기본(3:1)보다 낮아지는 앱 선택
+- [2026-11-22] DS 입력창 hover 테두리(`--ink-muted`)가 검게 보임 → gray-400. DS hover 규칙의 특정성이 높아 포커스·목록 열림(`.is-open`, 포커스가 목록에 있어 `:focus-within` 아님)·에러 테두리를 덮는 DS 버그를 프로젝트에서 보정 (cws-ds#1, DS 수정 후 제거)
 - [2026-11-22] `@choi/ds/fonts.css`(Pretendard)는 import하지 않음 — 프로젝트 본문이 시스템 폰트라 DS 컴포넌트만 Pretendard가 되면 혼재. DS `--font-sans` 폴백(system-ui)으로 렌더. 폰트 통일은 토큰 통일 이슈에서 함께 처리
 
 ### 🐛 트러블슈팅
@@ -199,3 +202,22 @@
 **다음 작업**
 
 - DS 입력창 색을 앱 회색에 맞춤
+
+### Commit — 2026-11-22 03:14
+
+- Message: `Style:#98 DS 입력창 회색·테두리·hover 색을 앱에 맞춤`
+- Issue: `#98`
+- Jira: `미사용`
+
+**변경 요약**
+
+- `index.css`: DS 회색 토큰을 앱 gray에 연결, DS 입력창 테두리를 `--color-border`로, hover 테두리를 gray-400으로
+- 포커스·목록 열림·에러 상태는 hover해도 원래 테두리색 유지
+
+**결정 로그**
+
+- 셀렉트 선택 후·목록 연 채 hover 시 검은 테두리 → DS 버그로 판단, DS 레포 이슈 등록 (cws-ds#1~#5: hover 버그, z-index 토큰, portal 옵션, Datepicker aria-label, TextInput aria-describedby)
+
+**다음 작업**
+
+- AppTextInput·AppDatePicker 추가 + 입력창 교체
