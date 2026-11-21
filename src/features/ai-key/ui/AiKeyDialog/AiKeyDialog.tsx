@@ -1,5 +1,6 @@
 import { useState } from "react";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
+import { AppTextInput } from "@/shared/ui/atoms/AppTextInput";
 import { cn } from "@/shared/lib/cn";
 import { useAiKey, looksLikeApiKey } from "@/shared/lib/useAiKey";
 import { AI_PROVIDERS } from "@/entities/company/api/research.api";
@@ -34,9 +35,6 @@ const PROVIDER_INFO: Record<AiProvider, ProviderInfo> = {
     placeholder: "sk-ant-...",
   },
 };
-
-const inputClass =
-  "w-full px-2 py-1.5 text-sm bg-surface text-text border border-border rounded-sm";
 
 /**
  * AI 조사에 쓸 제공자와 키를 설정한다.
@@ -177,15 +175,17 @@ export function AiKeyDialog({ onClose }: AiKeyDialogProps) {
           <label htmlFor="ai-key-input" className="block mb-1 text-sm font-medium text-text">
             {hasApiKey ? `${info.label} 키 변경` : `${info.label} API 키`}
           </label>
-          <input
+          <AppTextInput
             id="ai-key-input"
+            // DS 입력칸이 글꼴을 직접 지정해 래퍼에서 안쪽 input에 고정폭 글꼴을 내려준다
+            className="[&_input]:font-mono"
+            size="sm"
             type="password"
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
             placeholder={info.placeholder}
             autoComplete="off"
             spellCheck={false}
-            className={cn(inputClass, "font-mono")}
           />
           {formatWarning && (
             <p className="m-0 mt-1 text-xs text-red-600">

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
+import { AppTextInput } from "@/shared/ui/atoms/AppTextInput";
 import SyncHelp from "../SyncHelp/SyncHelp";
 import type { CalendarSettings } from "@/entities/solve-log/model/solve-log.type";
 import type { SyncResult } from "../../model/useCalendarSync";
@@ -16,9 +17,6 @@ interface SyncRepoSettingProps {
   onResync: (full?: boolean) => Promise<boolean>;
   onDisconnect: () => Promise<void>;
 }
-
-const INPUT_CLASS =
-  "flex-1 min-w-0 px-3 py-2 text-sm outline outline-1 outline-border rounded-md bg-surface text-text hover:outline-primary focus:outline-primary focus:ring-2 focus:ring-blue-200 transition-all";
 
 export default function SyncRepoSetting({
   settings,
@@ -103,12 +101,15 @@ export default function SyncRepoSetting({
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <input
+            <AppTextInput
               type="text"
               value={input}
               onChange={(event) => setInput(event.target.value)}
               placeholder="owner/repo (예: qlalfdmlghk1/Algorism_Python)"
-              className={INPUT_CLASS}
+              aria-label="GitHub 저장소 경로"
+              size="md"
+              // flex-wrap 행에서 버튼과 한 줄에 놓이도록 래퍼 기본 w-full을 풀고 남는 폭만 차지
+              className="flex-1 min-w-0 w-auto"
               onKeyDown={(event) => {
                 // 백필이 길어 반응이 없어 보이면 Enter를 연타하게 된다.
                 // 버튼은 loading으로 잠기지만 Enter는 따로 막아야 중복 실행이 없다.

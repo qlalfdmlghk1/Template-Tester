@@ -3,14 +3,13 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "@/widgets/Navbar/Navbar";
 import PageHeader from "@/shared/ui/molecules/PageHeader/PageHeader";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
+import { AppTextInput } from "@/shared/ui/atoms/AppTextInput";
 import AppFallback from "@/shared/ui/molecules/AppFallback/AppFallback";
 import { useDailySubjects } from "@/entities/daily/model/useDailySubjects";
 import { useSubjectForm } from "@/entities/daily/model/useSubjectForm";
 import { useConceptRecommend } from "@/entities/daily/model/useConceptRecommend";
 import { DailyStats } from "@/entities/daily/ui/DailyStats/DailyStats";
 
-const INPUT_CLASS =
-  "w-full px-4 py-2 text-sm outline outline-1 outline-border rounded-md bg-surface text-text hover:outline-primary focus:outline-primary focus:ring-2 focus:ring-blue-200 transition-all";
 const LABEL_CLASS = "block text-sm font-medium text-text leading-[30px] mb-2";
 
 export default function Daily() {
@@ -168,32 +167,32 @@ export default function Daily() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label className={LABEL_CLASS}>대주제</label>
-                  <input
+                  <AppTextInput
                     type="text"
                     value={form.topic}
                     onChange={(e) => form.setTopic(e.target.value)}
                     placeholder="예: 프론트엔드"
-                    className={INPUT_CLASS}
+                    aria-label="대주제"
                   />
                 </div>
                 <div>
                   <label className={LABEL_CLASS}>소주제</label>
-                  <input
+                  <AppTextInput
                     type="text"
                     value={form.sub}
                     onChange={(e) => form.setSub(e.target.value)}
                     placeholder="예: JavaScript"
-                    className={INPUT_CLASS}
+                    aria-label="소주제"
                   />
                 </div>
                 <div>
                   <label className={LABEL_CLASS}>세부주제</label>
-                  <input
+                  <AppTextInput
                     type="text"
                     value={form.detail}
                     onChange={(e) => form.setDetail(e.target.value)}
                     placeholder="예: 함수"
-                    className={INPUT_CLASS}
+                    aria-label="세부주제"
                   />
                 </div>
               </div>
@@ -216,13 +215,13 @@ export default function Daily() {
                   </button>
                 </div>
                 <div className="flex gap-2">
-                  <input
+                  <AppTextInput
                     type="text"
                     value={form.conceptInput}
                     onChange={(e) => form.setConceptInput(e.target.value)}
                     onKeyDown={handleConceptKeyDown}
                     placeholder="개념명 입력 후 Enter (예: 클로저, 호이스팅)"
-                    className={INPUT_CLASS}
+                    aria-label="개념"
                   />
                   <AppButton variant="outline" size="sm" onClick={form.addConcept} disabled={!form.canAddConcept}>
                     추가

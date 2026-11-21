@@ -25,10 +25,11 @@
 - [x] AppSelect → DS `Select` / `MultiSelect` 어댑터
 - [x] DS v0.3.0 업데이트 + 메인 색(`#3B82F6`)
 - [x] DS 입력창 회색·테두리·hover 색을 앱에 맞춤
+- [x] AppTextInput·AppDatePicker 추가 + 앱 전체 입력창 교체 (한 줄 입력 43곳·날짜 5곳)
 
 ### 🚧 진행 중
 
-- [ ] AppTextInput·AppDatePicker 추가 + 앱 전체 입력창 교체
+- [ ] AppButton → DS `Button` 어댑터
 
 ### 📝 결정 로그
 
@@ -44,6 +45,9 @@
 - [2026-11-22] DS v0.3.0(브랜드 색 기능) 적용. 메인 색은 앱 primary `#3B82F6` — DS가 흰 글자 4.5:1을 맞추려 라이트에서 `#2B72E5`로 보정, 다크 `#6CA4FF` 자동 생성. 보정된 색 채택(사용자 결정). 값은 `shared/config/brand.ts` 한 곳에 두고 앱은 `<BrandStyle>`(main.tsx), Storybook은 `applyBrandTheme`(preview.ts)으로 적용
 - [2026-11-22] DS 회색이 앱보다 진해 튐: `--line-strong`→`--color-gray-400`, `--ink-muted`→`--color-gray-500`로 연결(`html:root`, 앱 gray 변수가 다크에서 바뀌어 한 규칙으로 두 테마). DS 입력창 테두리만 앱 입력창과 같은 `--color-border`(#E5E7EB) — 토큰 전체에 걸면 스위치 꺼짐 트랙까지 흐려져서 `.cds-input`에 한정. 대비는 DS 기본(3:1)보다 낮아지는 앱 선택
 - [2026-11-22] DS 입력창 hover 테두리(`--ink-muted`)가 검게 보임 → gray-400. DS hover 규칙의 특정성이 높아 포커스·목록 열림(`.is-open`, 포커스가 목록에 있어 `:focus-within` 아님)·에러 테두리를 덮는 DS 버그를 프로젝트에서 보정 (cws-ds#1, DS 수정 후 제거)
+- [2026-11-22] 범위 확장(사용자 결정): DS 셀렉트와 높이를 맞추려 `AppTextInput`(DS TextInput)·`AppDatePicker`(DS Datepicker 단일)를 새로 만들고 앱 전체 `<input>`(text·password·url·number·search 43곳, date 5곳) 교체. 체크박스·라디오·파일·textarea는 제외, `type="time"` 1곳은 DS에 시간 컴포넌트가 없어 기존 input 유지·높이만 맞춤
+- [2026-11-22] AppTextInput·AppDatePicker는 래퍼 div가 너비 클래스를 받고 DS 필드는 항상 꽉 채움 — DS 필드 자체 너비(280px/100%)가 Tailwind보다 뒤에 로드돼 너비 클래스가 지기 때문. 날짜 값은 기존과 같은 'YYYY-MM-DD'라 저장 데이터 변경 없음. DS Datepicker가 aria-label을 받지 않아 `ariaLabel`은 래퍼 `role="group"`에 붙임 (cws-ds#4). 연봉 칸은 DS가 aria-describedby를 덮어써 "만원"·안내를 `suffix`·`helperText`로 옮김 (cws-ds#5)
+- [2026-11-22] size 기준: 같은 줄 셀렉트에 맞춤. 오답노트 작성·수정 폼과 목록 필터·정렬·검색은 md(40), 채용 화면(필터·모달 폼·일정)은 sm(32)
 - [2026-11-22] `@choi/ds/fonts.css`(Pretendard)는 import하지 않음 — 프로젝트 본문이 시스템 폰트라 DS 컴포넌트만 Pretendard가 되면 혼재. DS `--font-sans` 폴백(system-ui)으로 렌더. 폰트 통일은 토큰 통일 이슈에서 함께 처리
 
 ### 🐛 트러블슈팅
@@ -221,3 +225,24 @@
 **다음 작업**
 
 - AppTextInput·AppDatePicker 추가 + 입력창 교체
+
+### Commit — 2026-11-22 03:16
+
+- Message: `Feat:#98 DS 기반 AppTextInput·AppDatePicker 추가 및 입력창 교체`
+- Issue: `#98`
+- Jira: `미사용`
+
+**변경 요약**
+
+- `shared/ui/atoms/AppTextInput`, `AppDatePicker` 추가 (스토리·테스트 포함)
+- 20개 파일의 한 줄 입력·날짜 입력 교체. 미사용 스타일 상수(`INPUT_CLASS` 등) 제거, 검색 돋보기는 `iconLeft`로
+- 오답노트 작성·수정 폼과 목록 화면의 셀렉트를 md로 통일
+- API 키 입력은 `[&_input]:font-mono`로 고정폭 글꼴 유지
+
+**결정 로그**
+
+- 시간 입력은 네이티브 유지 (DS에 없음)
+
+**다음 작업**
+
+- AppButton → DS Button

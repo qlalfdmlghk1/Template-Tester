@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { signUpWithUsername } from "@/features/auth/api/auth.api";
 import { useNavigate, Link } from "react-router-dom";
+import { AppTextInput } from "@/shared/ui/atoms/AppTextInput";
 
 function Signup() {
   const [loading, setLoading] = useState(false);
@@ -62,13 +63,12 @@ function Signup() {
                 <label htmlFor="username" className="block text-sm font-medium text-text mb-2">
                   아이디 <span className="text-red-500">*</span>
                 </label>
-                <input
+                <AppTextInput
                   id="username"
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="아이디를 입력하세요"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                   disabled={loading}
                 />
               </div>
@@ -77,13 +77,12 @@ function Signup() {
                 <label htmlFor="displayName" className="block text-sm font-medium text-text mb-2">
                   닉네임 (선택)
                 </label>
-                <input
+                <AppTextInput
                   id="displayName"
                   type="text"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   placeholder="닉네임을 입력하세요"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                   disabled={loading}
                 />
                 <p className="mt-1 text-xs text-textSecondary">입력하지 않으면 아이디가 닉네임으로 사용됩니다.</p>
@@ -93,13 +92,12 @@ function Signup() {
                 <label htmlFor="password" className="block text-sm font-medium text-text mb-2">
                   비밀번호 <span className="text-red-500">*</span>
                 </label>
-                <input
+                <AppTextInput
                   id="password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="비밀번호를 입력하세요 (최소 6자)"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                   disabled={loading}
                 />
               </div>
@@ -108,13 +106,12 @@ function Signup() {
                 <label htmlFor="passwordConfirm" className="block text-sm font-medium text-text mb-2">
                   비밀번호 확인 <span className="text-red-500">*</span>
                 </label>
-                <input
+                <AppTextInput
                   id="passwordConfirm"
                   type="password"
                   value={passwordConfirm}
                   onChange={(e) => setPasswordConfirm(e.target.value)}
                   placeholder="비밀번호를 다시 입력하세요"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                   disabled={loading}
                 />
               </div>

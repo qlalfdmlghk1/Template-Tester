@@ -1,5 +1,6 @@
 import { useState } from "react";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
+import { AppTextInput } from "@/shared/ui/atoms/AppTextInput";
 import { cn } from "@/shared/lib/cn";
 import { useManualLogForm } from "../../model/useManualLogForm";
 import type { ManualLogInput } from "../../api/solveLog.api";
@@ -11,9 +12,6 @@ interface DayDetailPanelProps {
   onAddManualLog: (input: ManualLogInput) => Promise<void>;
   onRemoveLog: (logId: string) => Promise<void>;
 }
-
-const INPUT_CLASS =
-  "w-full px-3 py-2 text-sm outline outline-1 outline-border rounded-md bg-surface text-text hover:outline-primary focus:outline-primary focus:ring-2 focus:ring-blue-200 transition-all";
 
 const PLATFORM_LABEL = { programmers: "프로그래머스", boj: "백준" } as const;
 
@@ -95,42 +93,47 @@ export default function DayDetailPanel({
             ))}
           </div>
 
-          <input
+          <AppTextInput
             type="text"
             value={form.title}
             onChange={(event) => form.setTitle(event.target.value)}
             placeholder="문제 제목 (필수)"
-            className={INPUT_CLASS}
+            aria-label="문제 제목"
+            size="sm"
           />
           <div className="grid grid-cols-3 gap-2">
-            <input
+            <AppTextInput
               type="text"
               value={form.problemNo}
               onChange={(event) => form.setProblemNo(event.target.value)}
               placeholder="번호"
-              className={INPUT_CLASS}
+              aria-label="문제 번호"
+              size="sm"
             />
-            <input
+            <AppTextInput
               type="text"
               value={form.difficulty}
               onChange={(event) => form.setDifficulty(event.target.value)}
               placeholder="난이도"
-              className={INPUT_CLASS}
+              aria-label="난이도"
+              size="sm"
             />
-            <input
+            <AppTextInput
               type="text"
               value={form.language}
               onChange={(event) => form.setLanguage(event.target.value)}
               placeholder="언어"
-              className={INPUT_CLASS}
+              aria-label="언어"
+              size="sm"
             />
           </div>
-          <input
+          <AppTextInput
             type="text"
             value={form.memo}
             onChange={(event) => form.setMemo(event.target.value)}
             placeholder="메모 (선택)"
-            className={INPUT_CLASS}
+            aria-label="메모"
+            size="sm"
           />
 
           {form.hasInvalidProblemNo && (
