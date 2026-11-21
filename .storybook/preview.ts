@@ -1,5 +1,7 @@
 import type { Preview } from "storybook";
 import "../src/app/styles/index.css";
+// 앱 진입점(main.tsx)과 같은 순서 — preflight 뒤에 DS 스타일
+import "@choi/ds/styles.css";
 
 const preview: Preview = {
   parameters: {

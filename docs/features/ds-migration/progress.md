@@ -62,3 +62,25 @@
 **다음 작업**
 
 - AppToast → DS ToastProvider/useToast 어댑터
+
+### Commit — 2026-11-22
+
+- Message: `Refactor:#98 AppToast를 DS ToastProvider 기반으로 교체`
+- Issue: `#98`
+- Jira: `미사용`
+
+**변경 요약**
+
+- `ToastProvider`: DS `ToastProvider`(position `bottom-right`) + 브리지 컴포넌트로 기존 `showToast(message, type)` 컨텍스트 유지 → 사용처 수정 없음
+- `AppToast`: DS `Toast` 래퍼로 교체 (success→`success`, error→`danger` 톤)
+- 자체 타이머·목록 관리 코드 제거, `ToastItem` 타입 export 제거 (사용처 없음)
+- Storybook `preview.ts`에 `@choi/ds/styles.css` 추가 (앱과 같은 로드 순서)
+- 어댑터 동작 테스트 `ToastProvider.test.tsx` 추가
+
+**결정 로그**
+
+- 표시 시간·최대 개수는 DS 기본값 채택 (기존 3초 고정 → 성공 4초 / 에러 6초, 최대 3개). 에러는 `role="alert"`로 즉시 읽힘
+
+**다음 작업**
+
+- AppConfirmDialog → DS ConfirmModal
