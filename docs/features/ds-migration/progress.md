@@ -18,10 +18,12 @@
 - [x] 작업 환경 셋업 (/start 실행)
 - [x] `@choi/ds` 의존성 추가 (`github:qlalfdmlghk1/cws-ds#v0.2.0`, 버전 고정)
 - [x] 진입점 `styles.css` import + `body` 충돌 정리 (build·test 604건 통과)
+- [x] AppToast → DS `ToastProvider` / `useToast` 어댑터
+- [x] DS 오버레이 z-index를 프로젝트 레이어(navbar 1000·modal 1100·toast 1200)에 맞춤
 
 ### 🚧 진행 중
 
-- [ ] AppToast → DS `ToastProvider` / `useToast` 어댑터
+- [ ] AppConfirmDialog → DS `ConfirmModal` 어댑터
 
 ### 📝 결정 로그
 
@@ -30,11 +32,14 @@
 - [2026-11-22] AppChip → DS `Badge` 대응 (상태 표시 용도. DS `Chip`은 선택형 필터 칩이라 의미 불일치)
 - [2026-11-22] 사전 확인: React 19 환경에서 git 설치·`prepare` 빌드 정상. CSS 변수(`--brand` vs `--color-*`)·클래스(`.cds-*`) 충돌 없음. 단 `styles.css`에 전역 `body` 규칙 포함
 - [2026-11-22] CSS 로드 순서: DS `styles.css`를 `index.css` **뒤에** import. Tailwind preflight의 `[type='button']{background-color:transparent}`가 `.cds-btn--*`와 specificity(0,1,0)가 같아, DS가 앞에 오면 DS 버튼 배경이 투명해짐. 대신 DS 전역 `body` 규칙이 프로젝트 것을 덮으므로 프로젝트 쪽을 `html body`로 올리고 `word-break`/`overflow-wrap`도 `normal`로 고정해 기존 화면 유지 (DS의 `keep-all`/`anywhere` 채택은 토큰 통일 이슈에서 재검토)
+- [2026-11-22] DS 오버레이 z-index(modal·drawer 100, toaster 200, tooltip 300)가 프로젝트 navbar(1000)보다 낮아 모달이 네비게이션 아래로, 토스트가 프로젝트 모달(AiKeyDialog 등, 1100) 뒤로 깔림 → `index.css`에서 `html .cds-*`로 `tailwind.config.js` zIndex 스케일에 맞춤. content에 없는 클래스라 `@layer` 밖에 둠(안에 두면 Tailwind가 purge). DS에 z-index 토큰이 생기면 그쪽으로 이전 (DS 레포 이슈 후보)
 - [2026-11-22] `@choi/ds/fonts.css`(Pretendard)는 import하지 않음 — 프로젝트 본문이 시스템 폰트라 DS 컴포넌트만 Pretendard가 되면 혼재. DS `--font-sans` 폴백(system-ui)으로 렌더. 폰트 통일은 토큰 통일 이슈에서 함께 처리
 
 ### 🐛 트러블슈팅
 
 <!-- /note troubleshoot 으로 추가 -->
+
+- [2026-11-22] DS 모달·토스트가 네비게이션·프로젝트 모달 아래로 깔림 → `troubleshoot.md`
 
 ### ⏭️ 남은 작업
 
@@ -80,6 +85,26 @@
 **결정 로그**
 
 - 표시 시간·최대 개수는 DS 기본값 채택 (기존 3초 고정 → 성공 4초 / 에러 6초, 최대 3개). 에러는 `role="alert"`로 즉시 읽힘
+
+**다음 작업**
+
+- AppConfirmDialog → DS ConfirmModal
+
+### Commit — 2026-11-22 00:40
+
+- Message: `Fix:#98 DS 오버레이가 네비게이션·프로젝트 모달 아래로 깔리던 문제 수정`
+- Issue: `#98`
+- Jira: `미사용`
+
+**변경 요약**
+
+- `index.css`에 `html .cds-modal`·`.cds-drawer`(1100)·`.cds-toaster`(1200)·`.cds-tooltip`(1300) z-index 오버라이드 추가
+- 이미 교체한 토스트가 프로젝트 모달 뒤로 깔리던 회귀도 함께 해소
+- `troubleshoot.md` 신설
+
+**결정 로그**
+
+- DS에 z-index 토큰이 없어 프로젝트 CSS에서 덮어씀. 규칙은 `@layer` 밖 (purge 회피)
 
 **다음 작업**
 

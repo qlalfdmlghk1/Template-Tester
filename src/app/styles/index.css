@@ -258,3 +258,19 @@
     width: 100%;
   }
 }
+
+/* DS 오버레이 z-index(modal·drawer 100, toaster 200, tooltip 300)가 프로젝트 navbar(1000)보다 낮아
+   네비게이션 아래로 깔리므로 tailwind.config.js의 zIndex 스케일에 맞춘다. DS CSS가 뒤에 로드되므로 `html`로 specificity를 올린다.
+   content에 없는 클래스라 @layer 안에 두면 Tailwind가 지우므로 레이어 밖에 둔다. */
+html .cds-modal,
+html .cds-drawer {
+  z-index: theme("zIndex.modal");
+}
+
+html .cds-toaster {
+  z-index: theme("zIndex.toast");
+}
+
+html .cds-tooltip {
+  z-index: calc(theme("zIndex.toast") + 100);
+}
