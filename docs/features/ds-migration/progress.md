@@ -4,7 +4,7 @@
 
 - 이슈: #98 (Refactor)
 - 브랜치: refactor/98-ds-migration
-- 단계: 컴포넌트 어댑터 교체 중 (Toast·ConfirmDialog·Switch·Select 완료)
+- 단계: PR 리뷰 대기 (Toast·ConfirmDialog·Switch·Select·TextInput·DatePicker·Button 완료, Chip·Pagination 남음)
 - 마지막 업데이트: 2026-11-22
 
 ---
@@ -26,10 +26,11 @@
 - [x] DS v0.3.0 업데이트 + 메인 색(`#3B82F6`)
 - [x] DS 입력창 회색·테두리·hover 색을 앱에 맞춤
 - [x] AppTextInput·AppDatePicker 추가 + 앱 전체 입력창 교체 (한 줄 입력 43곳·날짜 5곳)
+- [x] AppButton → DS `Button` 어댑터
 
 ### 🚧 진행 중
 
-- [ ] AppButton → DS `Button` 어댑터
+- [ ] PR 리뷰
 
 ### 📝 결정 로그
 
@@ -48,6 +49,7 @@
 - [2026-11-22] 범위 확장(사용자 결정): DS 셀렉트와 높이를 맞추려 `AppTextInput`(DS TextInput)·`AppDatePicker`(DS Datepicker 단일)를 새로 만들고 앱 전체 `<input>`(text·password·url·number·search 43곳, date 5곳) 교체. 체크박스·라디오·파일·textarea는 제외, `type="time"` 1곳은 DS에 시간 컴포넌트가 없어 기존 input 유지·높이만 맞춤
 - [2026-11-22] AppTextInput·AppDatePicker는 래퍼 div가 너비 클래스를 받고 DS 필드는 항상 꽉 채움 — DS 필드 자체 너비(280px/100%)가 Tailwind보다 뒤에 로드돼 너비 클래스가 지기 때문. 날짜 값은 기존과 같은 'YYYY-MM-DD'라 저장 데이터 변경 없음. DS Datepicker가 aria-label을 받지 않아 `ariaLabel`은 래퍼 `role="group"`에 붙임 (cws-ds#4). 연봉 칸은 DS가 aria-describedby를 덮어써 "만원"·안내를 `suffix`·`helperText`로 옮김 (cws-ds#5)
 - [2026-11-22] size 기준: 같은 줄 셀렉트에 맞춤. 오답노트 작성·수정 폼과 목록 필터·정렬·검색은 md(40), 채용 화면(필터·모달 폼·일정)은 sm(32)
+- [2026-11-22] AppButton: DS 모양 4종으로 매핑 — solid 파랑→primary, 빨강→danger, 회색→secondary / outline→secondary / ghost→ghost. outline·ghost의 파란 글자는 DS처럼 중립색, **빨간 글자만 유지**(삭제 버튼 4곳, 사용자 결정) — `.app-btn--danger` 클래스 + index.css(`--danger-ink`, hover `--danger-soft`). 높이 lg 50→48 · md 44→40 · sm 36→32, xs는 sm(32). props 유지로 94곳 사용처 수정 없음
 - [2026-11-22] `@choi/ds/fonts.css`(Pretendard)는 import하지 않음 — 프로젝트 본문이 시스템 폰트라 DS 컴포넌트만 Pretendard가 되면 혼재. DS `--font-sans` 폴백(system-ui)으로 렌더. 폰트 통일은 토큰 통일 이슈에서 함께 처리
 
 ### 🐛 트러블슈팅
@@ -58,7 +60,9 @@
 
 ### ⏭️ 남은 작업
 
-- [ ] AppChip / AppPagination / AppButton 어댑터 교체
+- [ ] AppChip / AppPagination 어댑터 교체
+- [ ] textarea → DS Textarea (이번 범위 제외)
+- [ ] 전체 테스트 실행 시 일부 테스트 5초 타임아웃 (단독 실행은 통과) — testTimeout 조정 여부 결정
 - [ ] Storybook 스토리 갱신
 - [ ] 영향받는 테스트 수정
 
@@ -246,3 +250,23 @@
 **다음 작업**
 
 - AppButton → DS Button
+
+### Commit — 2026-11-22 03:18
+
+- Message: `Refactor:#98 AppButton을 DS Button 기반으로 교체`
+- Issue: `#98`
+- Jira: `미사용`
+
+**변경 요약**
+
+- `AppButton`: DS `Button` 래퍼로 교체 (variant×color → DS variant, xs→sm, width는 인라인 스타일)
+- 테두리·투명 버튼의 빨간 글자를 위한 `index.css` 규칙 추가 (DS ghost hover 글자색 규칙보다 우선하도록 `.cds-btn` 겹침)
+- 어댑터 테스트 추가, 스토리 설명 갱신
+
+**결정 로그**
+
+- 같은 size면 버튼·입력창·셀렉트 높이가 같아짐
+
+**다음 작업**
+
+- PR 리뷰 (사용자가 다음 날 진행), AppChip·AppPagination

@@ -8,17 +8,17 @@ const meta: Meta<typeof AppButton> = {
     variant: {
       control: "select",
       options: ["solid", "outline", "ghost"],
-      description: "버튼 스타일 변형",
+      description: "버튼 스타일 변형. DS로 solid→primary/danger, outline→secondary, ghost→ghost",
     },
     color: {
       control: "select",
       options: ["primary", "gray", "red", "blue"],
-      description: "버튼 색상",
+      description: "버튼 색상. solid에서만 색이 그대로 반영되고, outline·ghost는 red(빨간 글자)만 유지된다",
     },
     size: {
       control: "select",
       options: ["lg", "md", "sm", "xs"],
-      description: "버튼 크기",
+      description: "버튼 크기. lg 48 · md 40 · sm 32px, xs는 sm과 같다",
     },
     disabled: { control: "boolean", description: "비활성화 상태" },
     loading: { control: "boolean", description: "로딩 상태" },
