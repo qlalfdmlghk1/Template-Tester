@@ -16,17 +16,18 @@
 ### ✅ 완료
 
 - [x] 작업 환경 셋업 (/start 실행)
-- [x] `@choi/ds` 의존성 추가 (`github:qlalfdmlghk1/cws-ds#v0.2.0`, 버전 고정)
+- [x] `@choi/ds` 의존성 추가 (`github:qlalfdmlghk1/cws-ds#v0.2.0`, 버전 고정 → v0.3.0으로 올림)
 - [x] 진입점 `styles.css` import + `body` 충돌 정리 (build·test 604건 통과)
 - [x] AppToast → DS `ToastProvider` / `useToast` 어댑터
 - [x] DS 오버레이 z-index를 프로젝트 레이어(navbar 1000·modal 1100·toast 1200)에 맞춤
 - [x] AppConfirmDialog → DS `ConfirmModal` 어댑터
 - [x] AppSwitch → DS `Switch` 어댑터
 - [x] AppSelect → DS `Select` / `MultiSelect` 어댑터
+- [x] DS v0.3.0 업데이트 + 메인 색(`#3B82F6`)
 
 ### 🚧 진행 중
 
-- [ ] DS v0.3.0 업데이트 + 메인 색
+- [ ] DS 입력창 회색·테두리·hover 색을 앱에 맞춤
 
 ### 📝 결정 로그
 
@@ -39,6 +40,7 @@
 - [2026-11-22] AppConfirmDialog: DS `ConfirmModal`이 포커스(danger면 취소)·Esc·처리 중 닫기 차단을 맡으므로 자체 구현 제거. 동작 차이 — 바깥 클릭으로 닫히지 않음(DS alertdialog 정책 채택), 처리 중 Esc 무시(기존엔 닫힘). 설명의 `\n` 줄바꿈은 `whitespace-pre-wrap` span으로 유지
 - [2026-11-22] AppSwitch: DS `Switch`(input checkbox 기반)로 교체. 동작 차이 — 라벨이 스위치 **왼쪽**(DS 정책), 크기 md 44×24→36×20 · sm 32×18→28×16
 - [2026-11-22] AppSelect: DS `Select`/`MultiSelect`로 교체. DS는 string value만 받아 문자열 키로 넘기고 원래 값(number 포함)으로 복원. `width`/`fullWidth` 없으면 부모 너비를 채우는 기존 동작은 래퍼 div로 유지. 다중 선택은 `maxTagCount={1}`(태그 1개 + N). 대응 없고 사용처 없는 `showSelectAll`·`ariaDescribedby` 제거, `state="error"`는 `hint`가 있어야 표시. 드롭다운은 portal 없이 트리거 아래에 그림(모달 안 스크롤 영역에 갇힘 — 사용자 결정으로 DS 그대로 적용, DS 이슈 cws-ds#3). 높이 sm 36→32 · md 44→40 · lg 50→48
+- [2026-11-22] DS v0.3.0(브랜드 색 기능) 적용. 메인 색은 앱 primary `#3B82F6` — DS가 흰 글자 4.5:1을 맞추려 라이트에서 `#2B72E5`로 보정, 다크 `#6CA4FF` 자동 생성. 보정된 색 채택(사용자 결정). 값은 `shared/config/brand.ts` 한 곳에 두고 앱은 `<BrandStyle>`(main.tsx), Storybook은 `applyBrandTheme`(preview.ts)으로 적용
 - [2026-11-22] `@choi/ds/fonts.css`(Pretendard)는 import하지 않음 — 프로젝트 본문이 시스템 폰트라 DS 컴포넌트만 Pretendard가 되면 혼재. DS `--font-sans` 폴백(system-ui)으로 렌더. 폰트 통일은 토큰 통일 이슈에서 함께 처리
 
 ### 🐛 트러블슈팅
@@ -178,3 +180,22 @@
 **다음 작업**
 
 - DS v0.3.0 업데이트 + 메인 색
+
+### Commit — 2026-11-22 03:12
+
+- Message: `Chore:#98 DS v0.3.0으로 올리고 메인 색을 앱 primary로 적용`
+- Issue: `#98`
+- Jira: `미사용`
+
+**변경 요약**
+
+- `@choi/ds` `#v0.2.0` → `#v0.3.0` (lockfile resolved 형식은 기존과 같은 git+ssh)
+- `src/shared/config/brand.ts`에 `BRAND_COLOR` 추가, `main.tsx`에 `<BrandStyle>`, Storybook `preview.ts`에 `applyBrandTheme`
+
+**결정 로그**
+
+- 라이트 보정색 `#2B72E5` 채택 (기존 버튼 `#3B82F6`보다 한 단계 진함 — AppButton 교체 후 통일)
+
+**다음 작업**
+
+- DS 입력창 색을 앱 회색에 맞춤
