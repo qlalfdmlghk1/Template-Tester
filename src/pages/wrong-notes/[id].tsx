@@ -8,6 +8,8 @@ import { AppTextInput } from "@/shared/ui/atoms/AppTextInput";
 import { AppDatePicker } from "@/shared/ui/atoms/AppDatePicker";
 import ToggleButtonGroup from "@/shared/ui/atoms/ToggleButtonGroup/ToggleButtonGroup";
 import CodeEditor from "@/shared/ui/molecules/CodeEditor/CodeEditor";
+import { AppTextarea } from "@/shared/ui/atoms/AppTextarea";
+import { AppCheckbox } from "@/shared/ui/atoms/AppCheckbox";
 import { useWrongNoteDetail } from "@/entities/wrong-note/model/useWrongNoteDetail";
 import { useWrongNoteForm } from "@/entities/wrong-note/model/useWrongNoteForm";
 import {
@@ -282,28 +284,21 @@ export default function WrongNoteDetail() {
 
             <div>
               <label className="block text-sm font-medium text-text leading-[30px] mb-2">코멘트</label>
-              <textarea
+              <AppTextarea
                 value={formData.comment}
                 onChange={(e) => handleInputChange("comment", e.target.value)}
                 placeholder="이 문제에서 배운 점, 주의할 점 등을 기록하세요..."
                 rows={4}
-                className="w-full px-4 py-3 text-sm outline outline-1 outline-border rounded-md bg-surface text-text
-                  hover:outline-primary focus:outline-primary focus:ring-2 focus:ring-blue-200 transition-all resize-none"
+                resize="none"
               />
             </div>
 
-            <div className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                id="share"
-                checked={formData.share}
-                onChange={(e) => handleInputChange("share", e.target.checked)}
-                className="w-4 h-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
-              />
-              <label htmlFor="share" className="text-sm text-text cursor-pointer">
-                다른 사용자에게 공유하기
-              </label>
-            </div>
+            <AppCheckbox
+              id="share"
+              checked={formData.share}
+              onChange={(e) => handleInputChange("share", e.target.checked)}
+              label="다른 사용자에게 공유하기"
+            />
 
             <div className="flex justify-end gap-3 pt-4">
               <AppButton

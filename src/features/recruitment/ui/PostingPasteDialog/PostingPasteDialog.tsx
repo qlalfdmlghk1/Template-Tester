@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
 import AppIcon from "@/shared/ui/atoms/AppIcon/AppIcon";
+import { AppTextarea } from "@/shared/ui/atoms/AppTextarea";
 import { cn } from "@/shared/lib/cn";
 import {
   READ_IMAGE_MESSAGES,
@@ -14,6 +15,8 @@ import {
   SUPPORTED_IMAGE_TYPES,
 } from "@/entities/job-application/api/posting.api";
 import type { PostingImage } from "@/entities/job-application/api/posting.api";
+
+const POSTING_TEXT_ID = "posting-paste-text";
 
 interface PostingPasteDialogProps {
   companyName: string;
@@ -65,7 +68,6 @@ export function PostingPasteDialog({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropRef = useRef<HTMLButtonElement>(null);
-  const textRef = useRef<HTMLTextAreaElement>(null);
 
   /**
    * 붙어 있는 캡처의 정본.
@@ -93,7 +95,8 @@ export function PostingPasteDialog({
   // 탭을 열면 그 탭의 입력부로 포커스를 옮긴다 — 캡처 탭은 곧바로 Ctrl+V 가 먹게
   useEffect(() => {
     if (mode === "image") dropRef.current?.focus();
-    else textRef.current?.focus();
+    // AppTextarea(DS)는 ref를 받지 않아 id로 찾는다
+    else document.getElementById(POSTING_TEXT_ID)?.focus();
   }, [mode]);
 
   /** 읽어 들인 캡처를 목록에 더한다. 상한을 넘긴 만큼은 버리고 그 사실을 알린다 */
@@ -388,12 +391,12 @@ export function PostingPasteDialog({
                 한 내용을 붙여넣으세요. 메뉴나 푸터가 섞여도 됩니다. 글자가
                 선택되지 않는 공고라면 캡처 탭을 쓰세요.
               </span>
-              <textarea
-                ref={textRef}
+              <AppTextarea
+                id={POSTING_TEXT_ID}
+                aria-label="공고 본문"
                 value={text}
                 onChange={(event) => setText(event.target.value)}
                 rows={12}
-                className="w-full px-2 py-1.5 text-sm text-text bg-background border border-border rounded-sm resize-y focus:outline-none focus:border-blue-400"
               />
               {textTooShort && (
                 <span className="text-xs text-red-600">

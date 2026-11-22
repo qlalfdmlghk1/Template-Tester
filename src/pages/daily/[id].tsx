@@ -1,11 +1,9 @@
 import { useNavigate, useParams } from "react-router-dom";
 import Navbar from "@/widgets/Navbar/Navbar";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
+import { AppTextarea } from "@/shared/ui/atoms/AppTextarea";
 import { cn } from "@/shared/lib/cn";
 import { useDailySession } from "@/entities/daily/model/useDailySession";
-
-const INPUT_CLASS =
-  "w-full px-4 py-3 text-sm outline outline-1 outline-border rounded-md bg-surface text-text hover:outline-primary focus:outline-primary focus:ring-2 focus:ring-blue-200 transition-all resize-none";
 
 export default function DailySession() {
   const { id } = useParams<{ id: string }>();
@@ -167,13 +165,13 @@ export default function DailySession() {
               ) : (
                 /* 서술형 */
                 <div className="mt-5">
-                  <textarea
+                  <AppTextarea
                     value={textAnswer}
                     onChange={(e) => setTextAnswer(e.target.value)}
                     disabled={revealed}
                     rows={4}
                     placeholder="답을 서술해 보세요..."
-                    className={INPUT_CLASS}
+                    resize="none"
                   />
                 </div>
               )}

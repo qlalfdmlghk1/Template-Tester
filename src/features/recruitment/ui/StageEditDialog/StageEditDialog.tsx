@@ -1,6 +1,7 @@
 import { useState } from "react";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
 import AppIcon from "@/shared/ui/atoms/AppIcon/AppIcon";
+import { AppTextarea } from "@/shared/ui/atoms/AppTextarea";
 import { cn } from "@/shared/lib/cn";
 import {
   STAGE_LABELS,
@@ -100,13 +101,12 @@ export function StageEditDialog({
           <label htmlFor="stage-memo" className="block mb-1.5 text-sm font-medium text-text">
             메모
           </label>
-          <textarea
+          <AppTextarea
             id="stage-memo"
             rows={3}
             value={memo}
             onChange={(event) => setMemo(event.target.value)}
             placeholder="예: 1박 2일 합숙, 온라인 진행"
-            className="w-full px-2 py-1.5 text-sm bg-surface text-text border border-border rounded-sm resize-y"
           />
         </div>
 

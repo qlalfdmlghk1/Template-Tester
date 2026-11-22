@@ -1,4 +1,5 @@
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
+import { AppCheckbox } from "@/shared/ui/atoms/AppCheckbox";
 import { cn } from "@/shared/lib/cn";
 import type { ResearchSource } from "@/shared/model/aiSource";
 import { ResearchSourceLinks } from "../ResearchSourceLinks/ResearchSourceLinks";
@@ -84,13 +85,11 @@ export function AiFieldPreview<Field extends string>({
                 checked ? "border-blue-400 bg-surface" : "border-border bg-surface opacity-60",
               )}
             >
-              <label className="flex items-start gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={checked}
-                  onChange={() => onToggleField(field)}
-                  className="mt-0.5 shrink-0"
-                />
+              <AppCheckbox
+                checked={checked}
+                onChange={() => onToggleField(field)}
+                className="w-full"
+                label={
                 <span className="min-w-0">
                   <span className="flex flex-wrap items-center gap-1.5">
                     <span className="text-xs font-semibold text-text">{labels[field]}</span>
@@ -109,7 +108,8 @@ export function AiFieldPreview<Field extends string>({
                   />
                   <ResearchSourceLinks sources={sources[field]} />
                 </span>
-              </label>
+                }
+              />
             </li>
           );
         })}

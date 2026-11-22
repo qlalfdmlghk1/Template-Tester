@@ -1,6 +1,7 @@
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
 import { AppSelect } from "@/shared/ui/atoms/AppSelect";
 import { AppTextInput } from "@/shared/ui/atoms/AppTextInput";
+import { AppTextarea } from "@/shared/ui/atoms/AppTextarea";
 import { cn } from "@/shared/lib/cn";
 import {
   JOB_TAGS,
@@ -33,9 +34,6 @@ interface ApplicationFormDialogProps {
   /** AI 키가 없을 때 등록 화면으로 보낸다 */
   onRequestApiKey?: () => void;
 }
-
-const inputClass =
-  "w-full px-2 py-1.5 text-sm bg-surface text-text border border-border rounded-sm";
 
 /** 지원 건 등록·수정 — 상태와 추출 로직은 `useApplicationForm` 이 맡고 여기서는 렌더만 한다 */
 export function ApplicationFormDialog({
@@ -319,12 +317,11 @@ export function ApplicationFormDialog({
             >
               메모
             </label>
-            <textarea
+            <AppTextarea
               id="application-memo"
               rows={2}
               value={form.memo}
               onChange={(event) => form.setMemo(event.target.value)}
-              className={cn(inputClass, "resize-y")}
             />
           </div>
 
@@ -345,14 +342,13 @@ export function ApplicationFormDialog({
                   >
                     {POSTING_FIELD_LABELS[field]}
                   </label>
-                  <textarea
+                  <AppTextarea
                     id={`posting-${field}`}
                     rows={3}
                     value={form.posting[field]}
                     onChange={(event) =>
                       form.setPostingField(field, event.target.value)
                     }
-                    className={cn(inputClass, "resize-y")}
                   />
                 </div>
               ))}

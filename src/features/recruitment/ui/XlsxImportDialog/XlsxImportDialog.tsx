@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
 import AppIcon from "@/shared/ui/atoms/AppIcon/AppIcon";
+import { AppCheckbox } from "@/shared/ui/atoms/AppCheckbox";
 import { cn } from "@/shared/lib/cn";
 import { formatSchedule } from "@/entities/job-application/model/schedule";
 import { STAGE_LABELS, STAGE_STATUS_LABELS } from "@/entities/job-application/model/stage";
@@ -56,6 +57,8 @@ export function XlsxImportDialog({
 
   const allIds = rows.map((row) => row.id);
   const allChecked = allIds.length > 0 && allIds.every((id) => selectedIds.has(id));
+  // 일부만 고르면 전체 선택 상자에 – 표시
+  const someChecked = allIds.some((id) => selectedIds.has(id));
   const warningCount = rows.reduce((sum, row) => sum + row.warnings.length, 0);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -117,21 +120,13 @@ export function XlsxImportDialog({
         )}
 
         {researchRows.length > 0 && (
-          <label className="flex items-start gap-2 px-3 py-2 bg-gray-100 rounded-sm cursor-pointer">
-            <input
-              type="checkbox"
-              checked={includeResearch}
-              onChange={(event) => onToggleResearch(event.target.checked)}
-              className="mt-0.5"
-            />
-            <span className="text-sm text-text">
-              기업 조사 내용 {researchRows.length}건도 함께 가져오기
-              <span className="block text-xs text-textSecondary">
-                직무 설명·자격 요건이 기업에 저장되며, 「기업 조사」 화면에서 볼 수 있습니다.
-                이미 등록된 기업이면 조사 내용만 채웁니다.
-              </span>
-            </span>
-          </label>
+          <AppCheckbox
+            checked={includeResearch}
+            onChange={(event) => onToggleResearch(event.target.checked)}
+            className="w-full px-3 py-2 bg-gray-100 rounded-sm"
+            label={`기업 조사 내용 ${researchRows.length}건도 함께 가져오기`}
+            description="직무 설명·자격 요건이 기업에 저장되며, 「기업 조사」 화면에서 볼 수 있습니다. 이미 등록된 기업이면 조사 내용만 채웁니다."
+          />
         )}
 
         {rows.length > 0 && (
@@ -140,9 +135,9 @@ export function XlsxImportDialog({
               <thead className="sticky top-0 bg-gray-100">
                 <tr>
                   <th scope="col" className="w-10 px-2 py-2 border-b border-border">
-                    <input
-                      type="checkbox"
+                    <AppCheckbox
                       checked={allChecked}
+                      indeterminate={!allChecked && someChecked}
                       onChange={(event) => onToggleAll(allIds, event.target.checked)}
                       aria-label="전체 선택"
                     />
@@ -165,8 +160,7 @@ export function XlsxImportDialog({
                   return (
                     <tr key={row.id} className={cn(!checked && "opacity-50")}>
                       <td className="px-2 py-2 align-top border-b border-border">
-                        <input
-                          type="checkbox"
+                        <AppCheckbox
                           checked={checked}
                           onChange={() => onToggleRow(row.id)}
                           aria-label={`${row.companyName} 가져오기`}

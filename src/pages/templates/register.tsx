@@ -5,6 +5,8 @@ import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
 import AppSelect from "@/shared/ui/atoms/AppSelect/AppSelect";
 import { AppTextInput } from "@/shared/ui/atoms/AppTextInput";
 import CodeEditor from "@/shared/ui/molecules/CodeEditor/CodeEditor";
+import { AppTextarea } from "@/shared/ui/atoms/AppTextarea";
+import { AppRadioGroup } from "@/shared/ui/atoms/AppRadioGroup";
 import { useTemplateForm } from "@/entities/template/model/useTemplateForm";
 import type { Category, TemplateType } from "@/entities/template/model/template.type";
 
@@ -79,41 +81,28 @@ export default function TemplateRegistration() {
 
           <div className="mb-6">
             <label className="block text-sm font-semibold text-text mb-2">템플릿 설명</label>
-            <textarea
+            <AppTextarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="예: 정렬되어 있는 리스트에서 탐색 범위를 절반씩 좁혀가며 데이터를 탐색하는 알고리즘"
               rows={3}
-              className="w-full px-4 py-2 bg-background border border-border rounded-lg text-text placeholder-textSecondary focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+              resize="none"
             />
           </div>
 
           <div className="mb-6">
-            <label className="block text-sm font-semibold text-text mb-3">템플릿 형태</label>
-            <div className="flex gap-6">
-              <label className="flex items-center cursor-pointer">
-                <input
-                  type="radio"
-                  name="templateType"
-                  value="paragraph"
-                  checked={templateType === "paragraph"}
-                  onChange={(e) => setTemplateType(e.target.value as TemplateType)}
-                  className="w-4 h-4 text-primary bg-background border-border focus:ring-primary focus:ring-2"
-                />
-                <span className="ml-2 text-text">줄글형</span>
-              </label>
-              <label className="flex items-center cursor-pointer">
-                <input
-                  type="radio"
-                  name="templateType"
-                  value="problem"
-                  checked={templateType === "problem"}
-                  onChange={(e) => setTemplateType(e.target.value as TemplateType)}
-                  className="w-4 h-4 text-primary bg-background border-border focus:ring-primary focus:ring-2"
-                />
-                <span className="ml-2 text-text">문제형</span>
-              </label>
-            </div>
+            <p className="m-0 block text-sm font-semibold text-text mb-3">템플릿 형태</p>
+            <AppRadioGroup<TemplateType>
+              ariaLabel="템플릿 형태"
+              direction="horizontal"
+              name="templateType"
+              options={[
+                { value: "paragraph", label: "줄글형" },
+                { value: "problem", label: "문제형" },
+              ]}
+              value={templateType}
+              onChange={setTemplateType}
+            />
             {templateType === "problem" && (
               <p className="mt-2 text-xs text-textSecondary">
                 문제형은 서술형으로 입력하되, "1. ~~~" / "2. ~~~" 형식으로 입력해주세요.
