@@ -6,8 +6,8 @@ import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
 import AppFallback from "@/shared/ui/molecules/AppFallback/AppFallback";
 import AppChip from "@/shared/ui/atoms/AppChip/AppChip";
 import AppSelect from "@/shared/ui/atoms/AppSelect/AppSelect";
-import AppTextInput from "@/shared/ui/atoms/AppTextInput/AppTextInput";
-import AppDatePicker from "@/shared/ui/atoms/AppDatePicker/AppDatePicker";
+import { AppTextInput } from "@/shared/ui/atoms/AppTextInput";
+import { AppDatePicker } from "@/shared/ui/atoms/AppDatePicker";
 import AppPagination from "@/shared/ui/molecules/AppPagination/AppPagination";
 import ToggleButtonGroup from "@/shared/ui/atoms/ToggleButtonGroup/ToggleButtonGroup";
 import CodeEditor from "@/shared/ui/molecules/CodeEditor/CodeEditor";
@@ -192,6 +192,7 @@ export default function WrongNotes() {
                 />
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3">
                   <AppSelect
+                    ariaLabel="플랫폼"
                     options={platformOptions}
                     value={filters.platform}
                     onChange={(value) => handleFilterChange("platform", value as string)}
@@ -199,6 +200,7 @@ export default function WrongNotes() {
                     size="md"
                   />
                   <AppSelect
+                    ariaLabel="알고리즘"
                     options={categoryOptions}
                     value={filters.category}
                     onChange={(value) => handleFilterChange("category", value as string)}
@@ -206,6 +208,7 @@ export default function WrongNotes() {
                     size="md"
                   />
                   <AppSelect
+                    ariaLabel="언어"
                     options={languageOptions}
                     value={filters.language}
                     onChange={(value) => handleFilterChange("language", value as string)}
@@ -213,6 +216,7 @@ export default function WrongNotes() {
                     size="md"
                   />
                   <AppSelect
+                    ariaLabel="결과"
                     options={resultOptions}
                     value={filters.result}
                     onChange={(value) => handleFilterChange("result", value as string)}
@@ -220,6 +224,7 @@ export default function WrongNotes() {
                     size="md"
                   />
                   <AppSelect
+                    ariaLabel="작성 이유"
                     options={tagOptions}
                     value={filters.tag}
                     onChange={(value) => handleFilterChange("tag", value as string)}
@@ -243,6 +248,7 @@ export default function WrongNotes() {
                 {filteredNotes.length}개 / 전체 {notes.length}개
               </span>
               <AppSelect
+                ariaLabel="정렬"
                 options={wrongNoteSortOptions}
                 value={sortBy}
                 onChange={(value) => handleSortByChange(value as string)}
@@ -377,6 +383,7 @@ export default function WrongNotes() {
                 />
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3">
                   <AppSelect
+                    ariaLabel="친구"
                     options={friendList.map((f) => ({
                       value: f.odUserId,
                       label: f.displayName || f.email || "알 수 없음",
@@ -387,6 +394,7 @@ export default function WrongNotes() {
                     size="md"
                   />
                   <AppSelect
+                    ariaLabel="플랫폼"
                     options={platformOptions}
                     value={filters.platform}
                     onChange={(value) => handleFilterChange("platform", value as string)}
@@ -394,6 +402,7 @@ export default function WrongNotes() {
                     size="md"
                   />
                   <AppSelect
+                    ariaLabel="알고리즘"
                     options={categoryOptions}
                     value={filters.category}
                     onChange={(value) => handleFilterChange("category", value as string)}
@@ -401,6 +410,7 @@ export default function WrongNotes() {
                     size="md"
                   />
                   <AppSelect
+                    ariaLabel="언어"
                     options={languageOptions}
                     value={filters.language}
                     onChange={(value) => handleFilterChange("language", value as string)}
@@ -408,6 +418,7 @@ export default function WrongNotes() {
                     size="md"
                   />
                   <AppSelect
+                    ariaLabel="결과"
                     options={resultOptions}
                     value={filters.result}
                     onChange={(value) => handleFilterChange("result", value as string)}
@@ -445,6 +456,7 @@ export default function WrongNotes() {
                 {filteredFriendNotes.length}개 / 전체 {friendNotes.length}개
               </span>
               <AppSelect
+                ariaLabel="정렬"
                 options={wrongNoteSortOptions}
                 value={sortBy}
                 onChange={(value) => handleSortByChange(value as string)}
@@ -563,8 +575,10 @@ export default function WrongNotes() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-text leading-[30px] mb-2">언어</label>
+                <label id="wrong-note-language-label" htmlFor="wrong-note-language" className="block text-sm font-medium text-text leading-[30px] mb-2">언어</label>
                 <AppSelect
+                  id="wrong-note-language"
+                  ariaLabelledby="wrong-note-language-label"
                   options={languageOptions}
                   value={formData.language}
                   onChange={(value) => handleInputChange("language", value as string)}
@@ -588,16 +602,19 @@ export default function WrongNotes() {
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
-                <label htmlFor="wrong-note-date" className="block text-sm font-medium text-text leading-[30px] mb-2">날짜</label>
+                <label id="wrong-note-date-label" htmlFor="wrong-note-date" className="block text-sm font-medium text-text leading-[30px] mb-2">날짜</label>
                 <AppDatePicker
                   id="wrong-note-date"
+                  ariaLabelledby="wrong-note-date-label"
                   value={formData.date}
                   onChange={(value) => handleInputChange("date", value)}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-text leading-[30px] mb-2">알고리즘</label>
+                <label id="wrong-note-category-label" htmlFor="wrong-note-category" className="block text-sm font-medium text-text leading-[30px] mb-2">알고리즘</label>
                 <AppSelect
+                  id="wrong-note-category"
+                  ariaLabelledby="wrong-note-category-label"
                   options={categoryOptions}
                   value={formData.category}
                   onChange={(value) => handleInputChange("category", value as string)}
@@ -607,8 +624,10 @@ export default function WrongNotes() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-text leading-[30px] mb-2">플랫폼</label>
+                <label id="wrong-note-platform-label" htmlFor="wrong-note-platform" className="block text-sm font-medium text-text leading-[30px] mb-2">플랫폼</label>
                 <AppSelect
+                  id="wrong-note-platform"
+                  ariaLabelledby="wrong-note-platform-label"
                   options={platformOptions}
                   value={formData.platform}
                   onChange={(value) => handlePlatformChange(value as string)}
@@ -618,8 +637,10 @@ export default function WrongNotes() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-text leading-[30px] mb-2">등급</label>
+                <label id="wrong-note-grade-label" htmlFor="wrong-note-grade" className="block text-sm font-medium text-text leading-[30px] mb-2">등급</label>
                 <AppSelect
+                  id="wrong-note-grade"
+                  ariaLabelledby="wrong-note-grade-label"
                   options={getGradeOptions()}
                   value={formData.grade}
                   onChange={(value) => handleInputChange("grade", value as string)}

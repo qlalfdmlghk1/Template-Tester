@@ -1,4 +1,4 @@
-import { Switch } from "@choi/ds";
+import { AppSwitch as DsSwitch } from "@choi/ds";
 
 export type AppSwitchSize = "sm" | "md";
 
@@ -13,7 +13,7 @@ export interface AppSwitchProps {
 }
 
 /**
- * 켜고 끄는 상태를 즉시 반영하는 토글 — DS `Switch` 어댑터.
+ * 켜고 끄는 상태를 즉시 반영하는 토글 — DS `AppSwitch` 어댑터.
  *
  * 체크박스와 달리 "제출해야 적용되는 선택"이 아니라 "지금 켜져 있는 상태"를 나타낸다.
  * 목록 필터처럼 누르는 즉시 결과가 바뀌는 곳에 쓴다.
@@ -27,7 +27,7 @@ export default function AppSwitch({
   id,
 }: AppSwitchProps) {
   return (
-    <Switch
+    <DsSwitch
       id={id}
       checked={checked}
       onChange={(event) => onChange(event.target.checked)}

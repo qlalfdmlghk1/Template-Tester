@@ -73,4 +73,41 @@ describe("AppSelect (DS 어댑터)", () => {
     expect(screen.getByText("필수 항목입니다.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "월 선택" })).toHaveAttribute("aria-invalid", "true");
   });
+  it("ariaLabel은 트리거 이름이 되어 값을 고른 뒤에도 '이름, 현재 값'으로 읽힌다", () => {
+    render(<AppSelect options={monthOptions} value={2} ariaLabel="월" onChange={vi.fn()} />);
+
+    expect(screen.getByRole("button", { name: "월 2월" })).toBeInTheDocument();
+  });
+
+  it("ariaLabelledby로 바깥 라벨을 트리거 이름으로 연결한다", () => {
+    render(
+      <>
+        <span id="company-label">기업</span>
+        <AppSelect options={tagOptions} ariaLabelledby="company-label" placeholder="선택해주세요" onChange={vi.fn()} />
+      </>,
+    );
+
+    expect(screen.getByRole("button", { name: "기업 선택해주세요" })).toBeInTheDocument();
+  });
+
+  describe("너비 래퍼", () => {
+    it.each([
+      [{}],
+      [{ fullWidth: true }],
+      [{ fullWidth: true, width: "200px" }],
+    ])("%o → 부모 너비를 채운다", (props) => {
+      const { container } = render(<AppSelect options={monthOptions} onChange={vi.fn()} {...props} />);
+
+      expect(container.firstElementChild).toHaveClass("w-full");
+    });
+
+    it("width만 주면 그 너비로 고정하고 줄어들지 않는다", () => {
+      const { container } = render(<AppSelect options={monthOptions} width="200px" onChange={vi.fn()} />);
+      const wrapper = container.firstElementChild as HTMLElement;
+
+      expect(wrapper).not.toHaveClass("w-full");
+      expect(wrapper.style.width).toBe("200px");
+      expect(wrapper.style.flexShrink).toBe("0");
+    });
+  });
 });

@@ -1,4 +1,4 @@
-import { Pagination } from "@choi/ds";
+import { AppPagination as DsPagination } from "@choi/ds";
 import AppSelect from "@/shared/ui/atoms/AppSelect/AppSelect";
 
 interface AppPaginationProps {
@@ -26,6 +26,7 @@ export default function AppPagination({
         <div className="flex items-center gap-2 text-xs text-textSecondary sm:absolute sm:left-0">
           <span>페이지당</span>
           <AppSelect
+            ariaLabel="페이지당 개수"
             options={pageSizeOptions.map((n) => ({ value: String(n), label: `${n}개` }))}
             value={String(pageSize)}
             onChange={(value) => onPageSizeChange(Number(value))}
@@ -36,7 +37,7 @@ export default function AppPagination({
       )}
 
       {totalPages > 1 && (
-        <Pagination
+        <DsPagination
           pageCount={totalPages}
           page={currentPage}
           onChange={onPageChange}

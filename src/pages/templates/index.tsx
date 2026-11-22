@@ -41,8 +41,12 @@ export default function TemplateTesterPage() {
         <div className="bg-surface p-3 sm:p-4 rounded-lg border border-border mb-4 sm:mb-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-medium text-textSecondary">카테고리</label>
+              <label id="template-page-category-label" htmlFor="template-page-category" className="text-xs font-medium text-textSecondary">
+                카테고리
+              </label>
               <AppSelect
+                id="template-page-category"
+                ariaLabelledby="template-page-category-label"
                 value={currentCategory}
                 onChange={(value) => handleCategoryChange(value as Category)}
                 options={categories.map((cat) => ({
@@ -56,8 +60,12 @@ export default function TemplateTesterPage() {
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-medium text-textSecondary">템플릿</label>
+              <label id="template-page-template-label" htmlFor="template-page-template" className="text-xs font-medium text-textSecondary">
+                템플릿
+              </label>
               <AppSelect
+                id="template-page-template"
+                ariaLabelledby="template-page-template-label"
                 value={selectedTemplateId}
                 onChange={(value) => handleTemplateChange(value as string)}
                 options={templates.map((template) => ({

@@ -48,4 +48,33 @@ describe("AppPagination (DS 어댑터)", () => {
     expect(screen.queryByRole("button", { name: "7페이지" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "13페이지" })).not.toBeInTheDocument();
   });
+  describe("페이지 크기 선택 (onPageSizeChange)", () => {
+    it("페이지가 1개뿐이어도 onPageSizeChange가 있으면 크기 선택만 그린다", () => {
+      render(
+        <AppPagination currentPage={1} totalPages={1} pageSize={10} onPageChange={vi.fn()} onPageSizeChange={vi.fn()} />,
+      );
+
+      expect(screen.getByRole("button", { name: /^페이지당 개수/ })).toBeInTheDocument();
+      expect(screen.queryByRole("navigation")).not.toBeInTheDocument();
+    });
+
+    it("크기를 고르면 number로 넘긴다", async () => {
+      const onPageSizeChange = vi.fn();
+      render(
+        <AppPagination
+          currentPage={1}
+          totalPages={3}
+          pageSize={10}
+          onPageChange={vi.fn()}
+          onPageSizeChange={onPageSizeChange}
+          pageSizeOptions={[10, 30]}
+        />,
+      );
+
+      await userEvent.click(screen.getByRole("button", { name: /^페이지당 개수/ }));
+      await userEvent.click(screen.getByRole("option", { name: "30개" }));
+
+      expect(onPageSizeChange).toHaveBeenCalledWith(30);
+    });
+  });
 });

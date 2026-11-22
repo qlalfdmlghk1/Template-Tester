@@ -1,4 +1,4 @@
-import { TextInput } from "@choi/ds";
+import { AppTextInput as DsTextInput } from "@choi/ds";
 import { cn } from "@/shared/lib/cn";
 import type { InputHTMLAttributes, ReactNode } from "react";
 
@@ -25,7 +25,7 @@ export interface AppTextInputProps
 }
 
 /**
- * 한 줄 입력창 — DS `TextInput` 어댑터.
+ * 한 줄 입력창 — DS `AppTextInput` 어댑터.
  * text·password·url·number·search 등 input의 기본 속성은 그대로 전달된다.
  *
  * DS 필드는 자체 너비(280px / 100%)를 갖고 DS CSS가 Tailwind보다 뒤에 로드돼 너비 클래스가 지므로,
@@ -34,7 +34,7 @@ export interface AppTextInputProps
 export default function AppTextInput({ size = "md", className, ...props }: AppTextInputProps) {
   return (
     <div className={cn("w-full", className)}>
-      <TextInput size={size} fullWidth {...props} />
+      <DsTextInput size={size} fullWidth {...props} />
     </div>
   );
 }
