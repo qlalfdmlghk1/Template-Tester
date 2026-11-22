@@ -236,8 +236,12 @@
     }
   }
 
-  body {
+  /* @choi/ds/styles.css가 이 파일보다 뒤에 로드되며 전역 body(배경·글자색·폰트·줄바꿈)를 덮어쓰므로
+     `html body`로 specificity를 올려 프로젝트 기본값을 유지한다. */
+  html body {
     @apply m-0 min-h-screen bg-background text-text;
+    word-break: normal;
+    overflow-wrap: normal;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans",
       "Droid Sans", "Helvetica Neue", sans-serif;
     -webkit-font-smoothing: antialiased;
@@ -253,4 +257,73 @@
     min-height: 100vh;
     width: 100%;
   }
+}
+
+/* DS 오버레이 z-index(modal·drawer 100, toaster 200, tooltip 300)가 프로젝트 navbar(1000)보다 낮아
+   네비게이션 아래로 깔리므로 tailwind.config.js의 zIndex 스케일에 맞춘다. DS CSS가 뒤에 로드되므로 `html`로 specificity를 올린다.
+   content에 없는 클래스라 @layer 안에 두면 Tailwind가 지우므로 레이어 밖에 둔다. */
+html .cds-modal,
+html .cds-drawer {
+  z-index: theme("zIndex.modal");
+}
+
+html .cds-toaster {
+  z-index: theme("zIndex.toast");
+}
+
+html .cds-tooltip {
+  z-index: calc(theme("zIndex.toast") + 100);
+}
+
+/* DS 회색 토큰을 프로젝트 gray에 연결 — DS 기본값(--line-strong #8B8994 등)이 앱 회색보다 진해 DS 요소만 튀므로.
+   프로젝트 gray 변수는 다크 모드에서 값이 바뀌어 한 규칙으로 두 테마가 맞춰진다.
+   DS가 :root와 [data-theme=dark] 둘 다에 값을 두고 뒤에 로드되므로 html:root로 우선순위를 올린다. */
+html:root {
+  --line-strong: var(--color-gray-400);
+  --ink-muted: var(--color-gray-500);
+}
+
+/* DS 입력창(Select·MultiSelect 등) 테두리를 앱 입력창(border-border)과 같은 색으로.
+   포커스·에러 테두리(.cds-input:focus-within / .is-error)는 우선순위가 더 높아 그대로 유지된다. */
+html .cds-input {
+  border-color: var(--color-border);
+}
+
+/* AppButton 테두리·투명 버튼의 빨간 글자 — 삭제처럼 위험한 동작 표시. DS secondary·ghost는 중립색이라 덮어쓴다.
+   DS ghost hover가 글자색을 바꾸는 규칙(.cds-btn--ghost:hover:not(:disabled))보다 우선하도록 .cds-btn을 겹쳐 쓴다. */
+html .cds-btn.app-btn--danger:not(:disabled) {
+  color: var(--danger-ink);
+}
+
+html .cds-btn.app-btn--danger:hover:not(:disabled) {
+  background: var(--danger-soft);
+}
+
+/* AppChip warning(시간초과)·purple(언어) — DS Badge에 없는 색이라 앱 색을 덧입힌다.
+   DS 색 규칙(.cds-badge--soft.cds-badge--neutral)보다 우선하도록 .cds-badge를 겹쳐 쓴다. */
+html .cds-badge.app-chip--warning {
+  background: var(--color-yellow-100);
+  color: var(--color-yellow-700);
+}
+
+html .cds-badge.app-chip--purple {
+  background: var(--color-purple-100);
+  color: var(--color-purple-700);
+}
+
+/* DS 입력창 hover 테두리(--ink-muted)가 기본 테두리보다 훨씬 진해 검게 보이므로 한 단계 진한 gray-400으로.
+   DS hover 규칙(.cds-input:hover:not(.is-disabled):not(.is-readonly))이 포커스·목록 열림·에러 테두리까지 덮으므로 셋은 원래 색을 지킨다.
+   목록이 열리면 포커스가 트리거 밖(목록)으로 가 :focus-within에 안 걸리므로 .is-open을 따로 둔다.
+   상태 테두리를 덮는 건 DS 버그(qlalfdmlghk1/cws-ds#1) — DS에서 고쳐지면 아래 두 규칙은 지운다. */
+html .cds-input:hover:not(.is-disabled):not(.is-readonly) {
+  border-color: var(--color-gray-400);
+}
+
+html .cds-input:focus-within:hover:not(.is-disabled):not(.is-readonly),
+html .cds-input.is-open:hover:not(.is-disabled):not(.is-readonly) {
+  border-color: var(--focus);
+}
+
+html .cds-input.is-error:hover:not(.is-disabled):not(.is-readonly) {
+  border-color: var(--danger);
 }

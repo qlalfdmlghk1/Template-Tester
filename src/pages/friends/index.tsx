@@ -4,6 +4,7 @@ import { useAuth } from "@/features/auth/model/useAuth";
 import Navbar from "@/widgets/Navbar/Navbar";
 import PageHeader from "@/shared/ui/molecules/PageHeader/PageHeader";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
+import { AppTextInput } from "@/shared/ui/atoms/AppTextInput";
 import AppFallback from "@/shared/ui/molecules/AppFallback/AppFallback";
 import { useFriendList } from "@/entities/friend/model/useFriendList";
 import { useFriendRequests } from "@/entities/friend/model/useFriendRequests";
@@ -262,13 +263,14 @@ export default function Friends() {
               <div className="mb-6">
                 <label className="block text-sm font-medium text-text mb-2">닉네임 또는 이메일로 검색</label>
                 <div className="flex gap-2">
-                  <input
+                  <AppTextInput
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                     placeholder="닉네임 또는 이메일을 입력하세요"
-                    className="flex-1 px-4 py-2 border border-border rounded-lg bg-surface text-text focus:outline-none focus:border-primary"
+                    aria-label="닉네임 또는 이메일로 검색"
+                    className="flex-1"
                   />
                   <AppButton variant="solid" onClick={handleSearch} disabled={isSearching}>
                     {isSearching ? "검색 중..." : "검색"}

@@ -1,5 +1,6 @@
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
 import { AppSelect } from "@/shared/ui/atoms/AppSelect";
+import { AppTextInput } from "@/shared/ui/atoms/AppTextInput";
 import { cn } from "@/shared/lib/cn";
 import {
   JOB_TAGS,
@@ -181,12 +182,12 @@ export function ApplicationFormDialog({
                 >
                   기업명 <span className="text-red-600">*</span>
                 </label>
-                <input
+                <AppTextInput
                   id="company-name"
                   value={form.companyName}
                   onChange={(event) => form.setCompanyName(event.target.value)}
                   placeholder="예: 현대오토에버"
-                  className={inputClass}
+                  size="sm"
                 />
               </div>
               <div>
@@ -196,12 +197,12 @@ export function ApplicationFormDialog({
                 >
                   위치
                 </label>
-                <input
+                <AppTextInput
                   id="location"
                   value={form.location}
                   onChange={(event) => form.setLocation(event.target.value)}
                   placeholder="예: 판교"
-                  className={inputClass}
+                  size="sm"
                 />
               </div>
             </div>
@@ -214,12 +215,12 @@ export function ApplicationFormDialog({
             >
               공고명
             </label>
-            <input
+            <AppTextInput
               id="posting-title"
               value={form.postingTitle}
               onChange={(event) => form.setPostingTitle(event.target.value)}
               placeholder="같은 기업에 여러 번 지원할 때 구분합니다 (예: 2026 상반기 수시)"
-              className={inputClass}
+              size="sm"
             />
             <p className="m-0 mt-1 text-xs text-textSecondary">
               비워두면 이 건이 속한 반기로 채워집니다.
@@ -233,13 +234,13 @@ export function ApplicationFormDialog({
             >
               공고 링크
             </label>
-            <input
+            <AppTextInput
               id="posting-url"
               type="url"
               value={form.postingUrl}
               onChange={(event) => form.setPostingUrl(event.target.value)}
               placeholder="https://"
-              className={inputClass}
+              size="sm"
             />
             <p className="m-0 mt-1 text-xs text-textSecondary">
               공고마다 따로 저장됩니다. 비워두면 기업에 등록된 링크를 대신 보여줍니다.
@@ -276,14 +277,14 @@ export function ApplicationFormDialog({
             >
               채용 인원
             </label>
-            <input
+            <AppTextInput
               id="headcount"
               type="number"
               min={0}
               value={form.headcount}
               onChange={(event) => form.setHeadcount(event.target.value)}
               placeholder="비워두면 미정으로 표시됩니다"
-              className={inputClass}
+              size="sm"
             />
           </div>
 
@@ -297,12 +298,12 @@ export function ApplicationFormDialog({
               >
                 미지원 사유
               </label>
-              <input
+              <AppTextInput
                 id="not-applied"
                 value={form.notAppliedReason}
                 onChange={(event) => form.setNotAppliedReason(event.target.value)}
                 placeholder="입력하면 미지원으로 분류되어 합격률에서 제외됩니다"
-                className={inputClass}
+                size="sm"
               />
             </div>
           )}

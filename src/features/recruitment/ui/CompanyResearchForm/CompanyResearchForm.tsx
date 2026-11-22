@@ -1,5 +1,6 @@
 import { useState } from "react";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
+import { AppTextInput } from "@/shared/ui/atoms/AppTextInput";
 import { cn } from "@/shared/lib/cn";
 import {
   COMPANY_CATEGORIES,
@@ -167,12 +168,12 @@ export function CompanyResearchForm({
             <label htmlFor="research-name" className={labelClass}>
               기업명 <span className="text-red-600">*</span>
             </label>
-            <input
+            <AppTextInput
               id="research-name"
               value={name}
               onChange={(event) => setName(event.target.value)}
               placeholder="예: 카카오페이"
-              className={inputClass}
+              size="sm"
             />
           </div>
 
@@ -180,12 +181,12 @@ export function CompanyResearchForm({
             <label htmlFor="research-job" className={labelClass}>
               관심 직무
             </label>
-            <input
+            <AppTextInput
               id="research-job"
               value={targetJob}
               onChange={(event) => setTargetJob(event.target.value)}
               placeholder="예: 프론트엔드 개발자"
-              className={inputClass}
+              size="sm"
             />
           </div>
 
@@ -193,13 +194,13 @@ export function CompanyResearchForm({
             <label htmlFor="research-url" className={labelClass}>
               공고 링크
             </label>
-            <input
+            <AppTextInput
               id="research-url"
               type="url"
               value={postingUrl}
               onChange={(event) => setPostingUrl(event.target.value)}
               placeholder="https://"
-              className={inputClass}
+              size="sm"
             />
           </div>
 
@@ -207,12 +208,12 @@ export function CompanyResearchForm({
             <label htmlFor="research-location" className={labelClass}>
               위치
             </label>
-            <input
+            <AppTextInput
               id="research-location"
               value={location}
               onChange={(event) => setLocation(event.target.value)}
               placeholder="예: 판교"
-              className={inputClass}
+              size="sm"
             />
           </div>
 
@@ -221,24 +222,20 @@ export function CompanyResearchForm({
               연봉{" "}
               <span className="font-normal text-textSecondary">(선택)</span>
             </label>
-            <div className="flex items-center gap-2">
-              <input
-                id="research-salary"
-                value={salary}
-                inputMode="numeric"
-                // 붙여넣기로 "4,000" 이 들어와도 숫자만 남긴다
-                onChange={(event) =>
-                  setSalary(event.target.value.replace(/[^0-9]/g, ""))
-                }
-                placeholder="예: 4000"
-                aria-describedby="research-salary-hint"
-                className={cn(inputClass, "flex-1 min-w-0")}
-              />
-              <span className="shrink-0 text-sm text-textSecondary">만원</span>
-            </div>
-            <p id="research-salary-hint" className="mt-1 text-xs text-textSecondary">
-              비워 두면 미정으로 둡니다. 공고마다 달라지므로 대략치로 적습니다.
-            </p>
+            {/* DS가 aria-describedby를 helperText 연결로 덮어쓰므로 안내는 helperText로 넘긴다 */}
+            <AppTextInput
+              id="research-salary"
+              size="sm"
+              value={salary}
+              inputMode="numeric"
+              // 붙여넣기로 "4,000" 이 들어와도 숫자만 남긴다
+              onChange={(event) =>
+                setSalary(event.target.value.replace(/[^0-9]/g, ""))
+              }
+              placeholder="예: 4000"
+              suffix="만원"
+              helperText="비워 두면 미정으로 둡니다. 공고마다 달라지므로 대략치로 적습니다."
+            />
           </div>
 
           <fieldset className="m-0 p-0 border-0">

@@ -1,4 +1,5 @@
 import { AppSelect } from "@/shared/ui/atoms/AppSelect";
+import { AppTextInput } from "@/shared/ui/atoms/AppTextInput";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
 import { formatHalfId } from "@/entities/job-application/model/half";
 import {
@@ -69,14 +70,15 @@ export function RecruitmentToolbar({
     // 너비는 레이아웃이 정하고 AppSelect는 fullWidth로 칸을 채우게 한다.
     <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
       {/* 좁은 폭에서는 한 줄을 통째로 쓴다 — 셀렉트와 나란히 두면 검색어가 잘려 보인다 */}
-      <input
+      <AppTextInput
         type="search"
+        // 옆에 서는 AppSelect와 같은 size로 높이를 맞춘다 — 한 줄에 나란히 놓이므로
+        size="sm"
         value={filter.keyword}
         onChange={(event) => onChangeFilter({ ...filter, keyword: event.target.value })}
         placeholder="기업명 검색"
         aria-label="기업명 검색"
-        // 높이·좌우 여백은 옆에 서는 AppSelect(size="sm")와 맞춘다 — 한 줄에 나란히 놓이므로
-        className="col-span-2 sm:col-span-1 sm:w-48 h-9 px-3 text-sm bg-surface text-text border border-border rounded-sm"
+        className="col-span-2 sm:col-span-1 sm:w-48"
       />
 
       <AppSelect

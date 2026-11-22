@@ -3,6 +3,7 @@ import Navbar from "@/widgets/Navbar/Navbar";
 import PageHeader from "@/shared/ui/molecules/PageHeader/PageHeader";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
 import AppSelect from "@/shared/ui/atoms/AppSelect/AppSelect";
+import AppTextInput from "@/shared/ui/atoms/AppTextInput/AppTextInput";
 import CodeEditor from "@/shared/ui/molecules/CodeEditor/CodeEditor";
 import { useTemplateForm } from "@/entities/template/model/useTemplateForm";
 import type { Category, TemplateType } from "@/entities/template/model/template.type";
@@ -64,13 +65,13 @@ export default function TemplateRegistration() {
           </div>
 
           <div className="mb-6">
-            <label className="block text-sm font-semibold text-text mb-2">템플릿 제목</label>
-            <input
+            <label htmlFor="template-title" className="block text-sm font-semibold text-text mb-2">템플릿 제목</label>
+            <AppTextInput
+              id="template-title"
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="예: 이분 탐색 알고리즘"
-              className="w-full px-4 py-2 bg-background border border-border rounded-lg text-text placeholder-textSecondary focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
