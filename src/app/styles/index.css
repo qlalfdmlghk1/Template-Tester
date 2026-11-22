@@ -274,10 +274,18 @@ html:root {
   --z-tooltip: theme("zIndex.tooltip");
 }
 
-/* DS 회색 토큰을 프로젝트 gray에 연결 — DS 기본값(--line-strong #8B8994 등)이 앱 회색보다 진해 DS 요소만 튀므로.
-   프로젝트 gray 변수는 다크 모드에서 값이 바뀌어 한 규칙으로 두 테마가 맞춰진다. [유지: 토큰 통일 전까지] */
+/* DS 색 토큰을 프로젝트 색 변수에 연결 — 프로젝트 변수는 다크 모드에서 값이 바뀌어 한 규칙으로 두 테마가 맞춰진다.
+   - 회색: DS 기본값(--line-strong #8B8994 등)이 앱 회색보다 진해 DS 요소만 튀었다
+   - 바탕·테두리·글자: 다크에서 DS(#131217 검은 회색)가 앱(#1E293B 남색) 카드 위에 떠 보였다 (모달·입력창·셀렉트)
+   - raised·hover: 앱에 같은 단계가 없어 앱 바탕에 글자색을 섞어 "바탕보다 한 단계 뜬" 색을 만든다 (뱃지·탭 숫자·hover)
+   [유지: 토큰 통일 전까지] */
 html:root {
+  --surface: var(--color-surface);
+  --surface-raised: color-mix(in srgb, var(--color-surface) 94%, var(--color-text));
+  --surface-hover: color-mix(in srgb, var(--color-surface) 88%, var(--color-text));
+  --line: var(--color-border);
   --line-strong: var(--color-gray-400);
+  --ink: var(--color-text);
   --ink-muted: var(--color-gray-500);
 }
 
@@ -307,6 +315,15 @@ html .cds-btn.app-btn--danger:hover:not(:disabled) {
    [유지: 어댑터 레이아웃 — DS에 actions 슬롯이 생기면 이전] */
 html .app-tabs .cds-tabs__list {
   border-bottom: 0;
+  /* 목록이 가로 스크롤 영역(overflow-x:auto)이라 탭의 margin-bottom:-1px만큼 밑줄이 잘리고
+     세로로 1px 스크롤됐다 — 그 1px을 안쪽 여백으로 받아 밑줄(2px)이 온전히 보이게 한다 */
+  padding-bottom: 1px;
+}
+
+/* AppModal size="xl" — DS 크기는 lg(800)까지라 넓은 표(시트 가져오기)를 위해 1000px로 넓힌다.
+   [유지: DS에 xl 크기가 생기면 이전] */
+html .cds-modal__panel.app-modal--xl {
+  max-width: 1000px;
 }
 
 /* AppChip warning(시간초과)·purple(언어) — DS AppBadge에 없는 색이라 앱 색을 덧입힌다.
