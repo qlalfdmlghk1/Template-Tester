@@ -91,7 +91,7 @@ export default function TemplateRegistration() {
           </div>
 
           <div className="mb-6">
-            <p className="m-0 block text-sm font-semibold text-text mb-3">템플릿 형태</p>
+            <p className="block text-sm font-semibold text-text mb-3">템플릿 형태</p>
             <AppRadioGroup<TemplateType>
               ariaLabel="템플릿 형태"
               direction="horizontal"

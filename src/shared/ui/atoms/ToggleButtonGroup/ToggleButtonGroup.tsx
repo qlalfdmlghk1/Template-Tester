@@ -1,3 +1,5 @@
+import { AppChip } from "@choi/ds";
+
 interface ToggleOption {
   value: string;
   label: string;
@@ -8,13 +10,24 @@ interface ToggleButtonGroupProps {
   value: string | string[];
   onChange: (value: string | string[]) => void;
   multiple?: boolean;
+  /** 묶음 이름이 되는 바깥 라벨 요소의 id */
+  ariaLabelledby?: string;
+  /** 화면 라벨이 없을 때 스크린리더가 읽을 묶음 이름 */
+  ariaLabel?: string;
 }
 
+/**
+ * 알약 모양 토글 묶음 — DS `AppChip`(선택형 칩) 기반.
+ * 단일 선택은 같은 칩을 다시 누르면 해제되고, multiple이면 여러 개를 켜고 끈다.
+ * 각 칩은 aria-pressed로 켜짐 상태를 알리고, 묶음은 role="group"으로 이름을 받는다.
+ */
 export default function ToggleButtonGroup({
   options,
   value,
   onChange,
   multiple = false,
+  ariaLabelledby,
+  ariaLabel,
 }: ToggleButtonGroupProps) {
   const isSelected = (optionValue: string) => {
     if (multiple) {
@@ -36,20 +49,11 @@ export default function ToggleButtonGroup({
   };
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div role="group" aria-labelledby={ariaLabelledby} aria-label={ariaLabel} className="flex flex-wrap gap-2">
       {options.map((option) => (
-        <button
-          key={option.value}
-          type="button"
-          onClick={() => handleClick(option.value)}
-          className={`px-3 py-1.5 text-sm rounded-full border transition-all ${
-            isSelected(option.value)
-              ? "bg-primary text-white border-primary"
-              : "bg-surface text-textSecondary border-border hover:border-primary hover:text-primary"
-          }`}
-        >
+        <AppChip key={option.value} selected={isSelected(option.value)} onClick={() => handleClick(option.value)}>
           {option.label}
-        </button>
+        </AppChip>
       ))}
     </div>
   );

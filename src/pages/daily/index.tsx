@@ -5,6 +5,7 @@ import PageHeader from "@/shared/ui/molecules/PageHeader/PageHeader";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
 import { AppTextInput } from "@/shared/ui/atoms/AppTextInput";
 import AppFallback from "@/shared/ui/molecules/AppFallback/AppFallback";
+import { AppTabs } from "@/shared/ui/atoms/AppTabs";
 import { useDailySubjects } from "@/entities/daily/model/useDailySubjects";
 import { useSubjectForm } from "@/entities/daily/model/useSubjectForm";
 import { useConceptRecommend } from "@/entities/daily/model/useConceptRecommend";
@@ -65,28 +66,16 @@ export default function Daily() {
         <PageHeader title="데일리 학습" />
 
         {/* 탭 */}
-        <div className="flex items-end gap-2 mt-6 border-b border-border">
-          <button
-            onClick={() => setActiveTab("list")}
-            className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
-              activeTab === "list"
-                ? "text-primary border-primary"
-                : "text-textSecondary border-transparent hover:text-text"
-            }`}
-          >
-            내 주제
-          </button>
-          <button
-            onClick={() => setActiveTab("stats")}
-            className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
-              activeTab === "stats"
-                ? "text-primary border-primary"
-                : "text-textSecondary border-transparent hover:text-text"
-            }`}
-          >
-            통계
-          </button>
-          <div className="ml-auto pb-2">
+        <AppTabs
+          className="mt-6"
+          ariaLabel="데일리 학습 보기"
+          items={[
+            { value: "list", label: "내 주제" },
+            { value: "stats", label: "통계" },
+          ]}
+          value={activeTab}
+          onChange={setActiveTab}
+          actions={
             <AppButton
               variant={activeTab === "create" ? "solid" : "outline"}
               size="sm"
@@ -94,8 +83,8 @@ export default function Daily() {
             >
               + 새 주제
             </AppButton>
-          </div>
-        </div>
+          }
+        />
 
         {/* 목록 탭 */}
         {activeTab === "list" && (

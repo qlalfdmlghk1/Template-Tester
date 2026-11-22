@@ -303,6 +303,12 @@ html .cds-btn.app-btn--danger:hover:not(:disabled) {
   background: var(--danger-soft);
 }
 
+/* AppTabs — 밑줄 선을 오른쪽 버튼(actions)까지 잇기 위해 어댑터 래퍼가 선을 그리고 DS 목록 선은 끈다.
+   [유지: 어댑터 레이아웃 — DS에 actions 슬롯이 생기면 이전] */
+html .app-tabs .cds-tabs__list {
+  border-bottom: 0;
+}
+
 /* AppChip warning(시간초과)·purple(언어) — DS AppBadge에 없는 색이라 앱 색을 덧입힌다.
    DS 색 규칙(.cds-badge--soft.cds-badge--neutral)보다 우선하도록 .cds-badge를 겹쳐 쓴다.
    [유지: 사용자 결정 — DS에 warning 톤이 생기면 이전] */

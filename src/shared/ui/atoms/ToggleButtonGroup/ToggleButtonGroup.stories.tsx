@@ -19,8 +19,19 @@ const manyOptions = [
 const meta: Meta<typeof ToggleButtonGroup> = {
   title: "shared/ui/atoms/ToggleButtonGroup",
   component: ToggleButtonGroup,
+  tags: ["autodocs"],
+  parameters: {
+    docs: {
+      description: {
+        component:
+          "DS `AppChip`(선택형 칩) 기반 토글 묶음. 단일 선택은 켜진 칩을 다시 누르면 해제되고, multiple이면 여러 개를 켜고 끈다. 켜진 칩은 체크 표시 + aria-pressed.",
+      },
+    },
+  },
   argTypes: {
     multiple: { control: "boolean", description: "다중 선택 모드" },
+    ariaLabelledby: { control: "text", description: "묶음 이름이 되는 바깥 라벨 요소의 id" },
+    ariaLabel: { control: "text", description: "화면 라벨이 없을 때 스크린리더용 묶음 이름" },
   },
   args: {
     options: sampleOptions,

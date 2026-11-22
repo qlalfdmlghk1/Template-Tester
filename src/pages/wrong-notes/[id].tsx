@@ -187,16 +187,18 @@ export default function WrongNoteDetail() {
 
             <div className="flex w-full justify-between items-start">
               <div className="w-[50%]">
-                <label className="block text-sm font-medium text-text leading-[30px] mb-2">제출 결과</label>
+                <p id="wrong-note-result-label" className="block text-sm font-medium text-text leading-[30px] mb-2">제출 결과</p>
                 <ToggleButtonGroup
+                  ariaLabelledby="wrong-note-result-label"
                   options={resultOptions}
                   value={formData.result}
                   onChange={(value) => handleInputChange("result", value)}
                 />
               </div>
               <div className="w-[50%]">
-                <label className="block text-sm font-medium text-text leading-[30px] mb-2">작성 이유 (복수 선택 가능)</label>
+                <p id="wrong-note-tags-label" className="block text-sm font-medium text-text leading-[30px] mb-2">작성 이유 (복수 선택 가능)</p>
                 <ToggleButtonGroup
+                  ariaLabelledby="wrong-note-tags-label"
                   options={tagOptions}
                   value={formData.tags}
                   onChange={(value) => handleInputChange("tags", value)}

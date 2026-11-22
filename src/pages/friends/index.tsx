@@ -6,6 +6,7 @@ import PageHeader from "@/shared/ui/molecules/PageHeader/PageHeader";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
 import { AppTextInput } from "@/shared/ui/atoms/AppTextInput";
 import AppFallback from "@/shared/ui/molecules/AppFallback/AppFallback";
+import { AppTabs } from "@/shared/ui/atoms/AppTabs";
 import { useFriendList } from "@/entities/friend/model/useFriendList";
 import { useFriendRequests } from "@/entities/friend/model/useFriendRequests";
 import { useFriendSearch } from "@/entities/friend/model/useFriendSearch";
@@ -70,43 +71,30 @@ export default function Friends() {
         <PageHeader title="친구" />
 
         {/* 탭 네비게이션 */}
-        <div className="flex gap-2 mt-6 border-b border-border">
-          <button
-            onClick={() => setActiveTab("list")}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === "list"
-                ? "border-primary text-primary"
-                : "border-transparent text-textSecondary hover:text-text"
-            }`}
-          >
-            친구 목록
-          </button>
-          <button
-            onClick={() => setActiveTab("requests")}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${
-              activeTab === "requests"
-                ? "border-primary text-primary"
-                : "border-transparent text-textSecondary hover:text-text"
-            }`}
-          >
-            요청 관리
-            {receivedRequests.length > 0 && (
-              <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                {receivedRequests.length}
-              </span>
-            )}
-          </button>
-          <button
-            onClick={() => setActiveTab("add")}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === "add"
-                ? "border-primary text-primary"
-                : "border-transparent text-textSecondary hover:text-text"
-            }`}
-          >
-            친구 추가
-          </button>
-        </div>
+        <AppTabs
+          className="mt-6"
+          ariaLabel="친구 메뉴"
+          items={[
+            { value: "list", label: "친구 목록" },
+            {
+              value: "requests",
+              // 받은 요청은 알림이라 DS 숫자 배지 대신 빨간 배지를 유지한다
+              label: (
+                <span className="flex items-center gap-2">
+                  요청 관리
+                  {receivedRequests.length > 0 && (
+                    <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                      {receivedRequests.length}
+                    </span>
+                  )}
+                </span>
+              ),
+            },
+            { value: "add", label: "친구 추가" },
+          ]}
+          value={activeTab}
+          onChange={setActiveTab}
+        />
 
         {/* 탭 컨텐츠 */}
         <div className="mt-6">
