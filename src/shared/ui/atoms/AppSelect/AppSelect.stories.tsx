@@ -27,18 +27,14 @@ const meta: Meta<typeof AppSelect> = {
     state: {
       control: "select",
       options: ["default", "error"],
-      description: "상태 (default, error)",
+      description: "상태 (default, error). error는 hint가 있어야 표시된다",
     },
     multiple: { control: "boolean", description: "다중 선택 여부" },
-    showSelectAll: {
-      control: "boolean",
-      description: '다중 선택 시 "전체 선택" 옵션 표시 여부',
-    },
     width: { control: "text", description: '셀렉트 너비 (예: "200px")' },
     fullWidth: { control: "boolean", description: "전체 너비" },
     hint: {
       control: "text",
-      description: "하단 힌트 텍스트 (error 상태일 때만 표시)",
+      description: "하단 에러 문구 (error 상태일 때만 표시)",
     },
   },
   args: {
@@ -181,23 +177,6 @@ export const Disabled: Story = {
   },
 };
 
-// --- Error State ---
-
-export const ErrorState: Story = {
-  render: (args) => {
-    const [value, setValue] = useState<SelectValue | undefined>();
-    return <AppSelect {...args} value={value} onChange={(v) => setValue(v as SelectValue)} state="error" placeholder="에러 상태" />;
-  },
-  parameters: {
-    docs: {
-      description: { story: "에러 상태" },
-      source: {
-        code: `<AppSelect options={options} state="error" placeholder="에러 상태" />`,
-      },
-    },
-  },
-};
-
 // --- With Hint ---
 
 export const WithHint: Story = {
@@ -217,7 +196,7 @@ export const WithHint: Story = {
   parameters: {
     docs: {
       description: {
-        story: "hint prop은 error 상태일 때만 셀렉트 하단에 안내 텍스트를 표시합니다.",
+        story: "state가 error이고 hint가 있으면 테두리가 에러색이 되고 하단에 문구가 나옵니다.",
       },
       source: {
         code: `<AppSelect options={options} state="error" hint="지표를 선택해주세요." />`,
@@ -251,90 +230,6 @@ export const Multiple: Story = {
       description: { story: "다중 선택 모드" },
       source: {
         code: `<AppSelect value={selected} onChange={setSelected} options={options} multiple placeholder="여러 개 선택" />`,
-      },
-    },
-  },
-};
-
-// --- Multiple with Select All ---
-
-export const MultipleWithSelectAll: Story = {
-  render: (args) => {
-    const [value, setValue] = useState<SelectValue[]>([]);
-    return (
-      <div>
-        <AppSelect
-          {...args}
-          value={value}
-          onChange={(v) => setValue(v as SelectValue[])}
-          multiple
-          showSelectAll
-          placeholder="여러 개 선택"
-        />
-        <p className="mt-2 text-xs text-gray-500">
-          선택된 값: {value.length > 0 ? value.join(", ") : "없음"}
-        </p>
-      </div>
-    );
-  },
-  parameters: {
-    docs: {
-      description: {
-        story: '다중 선택 모드에서 "전체 선택" 옵션을 표시합니다. disabled가 아닌 옵션만 전체 선택/해제됩니다.',
-      },
-      source: {
-        code: `<AppSelect value={selected} onChange={setSelected} options={options} multiple showSelectAll placeholder="여러 개 선택" />`,
-      },
-    },
-  },
-};
-
-// --- Multiple Select All with Disabled Options ---
-
-export const MultipleSelectAllWithDisabled: Story = {
-  render: () => {
-    const [value, setValue] = useState<SelectValue[]>([]);
-    const options: SelectOption[] = [
-      { value: "option1", label: "옵션 1" },
-      { value: "option2", label: "옵션 2 (비활성화)", disabled: true },
-      { value: "option3", label: "옵션 3" },
-      { value: "option4", label: "옵션 4 (비활성화)", disabled: true },
-      { value: "option5", label: "옵션 5" },
-    ];
-    return (
-      <div>
-        <AppSelect
-          options={options}
-          value={value}
-          onChange={(v) => setValue(v as SelectValue[])}
-          multiple
-          showSelectAll
-          placeholder="여러 개 선택"
-        />
-        <p className="mt-2 text-xs text-gray-500">
-          선택된 값: {value.length > 0 ? value.join(", ") : "없음"}
-        </p>
-        <p className="mt-1 text-xs text-gray-400">
-          "전체 선택"은 disabled가 아닌 옵션(옵션 1, 3, 5)만 선택/해제합니다.
-        </p>
-      </div>
-    );
-  },
-  parameters: {
-    docs: {
-      description: {
-        story: 'disabled 옵션이 있을 때 "전체 선택"은 disabled가 아닌 옵션만 선택/해제합니다.',
-      },
-      source: {
-        code: `
-const options = [
-  { value: "option1", label: "옵션 1" },
-  { value: "option2", label: "옵션 2", disabled: true },
-  { value: "option3", label: "옵션 3" },
-];
-
-<AppSelect value={selected} onChange={setSelected} options={options} multiple showSelectAll />
-        `.trim(),
       },
     },
   },
@@ -403,7 +298,7 @@ export const AllStates: Story = {
         </div>
         <div>
           <p className="mb-2 text-sm font-semibold text-gray-800">Error</p>
-          <AppSelect options={defaultOptions} value={errorVal} onChange={(v) => setErrorVal(v as SelectValue)} state="error" placeholder="에러 상태" />
+          <AppSelect options={defaultOptions} value={errorVal} onChange={(v) => setErrorVal(v as SelectValue)} state="error" hint="필수 항목입니다." placeholder="에러 상태" />
         </div>
       </div>
     );

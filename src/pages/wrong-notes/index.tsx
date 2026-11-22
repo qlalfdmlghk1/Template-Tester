@@ -6,6 +6,8 @@ import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
 import AppFallback from "@/shared/ui/molecules/AppFallback/AppFallback";
 import AppChip from "@/shared/ui/atoms/AppChip/AppChip";
 import AppSelect from "@/shared/ui/atoms/AppSelect/AppSelect";
+import AppTextInput from "@/shared/ui/atoms/AppTextInput/AppTextInput";
+import AppDatePicker from "@/shared/ui/atoms/AppDatePicker/AppDatePicker";
 import AppPagination from "@/shared/ui/molecules/AppPagination/AppPagination";
 import ToggleButtonGroup from "@/shared/ui/atoms/ToggleButtonGroup/ToggleButtonGroup";
 import CodeEditor from "@/shared/ui/molecules/CodeEditor/CodeEditor";
@@ -170,67 +172,62 @@ export default function WrongNotes() {
           <div className="mt-6">
             {notes.length > 0 && (
               <div className="flex flex-col mb-3 sm:mb-4 p-3 sm:p-4 bg-surface border border-border rounded-lg gap-3 sm:gap-4">
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="문제 이름 또는 문제 번호로 검색..."
-                    className="w-full px-4 py-2 pl-10 text-sm outline outline-1 outline-border rounded-md bg-surface text-text
-                      hover:outline-primary focus:outline-primary focus:ring-2 focus:ring-blue-200 transition-all"
-                  />
-                  <svg
-                    className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-textSecondary"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    />
-                  </svg>
-                </div>
+                <AppTextInput
+                  type="text"
+                  size="md"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="문제 이름 또는 문제 번호로 검색..."
+                  aria-label="문제 검색"
+                  iconLeft={
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                      />
+                    </svg>
+                  }
+                />
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3">
                   <AppSelect
                     options={platformOptions}
                     value={filters.platform}
                     onChange={(value) => handleFilterChange("platform", value as string)}
                     placeholder="플랫폼"
-                    size="sm"
+                    size="md"
                   />
                   <AppSelect
                     options={categoryOptions}
                     value={filters.category}
                     onChange={(value) => handleFilterChange("category", value as string)}
                     placeholder="알고리즘"
-                    size="sm"
+                    size="md"
                   />
                   <AppSelect
                     options={languageOptions}
                     value={filters.language}
                     onChange={(value) => handleFilterChange("language", value as string)}
                     placeholder="언어"
-                    size="sm"
+                    size="md"
                   />
                   <AppSelect
                     options={resultOptions}
                     value={filters.result}
                     onChange={(value) => handleFilterChange("result", value as string)}
                     placeholder="결과"
-                    size="sm"
+                    size="md"
                   />
                   <AppSelect
                     options={tagOptions}
                     value={filters.tag}
                     onChange={(value) => handleFilterChange("tag", value as string)}
                     placeholder="작성 이유"
-                    size="sm"
+                    size="md"
                   />
                   {hasActiveFilters && (
-                    <AppButton variant="ghost" size="sm" onClick={clearFilters}>
+                    <AppButton variant="ghost" size="md" onClick={clearFilters}>
                       초기화
                     </AppButton>
                   )}
@@ -252,7 +249,7 @@ export default function WrongNotes() {
                 placeholder="정렬순 선택"
                 width="140px"
                 className="sm:!w-[160px]"
-                size="sm"
+                size="md"
               />
             </div>
 
@@ -360,29 +357,24 @@ export default function WrongNotes() {
           <div className="mt-6">
             {friendNotes.length > 0 && (
               <div className="flex flex-col mb-3 sm:mb-4 p-3 sm:p-4 bg-surface border border-border rounded-lg gap-3 sm:gap-4">
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="문제 이름 또는 문제 번호로 검색..."
-                    className="w-full px-4 py-2 pl-10 text-sm outline outline-1 outline-border rounded-md bg-surface text-text
-                      hover:outline-primary focus:outline-primary focus:ring-2 focus:ring-blue-200 transition-all"
-                  />
-                  <svg
-                    className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-textSecondary"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    />
-                  </svg>
-                </div>
+                <AppTextInput
+                  type="text"
+                  size="md"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="문제 이름 또는 문제 번호로 검색..."
+                  aria-label="문제 검색"
+                  iconLeft={
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                      />
+                    </svg>
+                  }
+                />
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3">
                   <AppSelect
                     options={friendList.map((f) => ({
@@ -392,35 +384,35 @@ export default function WrongNotes() {
                     value={friendFilter}
                     onChange={(value) => setFriendFilter(value as string)}
                     placeholder="모든 친구"
-                    size="sm"
+                    size="md"
                   />
                   <AppSelect
                     options={platformOptions}
                     value={filters.platform}
                     onChange={(value) => handleFilterChange("platform", value as string)}
                     placeholder="플랫폼"
-                    size="sm"
+                    size="md"
                   />
                   <AppSelect
                     options={categoryOptions}
                     value={filters.category}
                     onChange={(value) => handleFilterChange("category", value as string)}
                     placeholder="알고리즘"
-                    size="sm"
+                    size="md"
                   />
                   <AppSelect
                     options={languageOptions}
                     value={filters.language}
                     onChange={(value) => handleFilterChange("language", value as string)}
                     placeholder="언어"
-                    size="sm"
+                    size="md"
                   />
                   <AppSelect
                     options={resultOptions}
                     value={filters.result}
                     onChange={(value) => handleFilterChange("result", value as string)}
                     placeholder="결과"
-                    size="sm"
+                    size="md"
                   />
                 </div>
                 <div className="flex justify-between items-center">
@@ -432,7 +424,7 @@ export default function WrongNotes() {
                     searchQuery) && (
                     <AppButton
                       variant="ghost"
-                      size="sm"
+                      size="md"
                       onClick={() => {
                         setFriendFilter("");
                         clearFilters();
@@ -459,7 +451,7 @@ export default function WrongNotes() {
                 placeholder="정렬순 선택"
                 width="140px"
                 className="sm:!w-[160px]"
-                size="sm"
+                size="md"
               />
             </div>
 
@@ -561,14 +553,13 @@ export default function WrongNotes() {
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-4">
               <div>
-                <label className="block text-sm font-medium text-text leading-[30px] mb-2">문제 이름</label>
-                <input
+                <label htmlFor="wrong-note-title" className="block text-sm font-medium text-text leading-[30px] mb-2">문제 이름</label>
+                <AppTextInput
+                  id="wrong-note-title"
                   type="text"
                   value={formData.title}
                   onChange={(e) => handleInputChange("title", e.target.value)}
                   placeholder="예: 두 수의 합, 타겟 넘버 등"
-                  className="w-full px-4 py-2 text-sm outline outline-1 outline-border rounded-md bg-surface text-text
-                    hover:outline-primary focus:outline-primary focus:ring-2 focus:ring-blue-200 transition-all"
                 />
               </div>
               <div>
@@ -579,32 +570,29 @@ export default function WrongNotes() {
                   onChange={(value) => handleInputChange("language", value as string)}
                   placeholder="언어 선택"
                   fullWidth
-                  size="sm"
+                  size="md"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-text leading-[30px] mb-2">문제 링크</label>
-              <input
+              <label htmlFor="wrong-note-link" className="block text-sm font-medium text-text leading-[30px] mb-2">문제 링크</label>
+              <AppTextInput
+                id="wrong-note-link"
                 type="url"
                 value={formData.link}
                 onChange={(e) => handleInputChange("link", e.target.value)}
                 placeholder="https://programmers.co.kr/..."
-                className="w-full px-4 py-2 text-sm outline outline-1 outline-border rounded-md bg-surface text-text
-                  hover:outline-primary focus:outline-primary focus:ring-2 focus:ring-blue-200 transition-all"
               />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
-                <label className="block text-sm font-medium text-text leading-[30px] mb-2">날짜</label>
-                <input
-                  type="date"
+                <label htmlFor="wrong-note-date" className="block text-sm font-medium text-text leading-[30px] mb-2">날짜</label>
+                <AppDatePicker
+                  id="wrong-note-date"
                   value={formData.date}
-                  onChange={(e) => handleInputChange("date", e.target.value)}
-                  className="w-full px-4 py-2 text-sm outline outline-1 outline-border rounded-md bg-surface text-text
-                    hover:outline-primary focus:outline-primary focus:ring-2 focus:ring-blue-200 transition-all"
+                  onChange={(value) => handleInputChange("date", value)}
                 />
               </div>
               <div>
@@ -615,7 +603,7 @@ export default function WrongNotes() {
                   onChange={(value) => handleInputChange("category", value as string)}
                   placeholder="알고리즘 선택"
                   fullWidth
-                  size="sm"
+                  size="md"
                 />
               </div>
               <div>
@@ -626,7 +614,7 @@ export default function WrongNotes() {
                   onChange={(value) => handlePlatformChange(value as string)}
                   placeholder="플랫폼 선택"
                   fullWidth
-                  size="sm"
+                  size="md"
                 />
               </div>
               <div>
@@ -638,7 +626,7 @@ export default function WrongNotes() {
                   placeholder={formData.platform ? "등급 선택" : "플랫폼을 먼저 선택"}
                   disabled={!formData.platform}
                   fullWidth
-                  size="sm"
+                  size="md"
                 />
               </div>
             </div>
@@ -668,13 +656,13 @@ export default function WrongNotes() {
                 <label className="block text-sm font-medium text-text leading-[30px]">내 풀이</label>
                 <div className="border border-border rounded-lg p-3 bg-surface">
                   <div className="mb-2">
-                    <input
+                    <AppTextInput
                       type="text"
+                      size="sm"
                       value={formData.myCodeLabel}
                       onChange={(e) => handleInputChange("myCodeLabel", e.target.value)}
                       placeholder="라벨 (예: 브루트포스, 1차 시도 등)"
-                      className="w-full px-3 py-1.5 text-xs outline outline-1 outline-border rounded-md bg-background text-text
-                        hover:outline-primary focus:outline-primary focus:ring-2 focus:ring-blue-200 transition-all"
+                      aria-label="내 풀이 라벨"
                     />
                   </div>
                   <CodeEditor
@@ -703,13 +691,14 @@ export default function WrongNotes() {
                 {formData.solutions.map((solution, index) => (
                   <div key={index} className="relative border border-border rounded-lg p-3 bg-surface">
                     <div className="flex items-center gap-2 mb-2">
-                      <input
+                      <AppTextInput
                         type="text"
+                        size="sm"
+                        className="flex-1"
                         value={solution.label}
                         onChange={(e) => updateSolution(index, "label", e.target.value)}
                         placeholder={`풀이 ${index + 1} 라벨 (예: BFS, DP 등)`}
-                        className="flex-1 px-3 py-1.5 text-xs outline outline-1 outline-border rounded-md bg-background text-text
-                          hover:outline-primary focus:outline-primary focus:ring-2 focus:ring-blue-200 transition-all"
+                        aria-label={`풀이 ${index + 1} 라벨`}
                       />
                       {formData.solutions.length > 1 && (
                         <button

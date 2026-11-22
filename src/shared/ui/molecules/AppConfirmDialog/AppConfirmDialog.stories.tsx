@@ -10,7 +10,7 @@ const meta: Meta<typeof AppConfirmDialog> = {
   argTypes: {
     open: { control: "boolean", description: "열림 여부" },
     title: { control: "text", description: "제목" },
-    description: { control: "text", description: "부연 설명" },
+    description: { control: "text", description: "부연 설명 (줄바꿈 유지)" },
     confirmText: { control: "text", description: "확인 버튼 문구" },
     cancelText: { control: "text", description: "취소 버튼 문구" },
     danger: {

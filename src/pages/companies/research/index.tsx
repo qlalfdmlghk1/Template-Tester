@@ -4,6 +4,7 @@ import PageHeader from "@/shared/ui/molecules/PageHeader/PageHeader";
 import AppFallback from "@/shared/ui/molecules/AppFallback/AppFallback";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
 import { AppSwitch } from "@/shared/ui/atoms/AppSwitch";
+import { AppTextInput } from "@/shared/ui/atoms/AppTextInput";
 import { cn } from "@/shared/lib/cn";
 import {
   COMPANY_CATEGORIES,
@@ -66,13 +67,14 @@ export default function CompanyResearch() {
         ) : (
           <div className="flex flex-col gap-4">
             <div className="flex flex-wrap items-center gap-2">
-              <input
+              <AppTextInput
                 type="search"
+                size="sm"
                 value={page.keyword}
                 onChange={(event) => page.setKeyword(event.target.value)}
                 placeholder="기업명·직무·직무 설명·자격 요건 검색"
                 aria-label="기업 검색"
-                className="flex-1 min-w-[200px] max-w-[360px] px-3 py-1.5 text-sm bg-surface text-text border border-border rounded-sm"
+                className="flex-1 min-w-[200px] max-w-[360px]"
               />
 
               {/* 분류와 지망 등급은 서로 다른 축의 필터다. 같은 간격으로 늘어놓으면

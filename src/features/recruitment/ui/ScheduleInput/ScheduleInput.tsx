@@ -1,4 +1,6 @@
 import { AppSelect } from "@/shared/ui/atoms/AppSelect";
+import { AppTextInput } from "@/shared/ui/atoms/AppTextInput";
+import { AppDatePicker } from "@/shared/ui/atoms/AppDatePicker";
 import { ROUGH_PARTS, ROUGH_PART_LABELS } from "@/entities/job-application/model/schedule";
 import type { RoughPart, Schedule } from "@/entities/job-application/model/schedule";
 
@@ -63,17 +65,18 @@ export function ScheduleInput({ value, defaultYear, onChange }: ScheduleInputPro
 
       {value?.kind === "exact" && (
         <div className="flex gap-2">
-          <input
-            type="date"
-            aria-label="일자"
+          <AppDatePicker
+            size="sm"
+            placeholder="일자"
+            ariaLabel="일자"
             value={splitDateTime(value.at).date}
-            onChange={(event) =>
+            onChange={(date) =>
               onChange({
                 ...value,
-                at: joinDateTime(event.target.value, splitDateTime(value.at).time),
+                at: joinDateTime(date, splitDateTime(value.at).time),
               })
             }
-            className="flex-1 px-2 py-1.5 text-sm bg-surface text-text border border-border rounded-sm"
+            className="flex-1 min-w-0"
           />
           <input
             type="time"
@@ -86,39 +89,43 @@ export function ScheduleInput({ value, defaultYear, onChange }: ScheduleInputPro
                 hasTime: Boolean(event.target.value),
               })
             }
-            className="w-[110px] px-2 py-1.5 text-sm bg-surface text-text border border-border rounded-sm"
+            // DS에 시간 입력이 없어 기본 input을 두고, 옆 AppDatePicker(size="sm", 32px)와 높이·테두리를 맞춘다
+            className="w-[110px] h-8 px-3 text-sm bg-surface text-text border border-border rounded-md"
           />
         </div>
       )}
 
       {value?.kind === "range" && (
         <div className="flex items-center gap-2">
-          <input
-            type="date"
-            aria-label="시작일"
+          <AppDatePicker
+            size="sm"
+            placeholder="시작일"
+            ariaLabel="시작일"
             value={value.start}
-            onChange={(event) => onChange({ ...value, start: event.target.value })}
-            className="flex-1 px-2 py-1.5 text-sm bg-surface text-text border border-border rounded-sm"
+            onChange={(start) => onChange({ ...value, start })}
+            className="flex-1 min-w-0"
           />
           <span className="text-textSecondary">~</span>
-          <input
-            type="date"
-            aria-label="종료일"
+          <AppDatePicker
+            size="sm"
+            placeholder="종료일"
+            ariaLabel="종료일"
             value={value.end}
-            onChange={(event) => onChange({ ...value, end: event.target.value })}
-            className="flex-1 px-2 py-1.5 text-sm bg-surface text-text border border-border rounded-sm"
+            onChange={(end) => onChange({ ...value, end })}
+            className="flex-1 min-w-0"
           />
         </div>
       )}
 
       {value?.kind === "rough" && (
         <div className="flex gap-2">
-          <input
+          <AppTextInput
             type="number"
+            size="sm"
             aria-label="연도"
             value={value.year}
             onChange={(event) => onChange({ ...value, year: Number(event.target.value) })}
-            className="w-[90px] px-2 py-1.5 text-sm bg-surface text-text border border-border rounded-sm"
+            className="w-[90px] shrink-0"
           />
           <AppSelect
             size="sm"

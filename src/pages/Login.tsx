@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { signInWithGoogle, signInWithGithub, signInWithUsername } from "@/features/auth/api/auth.api";
 import { useNavigate, Link } from "react-router-dom";
+import { AppTextInput } from "@/shared/ui/atoms/AppTextInput";
 
 function Login() {
   const [loading, setLoading] = useState(false);
@@ -79,13 +80,12 @@ function Login() {
                 <label htmlFor="username" className="block text-sm font-medium text-text mb-2">
                   아이디
                 </label>
-                <input
+                <AppTextInput
                   id="username"
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="아이디를 입력하세요"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                   disabled={loading}
                 />
               </div>
@@ -93,13 +93,12 @@ function Login() {
                 <label htmlFor="password" className="block text-sm font-medium text-text mb-2">
                   비밀번호
                 </label>
-                <input
+                <AppTextInput
                   id="password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="비밀번호를 입력하세요"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                   disabled={loading}
                 />
               </div>

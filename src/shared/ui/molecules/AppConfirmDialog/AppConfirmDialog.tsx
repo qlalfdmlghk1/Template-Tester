@@ -1,9 +1,9 @@
-import { useEffect, useRef } from "react";
-import AppButton from "../../atoms/AppButton/AppButton";
+import { ConfirmModal } from "@choi/ds";
 
 export interface AppConfirmDialogProps {
   open: boolean;
   title: string;
+  /** 줄바꿈(\n)은 그대로 표시한다 */
   description?: string;
   confirmText?: string;
   cancelText?: string;
@@ -16,7 +16,11 @@ export interface AppConfirmDialogProps {
   onCancel: () => void;
 }
 
-/** 되돌리기 어려운 동작 전에 한 번 묻는 모달 */
+/**
+ * 되돌리기 어려운 동작 전에 한 번 묻는 모달 — DS `ConfirmModal` 어댑터.
+ * 포커스(danger면 취소 버튼), Esc 닫기, 처리 중 닫기 차단은 DS가 맡는다.
+ * DS 정책상 바깥(어두운 막) 클릭으로는 닫히지 않는다.
+ */
 export default function AppConfirmDialog({
   open,
   title,
@@ -29,67 +33,21 @@ export default function AppConfirmDialog({
   onConfirm,
   onCancel,
 }: AppConfirmDialogProps) {
-  // AppButton은 ref를 노출하지 않으므로 감싼 요소에서 버튼을 찾아 포커스한다
-  const actionsRef = useRef<HTMLDivElement>(null);
-
-  // 열릴 때 확인 버튼으로 포커스를 옮기고, ESC로 닫는다
-  useEffect(() => {
-    if (!open) return;
-
-    // 되돌리기 어려운 동작은 확인 버튼에 포커스를 주지 않는다.
-    // 열자마자 Enter 한 번에 삭제가 실행되는 것을 막기 위해 취소 쪽에 둔다.
-    const selector = danger ? "button:first-of-type" : "button:last-of-type";
-    actionsRef.current?.querySelector<HTMLButtonElement>(selector)?.focus();
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onCancel();
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [open, danger, onCancel]);
-
-  if (!open) return null;
-
   return (
-    <div className="fixed inset-0 z-modal flex items-center justify-center p-4">
-      <div
-        className="absolute inset-0 bg-black/40"
-        onClick={onCancel}
-        aria-hidden="true"
-      />
-
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="confirm-dialog-title"
-        className="relative w-full max-w-[400px] p-5 bg-surface border border-border rounded-lg shadow-[0_12px_32px_rgba(0,0,0,0.18)]"
-      >
-        <h2 id="confirm-dialog-title" className="m-0 mb-2 text-base font-semibold text-text">
-          {title}
-        </h2>
-        {description && (
-          <p className="m-0 mb-3 text-sm text-textSecondary whitespace-pre-wrap">
-            {description}
-          </p>
-        )}
-
-        {children && <div className="mb-4">{children}</div>}
-
-        <div ref={actionsRef} className="flex justify-end gap-2">
-          <AppButton variant="outline" color="gray" size="sm" onClick={onCancel}>
-            {cancelText}
-          </AppButton>
-          <AppButton
-            color={danger ? "red" : "primary"}
-            size="sm"
-            loading={loading}
-            onClick={onConfirm}
-          >
-            {confirmText}
-          </AppButton>
-        </div>
-      </div>
-    </div>
+    <ConfirmModal
+      open={open}
+      title={title}
+      description={
+        description && <span className="whitespace-pre-wrap">{description}</span>
+      }
+      confirmLabel={confirmText}
+      cancelLabel={cancelText}
+      tone={danger ? "danger" : "default"}
+      loading={loading}
+      onConfirm={onConfirm}
+      onClose={onCancel}
+    >
+      {children}
+    </ConfirmModal>
   );
 }

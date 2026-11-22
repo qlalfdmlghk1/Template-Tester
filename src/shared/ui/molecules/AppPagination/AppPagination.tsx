@@ -1,4 +1,4 @@
-import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
+import { Pagination } from "@choi/ds";
 import AppSelect from "@/shared/ui/atoms/AppSelect/AppSelect";
 
 interface AppPaginationProps {
@@ -10,24 +10,6 @@ interface AppPaginationProps {
   pageSizeOptions?: number[];
 }
 
-function getPageNumbers(currentPage: number, totalPages: number): (number | "...")[] {
-  const delta = 2;
-  const pages: (number | "...")[] = [];
-  const start = Math.max(1, currentPage - delta);
-  const end = Math.min(totalPages, currentPage + delta);
-
-  if (start > 1) {
-    pages.push(1);
-    if (start > 2) pages.push("...");
-  }
-  for (let i = start; i <= end; i++) pages.push(i);
-  if (end < totalPages) {
-    if (end < totalPages - 1) pages.push("...");
-    pages.push(totalPages);
-  }
-  return pages;
-}
-
 export default function AppPagination({
   currentPage,
   totalPages,
@@ -37,8 +19,6 @@ export default function AppPagination({
   pageSizeOptions = [10, 20, 50],
 }: AppPaginationProps) {
   if (totalPages <= 1 && !onPageSizeChange) return null;
-
-  const pageNumbers = getPageNumbers(currentPage, totalPages);
 
   return (
     <div className="relative flex flex-col sm:flex-row items-center justify-center gap-3 mt-6">
@@ -56,43 +36,13 @@ export default function AppPagination({
       )}
 
       {totalPages > 1 && (
-        <div className="flex items-center gap-1">
-          <AppButton
-            variant="outline"
-            color="gray"
-            size="sm"
-            onClick={() => onPageChange(currentPage - 1)}
-            disabled={currentPage <= 1}
-          >
-            이전
-          </AppButton>
-          {pageNumbers.map((p, i) =>
-            p === "..." ? (
-              <span key={`ellipsis-${i}`} className="px-2 text-textSecondary text-sm">
-                ...
-              </span>
-            ) : (
-              <AppButton
-                key={p}
-                variant={p === currentPage ? "solid" : "ghost"}
-                color="primary"
-                size="sm"
-                onClick={() => onPageChange(p)}
-              >
-                {p}
-              </AppButton>
-            ),
-          )}
-          <AppButton
-            variant="outline"
-            color="gray"
-            size="sm"
-            onClick={() => onPageChange(currentPage + 1)}
-            disabled={currentPage >= totalPages}
-          >
-            다음
-          </AppButton>
-        </div>
+        <Pagination
+          pageCount={totalPages}
+          page={currentPage}
+          onChange={onPageChange}
+          siblingCount={2}
+          size="sm"
+        />
       )}
     </div>
   );

@@ -4,6 +4,8 @@ import PageHeader from "@/shared/ui/molecules/PageHeader/PageHeader";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
 import AppChip from "@/shared/ui/atoms/AppChip/AppChip";
 import AppSelect from "@/shared/ui/atoms/AppSelect/AppSelect";
+import AppTextInput from "@/shared/ui/atoms/AppTextInput/AppTextInput";
+import AppDatePicker from "@/shared/ui/atoms/AppDatePicker/AppDatePicker";
 import ToggleButtonGroup from "@/shared/ui/atoms/ToggleButtonGroup/ToggleButtonGroup";
 import CodeEditor from "@/shared/ui/molecules/CodeEditor/CodeEditor";
 import { useWrongNoteDetail } from "@/entities/wrong-note/model/useWrongNoteDetail";
@@ -97,14 +99,13 @@ export default function WrongNoteDetail() {
           <div className="mt-6 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-4">
               <div>
-                <label className="block text-sm font-medium text-text leading-[30px] mb-2">문제 이름</label>
-                <input
+                <label htmlFor="wrong-note-title" className="block text-sm font-medium text-text leading-[30px] mb-2">문제 이름</label>
+                <AppTextInput
+                  id="wrong-note-title"
                   type="text"
                   value={formData.title}
                   onChange={(e) => handleInputChange("title", e.target.value)}
                   placeholder="예: 두 수의 합, 타겟 넘버 등"
-                  className="w-full px-4 py-2 text-sm outline outline-1 outline-border rounded-md bg-surface text-text
-                    hover:outline-primary focus:outline-primary focus:ring-2 focus:ring-blue-200 transition-all"
                 />
               </div>
               <div>
@@ -115,32 +116,29 @@ export default function WrongNoteDetail() {
                   onChange={(value) => handleInputChange("language", value as string)}
                   placeholder="언어 선택"
                   fullWidth
-                  size="sm"
+                  size="md"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-text leading-[30px] mb-2">문제 링크</label>
-              <input
+              <label htmlFor="wrong-note-link" className="block text-sm font-medium text-text leading-[30px] mb-2">문제 링크</label>
+              <AppTextInput
+                id="wrong-note-link"
                 type="url"
                 value={formData.link}
                 onChange={(e) => handleInputChange("link", e.target.value)}
                 placeholder="https://programmers.co.kr/..."
-                className="w-full px-4 py-2 text-sm outline outline-1 outline-border rounded-md bg-surface text-text
-                  hover:outline-primary focus:outline-primary focus:ring-2 focus:ring-blue-200 transition-all"
               />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
-                <label className="block text-sm font-medium text-text leading-[30px] mb-2">날짜</label>
-                <input
-                  type="date"
+                <label htmlFor="wrong-note-date" className="block text-sm font-medium text-text leading-[30px] mb-2">날짜</label>
+                <AppDatePicker
+                  id="wrong-note-date"
                   value={formData.date}
-                  onChange={(e) => handleInputChange("date", e.target.value)}
-                  className="w-full px-4 py-2 text-sm outline outline-1 outline-border rounded-md bg-surface text-text
-                    hover:outline-primary focus:outline-primary focus:ring-2 focus:ring-blue-200 transition-all"
+                  onChange={(value) => handleInputChange("date", value)}
                 />
               </div>
               <div>
@@ -201,13 +199,13 @@ export default function WrongNoteDetail() {
                 <label className="block text-sm font-medium text-text leading-[30px]">내 풀이</label>
                 <div className="border border-border rounded-lg p-3 bg-surface">
                   <div className="mb-2">
-                    <input
+                    <AppTextInput
                       type="text"
+                      size="sm"
                       value={formData.myCodeLabel}
                       onChange={(e) => handleInputChange("myCodeLabel", e.target.value)}
                       placeholder="라벨 (예: 브루트포스, 1차 시도 등)"
-                      className="w-full px-3 py-1.5 text-xs outline outline-1 outline-border rounded-md bg-background text-text
-                        hover:outline-primary focus:outline-primary focus:ring-2 focus:ring-blue-200 transition-all"
+                      aria-label="내 풀이 라벨"
                     />
                   </div>
                   <CodeEditor
@@ -236,13 +234,14 @@ export default function WrongNoteDetail() {
                 {formData.solutions.map((solution, index) => (
                   <div key={index} className="relative border border-border rounded-lg p-3 bg-surface">
                     <div className="flex items-center gap-2 mb-2">
-                      <input
+                      <AppTextInput
                         type="text"
+                        size="sm"
+                        className="flex-1"
                         value={solution.label}
                         onChange={(e) => updateSolution(index, "label", e.target.value)}
                         placeholder={`풀이 ${index + 1} 라벨 (예: BFS, DP 등)`}
-                        className="flex-1 px-3 py-1.5 text-xs outline outline-1 outline-border rounded-md bg-background text-text
-                          hover:outline-primary focus:outline-primary focus:ring-2 focus:ring-blue-200 transition-all"
+                        aria-label={`풀이 ${index + 1} 라벨`}
                       />
                       {formData.solutions.length > 1 && (
                         <button
