@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from "react";
-import { AppDatepicker as DsDatepicker, AppIconButton as DsIconButton } from "@choi/ds";
+// DS 이름은 AppDatepicker(소문자 p) — 이 어댑터(AppDatePicker)와 철자가 달라 그대로 쓴다
+import { AppDatepicker, AppIconButton } from "@choi/ds";
 import { X } from "lucide-react";
 import { cn } from "@/shared/lib/cn";
 
@@ -84,7 +85,7 @@ export default function AppDatePicker({
 
   return (
     <div className={cn("w-full", clearable && "flex items-start gap-1", className)}>
-      <DsDatepicker
+      <AppDatepicker
         key={resetKey}
         mode="single"
         value={value || null}
@@ -102,7 +103,7 @@ export default function AppDatePicker({
         {...props}
       />
       {showClear && (
-        <DsIconButton
+        <AppIconButton
           icon={<X />}
           label={ariaLabel ? `${ariaLabel} 지우기` : "날짜 지우기"}
           size={size}

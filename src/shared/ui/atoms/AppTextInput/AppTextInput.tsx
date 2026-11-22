@@ -1,4 +1,4 @@
-import { AppTextInput as DsTextInput } from "@choi/ds";
+import { AppTextInput } from "@choi/ds";
 import { cn } from "@/shared/lib/cn";
 import type { InputHTMLAttributes, ReactNode } from "react";
 
@@ -31,10 +31,14 @@ export interface AppTextInputProps
  * DS 필드는 자체 너비(280px / 100%)를 갖고 DS CSS가 Tailwind보다 뒤에 로드돼 너비 클래스가 지므로,
  * 래퍼 div가 너비를 받고 DS 필드는 항상 래퍼를 채운다.
  */
-export default function AppTextInput({ size = "md", className, ...props }: AppTextInputProps) {
+function AppTextInputAdapter({ size = "md", className, ...props }: AppTextInputProps) {
   return (
     <div className={cn("w-full", className)}>
-      <DsTextInput size={size} fullWidth {...props} />
+      <AppTextInput size={size} fullWidth {...props} />
     </div>
   );
 }
+
+AppTextInputAdapter.displayName = "AppTextInput";
+
+export default AppTextInputAdapter;

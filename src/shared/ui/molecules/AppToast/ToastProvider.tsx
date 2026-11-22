@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { AppToastProvider as DsToastProvider, useToast as useDsToast } from "@choi/ds";
+import { AppToastProvider, useToast } from "@choi/ds";
 import { TOAST_TONE, ToastContext } from "./ToastContext";
 import type { ToastType } from "./ToastContext";
 
@@ -9,7 +9,7 @@ interface ToastProviderProps {
 
 /** DS 토스트 API를 프로젝트의 showToast(message, type) 시그니처로 노출한다 */
 function ToastBridge({ children }: ToastProviderProps) {
-  const { toast } = useDsToast();
+  const { toast } = useToast();
 
   const value = useMemo(
     () => ({
@@ -26,8 +26,8 @@ function ToastBridge({ children }: ToastProviderProps) {
 /** 앱 최상단에 한 번 감싼다. 토스트는 화면 우하단에 쌓인다 (@choi/ds ToastProvider 기반) */
 export function ToastProvider({ children }: ToastProviderProps) {
   return (
-    <DsToastProvider position="bottom-right">
+    <AppToastProvider position="bottom-right">
       <ToastBridge>{children}</ToastBridge>
-    </DsToastProvider>
+    </AppToastProvider>
   );
 }
