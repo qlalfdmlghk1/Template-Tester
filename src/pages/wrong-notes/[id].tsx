@@ -8,6 +8,8 @@ import { AppTextInput } from "@/shared/ui/atoms/AppTextInput";
 import { AppDatePicker } from "@/shared/ui/atoms/AppDatePicker";
 import ToggleButtonGroup from "@/shared/ui/atoms/ToggleButtonGroup/ToggleButtonGroup";
 import CodeEditor from "@/shared/ui/molecules/CodeEditor/CodeEditor";
+import { AppTextarea } from "@/shared/ui/atoms/AppTextarea";
+import { AppCheckbox } from "@/shared/ui/atoms/AppCheckbox";
 import { useWrongNoteDetail } from "@/entities/wrong-note/model/useWrongNoteDetail";
 import { useWrongNoteForm } from "@/entities/wrong-note/model/useWrongNoteForm";
 import {
@@ -185,16 +187,18 @@ export default function WrongNoteDetail() {
 
             <div className="flex w-full justify-between items-start">
               <div className="w-[50%]">
-                <label className="block text-sm font-medium text-text leading-[30px] mb-2">제출 결과</label>
+                <p id="wrong-note-result-label" className="block text-sm font-medium text-text leading-[30px] mb-2">제출 결과</p>
                 <ToggleButtonGroup
+                  ariaLabelledby="wrong-note-result-label"
                   options={resultOptions}
                   value={formData.result}
                   onChange={(value) => handleInputChange("result", value)}
                 />
               </div>
               <div className="w-[50%]">
-                <label className="block text-sm font-medium text-text leading-[30px] mb-2">작성 이유 (복수 선택 가능)</label>
+                <p id="wrong-note-tags-label" className="block text-sm font-medium text-text leading-[30px] mb-2">작성 이유 (복수 선택 가능)</p>
                 <ToggleButtonGroup
+                  ariaLabelledby="wrong-note-tags-label"
                   options={tagOptions}
                   value={formData.tags}
                   onChange={(value) => handleInputChange("tags", value)}
@@ -281,29 +285,23 @@ export default function WrongNoteDetail() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-text leading-[30px] mb-2">코멘트</label>
-              <textarea
+              <label htmlFor="wrong-note-comment" className="block text-sm font-medium text-text leading-[30px] mb-2">코멘트</label>
+              <AppTextarea
+                id="wrong-note-comment"
                 value={formData.comment}
                 onChange={(e) => handleInputChange("comment", e.target.value)}
                 placeholder="이 문제에서 배운 점, 주의할 점 등을 기록하세요..."
                 rows={4}
-                className="w-full px-4 py-3 text-sm outline outline-1 outline-border rounded-md bg-surface text-text
-                  hover:outline-primary focus:outline-primary focus:ring-2 focus:ring-blue-200 transition-all resize-none"
+                resize="none"
               />
             </div>
 
-            <div className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                id="share"
-                checked={formData.share}
-                onChange={(e) => handleInputChange("share", e.target.checked)}
-                className="w-4 h-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
-              />
-              <label htmlFor="share" className="text-sm text-text cursor-pointer">
-                다른 사용자에게 공유하기
-              </label>
-            </div>
+            <AppCheckbox
+              id="share"
+              checked={formData.share}
+              onChange={(e) => handleInputChange("share", e.target.checked)}
+              label="다른 사용자에게 공유하기"
+            />
 
             <div className="flex justify-end gap-3 pt-4">
               <AppButton

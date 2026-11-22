@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
 import AppIcon from "@/shared/ui/atoms/AppIcon/AppIcon";
+import { AppTextarea } from "@/shared/ui/atoms/AppTextarea";
+import { AppModal } from "@/shared/ui/molecules/AppModal";
 import { cn } from "@/shared/lib/cn";
 import {
   READ_IMAGE_MESSAGES,
@@ -14,6 +16,9 @@ import {
   SUPPORTED_IMAGE_TYPES,
 } from "@/entities/job-application/api/posting.api";
 import type { PostingImage } from "@/entities/job-application/api/posting.api";
+
+const POSTING_TEXT_ID = "posting-paste-text";
+const POSTING_FORM_ID = "posting-paste-form";
 
 interface PostingPasteDialogProps {
   companyName: string;
@@ -65,7 +70,6 @@ export function PostingPasteDialog({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropRef = useRef<HTMLButtonElement>(null);
-  const textRef = useRef<HTMLTextAreaElement>(null);
 
   /**
    * 붙어 있는 캡처의 정본.
@@ -93,7 +97,8 @@ export function PostingPasteDialog({
   // 탭을 열면 그 탭의 입력부로 포커스를 옮긴다 — 캡처 탭은 곧바로 Ctrl+V 가 먹게
   useEffect(() => {
     if (mode === "image") dropRef.current?.focus();
-    else textRef.current?.focus();
+    // AppTextarea(DS)는 ref를 받지 않아 id로 찾는다
+    else document.getElementById(POSTING_TEXT_ID)?.focus();
   }, [mode]);
 
   /** 읽어 들인 캡처를 목록에 더한다. 상한을 넘긴 만큼은 버리고 그 사실을 알린다 */
@@ -199,218 +204,18 @@ export function PostingPasteDialog({
   };
 
   return (
-    <div className="fixed inset-0 z-modal flex items-center justify-center p-4">
-      <div
-        className="absolute inset-0 bg-black/40"
-        onClick={onClose}
-        aria-hidden="true"
-      />
-
-      <form
-        onSubmit={handleSubmit}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="posting-paste-title"
-        className="relative flex flex-col w-full max-w-[560px] max-h-[90vh] bg-surface border border-border rounded-lg shadow-[0_12px_32px_rgba(0,0,0,0.18)]"
-      >
-        {/* 캡처를 여러 장 붙이면 길어진다 — 버튼이 밀려 올라가지 않게 푸터를 고정한다 */}
-        <div className="flex flex-col gap-4 flex-1 min-h-0 overflow-y-auto p-5">
-          <header>
-            <p className="m-0 text-xs text-textSecondary">
-              {companyName}
-              {postingTitle && ` · ${postingTitle}`}
-            </p>
-            <h2
-              id="posting-paste-title"
-              className="m-0 text-base font-semibold text-text"
-            >
-              공고 내용 붙여넣기
-            </h2>
-            {reason && (
-              <p className="m-0 mt-1 text-xs text-yellow-800 bg-yellow-100 px-2 py-1 rounded-sm">
-                {reason}
-              </p>
-            )}
-          </header>
-
-          <div
-            role="tablist"
-            aria-label="입력 방식"
-            className="flex gap-1 border-b border-border"
-          >
-            {MODES.map((item) => {
-              const selected = mode === item;
-              // 다른 탭에 넣어 둔 내용이 조용히 무시되지 않게 표시한다
-              const filled =
-                item === "image" ? images.length > 0 : trimmed.length > 0;
-
-              return (
-                <button
-                  key={item}
-                  type="button"
-                  role="tab"
-                  id={`posting-tab-${item}`}
-                  aria-selected={selected}
-                  aria-controls={`posting-panel-${item}`}
-                  tabIndex={selected ? 0 : -1}
-                  onClick={() => setMode(item)}
-                  onKeyDown={handleTabKey}
-                  className={cn(
-                    "flex items-center gap-1.5 px-3 py-2 -mb-px text-sm border-b-2 transition-colors",
-                    selected
-                      ? "border-primary text-text font-semibold"
-                      : "border-transparent text-textSecondary hover:text-text",
-                  )}
-                >
-                  {MODE_LABELS[item]}
-                  {item === "image" && images.length > 0 && (
-                    <span className="px-1.5 rounded-full text-xs bg-primary text-white">
-                      {images.length}
-                    </span>
-                  )}
-                  {item === "text" && filled && (
-                    <span
-                      className="w-1.5 h-1.5 rounded-full bg-primary"
-                      aria-label="내용 있음"
-                    />
-                  )}
-                </button>
-              );
-            })}
-          </div>
-
-          {mode === "image" ? (
-            <section
-              role="tabpanel"
-              id="posting-panel-image"
-              aria-labelledby="posting-tab-image"
-              className="flex flex-col gap-1.5"
-            >
-              <button
-                ref={dropRef}
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                onDrop={handleDrop}
-                onDragOver={(event) => {
-                  event.preventDefault();
-                  setDragging(true);
-                }}
-                onDragLeave={() => setDragging(false)}
-                className={cn(
-                  "flex flex-col items-center gap-1 px-3 py-6 border-2 border-dashed rounded-md transition-colors",
-                  "focus:outline-none focus:border-blue-400 focus:bg-blue-50/50",
-                  dragging
-                    ? "border-blue-400 bg-blue-50/50"
-                    : "border-border hover:border-blue-300",
-                )}
-              >
-                <AppIcon
-                  name="photo"
-                  size={24}
-                  className="text-textSecondary"
-                />
-                <span className="text-sm text-text">
-                  여기에{" "}
-                  <kbd className="px-1 border border-border rounded-sm">
-                    Ctrl+V
-                  </kbd>{" "}
-                  로 붙여넣기
-                </span>
-                <span className="text-xs text-textSecondary">
-                  끌어다 놓거나, 눌러서 이미지 파일을 고를 수도 있습니다
-                </span>
-              </button>
-
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept={SUPPORTED_IMAGE_TYPES.join(",")}
-                multiple
-                hidden
-                onChange={(event) => {
-                  void addFiles(Array.from(event.target.files ?? []));
-                  // 같은 파일을 다시 고를 수 있게 비운다
-                  event.target.value = "";
-                }}
-              />
-
-              <span className="text-xs text-textSecondary">
-                <kbd className="px-1 border border-border rounded-sm">
-                  Win+Shift+S
-                </kbd>{" "}
-                로 공고 화면을 캡처한 뒤 붙여넣으세요. 모집요강이 이미지로 된
-                공고도 읽습니다. 길면 나눠서 최대 {MAX_IMAGES}장까지 됩니다.
-              </span>
-
-              {images.length > 0 && (
-                <ul className="flex flex-wrap gap-2 m-0 mt-1 p-0 list-none">
-                  {images.map((image, index) => (
-                    <li key={image.dataUrl} className="relative">
-                      <img
-                        src={image.dataUrl}
-                        alt={`붙여넣은 캡처 ${index + 1}`}
-                        className="w-24 h-24 object-cover border border-border rounded-sm"
-                      />
-                      <button
-                        type="button"
-                        onClick={() =>
-                          commitImages(
-                            imagesRef.current.filter((_, i) => i !== index),
-                          )
-                        }
-                        aria-label={`캡처 ${index + 1} 제거`}
-                        className="absolute -top-1.5 -right-1.5 flex items-center justify-center w-5 h-5 bg-surface border border-border rounded-full text-textSecondary hover:text-text"
-                      >
-                        <AppIcon name="x-mark" size={12} />
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-
-            </section>
-          ) : (
-            <section
-              role="tabpanel"
-              id="posting-panel-text"
-              aria-labelledby="posting-tab-text"
-              className="flex flex-col gap-1.5"
-            >
-              <span className="text-xs text-textSecondary">
-                공고 페이지에서{" "}
-                <kbd className="px-1 border border-border rounded-sm">
-                  Ctrl+A
-                </kbd>{" "}
-                →{" "}
-                <kbd className="px-1 border border-border rounded-sm">
-                  Ctrl+C
-                </kbd>{" "}
-                한 내용을 붙여넣으세요. 메뉴나 푸터가 섞여도 됩니다. 글자가
-                선택되지 않는 공고라면 캡처 탭을 쓰세요.
-              </span>
-              <textarea
-                ref={textRef}
-                value={text}
-                onChange={(event) => setText(event.target.value)}
-                rows={12}
-                className="w-full px-2 py-1.5 text-sm text-text bg-background border border-border rounded-sm resize-y focus:outline-none focus:border-blue-400"
-              />
-              {textTooShort && (
-                <span className="text-xs text-red-600">
-                  본문이 너무 짧습니다. 공고 내용을 더 붙여넣어 주세요.
-                </span>
-              )}
-            </section>
-          )}
-
-          {/* 탭 패널 밖에 둔다 — 캡처가 꽉 찬 상태로 본문 탭에서 붙여넣으면 탭 전환이
-              일어나지 않아, 패널 안에 두면 방금 띄운 안내가 아무 데도 보이지 않는다 */}
-          {imageError && (
-            <span className="text-xs text-red-600">{imageError}</span>
-          )}
-        </div>
-
-        <footer className="flex justify-end gap-2 shrink-0 px-5 py-4 border-t border-border">
+    // 캡처를 여러 장 붙이면 길어진다 — AppModal은 머리말·버튼을 고정하고 본문만 스크롤한다
+    <AppModal
+      size="md"
+      title="공고 내용 붙여넣기"
+      description={`${companyName}${postingTitle ? ` · ${postingTitle}` : ""}`}
+      onClose={onClose}
+      busy={extracting}
+      formId={POSTING_FORM_ID}
+      onSubmit={handleSubmit}
+      bodyClassName="gap-4"
+      footer={
+        <>
           <AppButton
             type="button"
             variant="outline"
@@ -423,6 +228,7 @@ export function PostingPasteDialog({
           </AppButton>
           <AppButton
             type="submit"
+            form={POSTING_FORM_ID}
             size="sm"
             disabled={extracting || !canSubmit}
           >
@@ -432,8 +238,188 @@ export function PostingPasteDialog({
                 ? `캡처 ${images.length}장으로 채우기`
                 : "본문으로 채우기"}
           </AppButton>
-        </footer>
-      </form>
-    </div>
+        </>
+      }
+    >
+      {reason && (
+        <p className="m-0 text-xs text-yellow-800 bg-yellow-100 px-2 py-1 rounded-sm">{reason}</p>
+      )}
+
+      <div
+        role="tablist"
+        aria-label="입력 방식"
+        className="flex gap-1 border-b border-border"
+      >
+        {MODES.map((item) => {
+          const selected = mode === item;
+          // 다른 탭에 넣어 둔 내용이 조용히 무시되지 않게 표시한다
+          const filled =
+            item === "image" ? images.length > 0 : trimmed.length > 0;
+
+          return (
+            <button
+              key={item}
+              type="button"
+              role="tab"
+              id={`posting-tab-${item}`}
+              aria-selected={selected}
+              aria-controls={`posting-panel-${item}`}
+              tabIndex={selected ? 0 : -1}
+              onClick={() => setMode(item)}
+              onKeyDown={handleTabKey}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-2 -mb-px text-sm border-b-2 transition-colors",
+                selected
+                  ? "border-primary text-text font-semibold"
+                  : "border-transparent text-textSecondary hover:text-text",
+              )}
+            >
+              {MODE_LABELS[item]}
+              {item === "image" && images.length > 0 && (
+                <span className="px-1.5 rounded-full text-xs bg-primary text-white">
+                  {images.length}
+                </span>
+              )}
+              {item === "text" && filled && (
+                <span
+                  className="w-1.5 h-1.5 rounded-full bg-primary"
+                  aria-label="내용 있음"
+                />
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {mode === "image" ? (
+        <section
+          role="tabpanel"
+          id="posting-panel-image"
+          aria-labelledby="posting-tab-image"
+          className="flex flex-col gap-1.5"
+        >
+          <button
+            ref={dropRef}
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            onDrop={handleDrop}
+            onDragOver={(event) => {
+              event.preventDefault();
+              setDragging(true);
+            }}
+            onDragLeave={() => setDragging(false)}
+            className={cn(
+              "flex flex-col items-center gap-1 px-3 py-6 border-2 border-dashed rounded-md transition-colors",
+              "focus:outline-none focus:border-blue-400 focus:bg-blue-50/50",
+              dragging
+                ? "border-blue-400 bg-blue-50/50"
+                : "border-border hover:border-blue-300",
+            )}
+          >
+            <AppIcon
+              name="photo"
+              size={24}
+              className="text-textSecondary"
+            />
+            <span className="text-sm text-text">
+              여기에{" "}
+              <kbd className="px-1 border border-border rounded-sm">
+                Ctrl+V
+              </kbd>{" "}
+              로 붙여넣기
+            </span>
+            <span className="text-xs text-textSecondary">
+              끌어다 놓거나, 눌러서 이미지 파일을 고를 수도 있습니다
+            </span>
+          </button>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept={SUPPORTED_IMAGE_TYPES.join(",")}
+            multiple
+            hidden
+            onChange={(event) => {
+              void addFiles(Array.from(event.target.files ?? []));
+              // 같은 파일을 다시 고를 수 있게 비운다
+              event.target.value = "";
+            }}
+          />
+
+          <span className="text-xs text-textSecondary">
+            <kbd className="px-1 border border-border rounded-sm">
+              Win+Shift+S
+            </kbd>{" "}
+            로 공고 화면을 캡처한 뒤 붙여넣으세요. 모집요강이 이미지로 된
+            공고도 읽습니다. 길면 나눠서 최대 {MAX_IMAGES}장까지 됩니다.
+          </span>
+
+          {images.length > 0 && (
+            <ul className="flex flex-wrap gap-2 m-0 mt-1 p-0 list-none">
+              {images.map((image, index) => (
+                <li key={image.dataUrl} className="relative">
+                  <img
+                    src={image.dataUrl}
+                    alt={`붙여넣은 캡처 ${index + 1}`}
+                    className="w-24 h-24 object-cover border border-border rounded-sm"
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      commitImages(
+                        imagesRef.current.filter((_, i) => i !== index),
+                      )
+                    }
+                    aria-label={`캡처 ${index + 1} 제거`}
+                    className="absolute -top-1.5 -right-1.5 flex items-center justify-center w-5 h-5 bg-surface border border-border rounded-full text-textSecondary hover:text-text"
+                  >
+                    <AppIcon name="x-mark" size={12} />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+
+        </section>
+      ) : (
+        <section
+          role="tabpanel"
+          id="posting-panel-text"
+          aria-labelledby="posting-tab-text"
+          className="flex flex-col gap-1.5"
+        >
+          <span className="text-xs text-textSecondary">
+            공고 페이지에서{" "}
+            <kbd className="px-1 border border-border rounded-sm">
+              Ctrl+A
+            </kbd>{" "}
+            →{" "}
+            <kbd className="px-1 border border-border rounded-sm">
+              Ctrl+C
+            </kbd>{" "}
+            한 내용을 붙여넣으세요. 메뉴나 푸터가 섞여도 됩니다. 글자가
+            선택되지 않는 공고라면 캡처 탭을 쓰세요.
+          </span>
+          <AppTextarea
+            id={POSTING_TEXT_ID}
+            aria-label="공고 본문"
+            value={text}
+            onChange={(event) => setText(event.target.value)}
+            rows={12}
+          />
+          {textTooShort && (
+            <span className="text-xs text-red-600">
+              본문이 너무 짧습니다. 공고 내용을 더 붙여넣어 주세요.
+            </span>
+          )}
+        </section>
+      )}
+
+      {/* 탭 패널 밖에 둔다 — 캡처가 꽉 찬 상태로 본문 탭에서 붙여넣으면 탭 전환이
+          일어나지 않아, 패널 안에 두면 방금 띄운 안내가 아무 데도 보이지 않는다 */}
+      {imageError && (
+        <span className="text-xs text-red-600">{imageError}</span>
+      )}
+    </AppModal>
   );
 }

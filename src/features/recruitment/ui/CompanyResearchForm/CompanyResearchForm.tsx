@@ -1,6 +1,7 @@
 import { useState } from "react";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
 import { AppTextInput } from "@/shared/ui/atoms/AppTextInput";
+import { AppTextarea } from "@/shared/ui/atoms/AppTextarea";
 import { cn } from "@/shared/lib/cn";
 import {
   COMPANY_CATEGORIES,
@@ -32,9 +33,6 @@ interface CompanyResearchFormProps {
   /** API 키 설정 화면 열기 — 키가 없을 때 안내에서 호출 */
   onOpenKeySettings: () => void;
 }
-
-const inputClass =
-  "w-full px-2 py-1.5 text-sm bg-surface text-text border border-border rounded-sm";
 
 const labelClass = "block mb-1 text-sm font-medium text-text";
 
@@ -322,13 +320,12 @@ export function CompanyResearchForm({
             <label htmlFor="research-desc" className={labelClass}>
               직무 설명
             </label>
-            <textarea
+            <AppTextarea
               id="research-desc"
               rows={6}
               value={jobDescription}
               onChange={(event) => setJobDescription(event.target.value)}
               placeholder="공고의 직무 소개를 붙여넣어 두면 나중에 비교하기 좋습니다."
-              className={cn(inputClass, "resize-y")}
             />
           </div>
 
@@ -336,13 +333,12 @@ export function CompanyResearchForm({
             <label htmlFor="research-req" className={labelClass}>
               자격 요건
             </label>
-            <textarea
+            <AppTextarea
               id="research-req"
               rows={6}
               value={requirements}
               onChange={(event) => setRequirements(event.target.value)}
               placeholder="요구 기술·경력 조건 등"
-              className={cn(inputClass, "resize-y")}
             />
           </div>
 
@@ -350,13 +346,12 @@ export function CompanyResearchForm({
             <label htmlFor="research-memo" className={labelClass}>
               메모
             </label>
-            <textarea
+            <AppTextarea
               id="research-memo"
               rows={4}
               value={researchNote}
               onChange={(event) => setResearchNote(event.target.value)}
               placeholder="지원 전략, 준비할 것 등"
-              className={cn(inputClass, "resize-y")}
             />
           </div>
         </div>
@@ -434,13 +429,12 @@ export function CompanyResearchForm({
             <label htmlFor="research-talent" className={labelClass}>
               인재상
             </label>
-            <textarea
+            <AppTextarea
               id="research-talent"
               rows={8}
               value={talentProfile}
               onChange={(event) => setTalentProfile(event.target.value)}
               placeholder="기업이 공표한 인재상·핵심 가치"
-              className={cn(inputClass, "resize-y")}
             />
             <ResearchSourceLinks sources={researchSources?.talentProfile} />
           </div>
@@ -449,13 +443,12 @@ export function CompanyResearchForm({
             <label htmlFor="research-business" className={labelClass}>
               사업 내용
             </label>
-            <textarea
+            <AppTextarea
               id="research-business"
               rows={10}
               value={businessSummary}
               onChange={(event) => setBusinessSummary(event.target.value)}
               placeholder="주요 사업 영역·제품·서비스"
-              className={cn(inputClass, "resize-y")}
             />
             <ResearchSourceLinks sources={researchSources?.businessSummary} />
           </div>
@@ -464,13 +457,12 @@ export function CompanyResearchForm({
             <label htmlFor="research-issues" className={labelClass}>
               최근 이슈
             </label>
-            <textarea
+            <AppTextarea
               id="research-issues"
               rows={12}
               value={recentIssues}
               onChange={(event) => setRecentIssues(event.target.value)}
               placeholder="실적·조직 개편·신사업 등 최근 소식"
-              className={cn(inputClass, "resize-y")}
             />
             <ResearchSourceLinks sources={researchSources?.recentIssues} />
           </div>

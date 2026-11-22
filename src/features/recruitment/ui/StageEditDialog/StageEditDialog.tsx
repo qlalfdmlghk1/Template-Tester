@@ -1,6 +1,8 @@
 import { useState } from "react";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
 import AppIcon from "@/shared/ui/atoms/AppIcon/AppIcon";
+import { AppModal } from "@/shared/ui/molecules/AppModal";
+import { AppTextarea } from "@/shared/ui/atoms/AppTextarea";
 import { cn } from "@/shared/lib/cn";
 import {
   STAGE_LABELS,
@@ -23,6 +25,8 @@ interface StageEditDialogProps {
   onClose: () => void;
 }
 
+const STAGE_EDIT_FORM_ID = "stage-edit-form";
+
 /** 전형 단계 한 칸 편집 — 저장하면 해당 칸만 즉시 반영된다 */
 export function StageEditDialog({
   stageKey,
@@ -43,82 +47,74 @@ export function StageEditDialog({
   };
 
   return (
-    <div className="fixed inset-0 z-modal flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} aria-hidden="true" />
-
-      <form
-        onSubmit={handleSubmit}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="stage-edit-title"
-        className="relative flex flex-col gap-4 w-full max-w-[420px] max-h-[90vh] overflow-y-auto p-5 bg-surface border border-border rounded-lg shadow-[0_12px_32px_rgba(0,0,0,0.18)]"
-      >
-        <header>
-          <p className="m-0 text-xs text-textSecondary">{companyName}</p>
-          <h2 id="stage-edit-title" className="m-0 text-base font-semibold text-text">
-            {STAGE_LABELS[stageKey]}
-          </h2>
-        </header>
-
-        <fieldset className="m-0 p-0 border-0">
-          <legend className="mb-1.5 text-sm font-medium text-text">상태</legend>
-          <div className="flex flex-wrap gap-1.5">
-            {STAGE_STATUSES.map((option) => {
-              const display = STAGE_STATUS_DISPLAY[option];
-              const isSelected = option === status;
-
-              return (
-                <button
-                  key={option}
-                  type="button"
-                  onClick={() => setStatus(option)}
-                  aria-pressed={isSelected}
-                  className={cn(
-                    "flex items-center gap-1 px-2.5 py-1.5 text-xs rounded-sm border transition-colors",
-                    display.cellClass || "bg-surface",
-                    isSelected
-                      ? "border-blue-500 ring-1 ring-blue-500 text-text"
-                      : "border-border text-textSecondary hover:border-gray-400",
-                  )}
-                >
-                  {display.icon && (
-                    <AppIcon name={display.icon} size={12} className={display.iconClass} />
-                  )}
-                  {STAGE_STATUS_LABELS[option]}
-                </button>
-              );
-            })}
-          </div>
-        </fieldset>
-
-        <div>
-          <p className="m-0 mb-1.5 text-sm font-medium text-text">일정</p>
-          <ScheduleInput value={schedule} defaultYear={defaultYear} onChange={setSchedule} />
-        </div>
-
-        <div>
-          <label htmlFor="stage-memo" className="block mb-1.5 text-sm font-medium text-text">
-            메모
-          </label>
-          <textarea
-            id="stage-memo"
-            rows={3}
-            value={memo}
-            onChange={(event) => setMemo(event.target.value)}
-            placeholder="예: 1박 2일 합숙, 온라인 진행"
-            className="w-full px-2 py-1.5 text-sm bg-surface text-text border border-border rounded-sm resize-y"
-          />
-        </div>
-
-        <div className="flex justify-end gap-2">
-          <AppButton type="button" variant="outline" color="gray" size="sm" onClick={onClose}>
+    <AppModal
+      size="sm"
+      title={STAGE_LABELS[stageKey]}
+      description={companyName}
+      onClose={onClose}
+      busy={saving}
+      formId={STAGE_EDIT_FORM_ID}
+      onSubmit={handleSubmit}
+      bodyClassName="gap-4"
+      footer={
+        <>
+          <AppButton type="button" variant="outline" color="gray" size="sm" onClick={onClose} disabled={saving}>
             취소
           </AppButton>
-          <AppButton type="submit" size="sm" loading={saving}>
+          <AppButton type="submit" form={STAGE_EDIT_FORM_ID} size="sm" loading={saving}>
             저장
           </AppButton>
+        </>
+      }
+    >
+      <fieldset className="m-0 p-0 border-0">
+        <legend className="mb-1.5 text-sm font-medium text-text">상태</legend>
+        <div className="flex flex-wrap gap-1.5">
+          {STAGE_STATUSES.map((option) => {
+            const display = STAGE_STATUS_DISPLAY[option];
+            const isSelected = option === status;
+
+            return (
+              <button
+                key={option}
+                type="button"
+                onClick={() => setStatus(option)}
+                aria-pressed={isSelected}
+                className={cn(
+                  "flex items-center gap-1 px-2.5 py-1.5 text-xs rounded-sm border transition-colors",
+                  display.cellClass || "bg-surface",
+                  isSelected
+                    ? "border-blue-500 ring-1 ring-blue-500 text-text"
+                    : "border-border text-textSecondary hover:border-gray-400",
+                )}
+              >
+                {display.icon && (
+                  <AppIcon name={display.icon} size={12} className={display.iconClass} />
+                )}
+                {STAGE_STATUS_LABELS[option]}
+              </button>
+            );
+          })}
         </div>
-      </form>
-    </div>
+      </fieldset>
+
+      <div>
+        <p className="m-0 mb-1.5 text-sm font-medium text-text">일정</p>
+        <ScheduleInput value={schedule} defaultYear={defaultYear} onChange={setSchedule} />
+      </div>
+
+      <div>
+        <label htmlFor="stage-memo" className="block mb-1.5 text-sm font-medium text-text">
+          메모
+        </label>
+        <AppTextarea
+          id="stage-memo"
+          rows={3}
+          value={memo}
+          onChange={(event) => setMemo(event.target.value)}
+          placeholder="예: 1박 2일 합숙, 온라인 진행"
+        />
+      </div>
+    </AppModal>
   );
 }

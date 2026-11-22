@@ -1,4 +1,4 @@
-import { AppMultiSelect as DsMultiSelect, AppSelect as DsSelect } from "@choi/ds";
+import { AppMultiSelect, AppSelect } from "@choi/ds";
 import { cn } from "@/shared/lib/cn";
 import type { AppSelectProps, SelectOption, SelectValue } from "./AppSelect.type";
 
@@ -17,7 +17,7 @@ function fromKey(options: SelectOption[], key: string): SelectValue {
  * `width`도 `fullWidth`도 없으면 부모 너비를 채운다 (DS 기본 280px 대신 기존 동작 유지).
  * 드롭다운 목록은 기본적으로 트리거 아래에 붙는다. 스크롤 영역 안에서 잘리면 `portal`을 켠다.
  */
-export default function AppSelect({
+function AppSelectAdapter({
   options = [],
   value,
   onChange,
@@ -62,7 +62,7 @@ export default function AppSelect({
       style={width && !fullWidth ? { width, flexShrink: 0 } : undefined}
     >
       {multiple ? (
-        <DsMultiSelect
+        <AppMultiSelect
           {...common}
           // 좁은 필터 칸에서 태그가 넘치지 않도록 하나만 보이고 나머지는 +N
           maxTagCount={1}
@@ -70,7 +70,7 @@ export default function AppSelect({
           onChange={(keys) => onChange?.(keys.map((key) => fromKey(options, key)))}
         />
       ) : (
-        <DsSelect
+        <AppSelect
           {...common}
           // undefined면 DS가 비제어로 전환되므로 빈 문자열로 제어 상태를 유지한다
           value={value === undefined || value === null || Array.isArray(value) ? "" : toKey(value)}
@@ -80,3 +80,7 @@ export default function AppSelect({
     </div>
   );
 }
+
+AppSelectAdapter.displayName = "AppSelect";
+
+export default AppSelectAdapter;
