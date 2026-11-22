@@ -210,6 +210,7 @@ export function PostingPasteDialog({
       title="공고 내용 붙여넣기"
       description={`${companyName}${postingTitle ? ` · ${postingTitle}` : ""}`}
       onClose={onClose}
+      busy={extracting}
       formId={POSTING_FORM_ID}
       onSubmit={handleSubmit}
       bodyClassName="gap-4"

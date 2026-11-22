@@ -65,6 +65,7 @@ export function ApplicationFormDialog({
         size="lg"
         title={form.isEdit ? "지원 건 수정" : "지원 건 추가"}
         onClose={onClose}
+        busy={saving}
         formId={APPLICATION_FORM_ID}
         onSubmit={handleSubmit}
         toolbar={
@@ -109,7 +110,7 @@ export function ApplicationFormDialog({
         }
         footer={
           <>
-            <AppButton type="button" variant="outline" color="gray" size="sm" onClick={onClose}>
+            <AppButton type="button" variant="outline" color="gray" size="sm" onClick={onClose} disabled={saving}>
               취소
             </AppButton>
             <AppButton

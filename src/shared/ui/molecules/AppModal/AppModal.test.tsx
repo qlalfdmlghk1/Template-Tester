@@ -76,6 +76,17 @@ describe("AppModal (DS 어댑터)", () => {
     expect(screen.getByRole("dialog")).toHaveClass("app-modal--xl");
   });
 
+  it("busy면 Esc·닫기(X)·바깥 클릭을 모두 무시한다", async () => {
+    const onClose = vi.fn();
+    render(<AppModal title="저장 중" busy onClose={onClose} />);
+
+    await userEvent.keyboard("{Escape}");
+    await userEvent.click(screen.getByRole("button", { name: "닫기" }));
+    await userEvent.click(document.querySelector<HTMLElement>(".cds-modal__scrim")!);
+
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
   it("open={false}면 그리지 않는다", () => {
     render(<AppModal open={false} title="설정" onClose={vi.fn()} />);
 

@@ -75,9 +75,10 @@ export function XlsxImportDialog({
       title="시트에서 가져오기"
       description="구글 시트를 xlsx로 내려받아 올리면 전형 일정과 셀 색상(합격·불합격 등)을 함께 읽습니다."
       onClose={onClose}
+      busy={isApplying}
       footer={
         <>
-          <AppButton variant="outline" color="gray" size="sm" onClick={onClose}>
+          <AppButton variant="outline" color="gray" size="sm" onClick={onClose} disabled={isApplying}>
             닫기
           </AppButton>
           <AppButton

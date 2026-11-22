@@ -13,6 +13,7 @@ const meta: Meta<typeof AppModal> = {
     description: { control: "text", description: "제목 아래 보조 문구" },
     size: { control: "select", options: ["sm", "md", "lg", "xl"], description: "너비 sm 400 · md 560 · lg 800 · xl 1000" },
     closeOnOverlay: { control: "boolean", description: "바깥 클릭으로 닫기 (기본 true)" },
+    busy: { control: "boolean", description: "저장·분석 중 — Esc·닫기(X)·바깥 클릭을 무시 (X는 보이지만 눌러도 닫히지 않음)" },
     formId: { control: "text", description: "본문을 감쌀 form id — footer submit 버튼은 form={formId}" },
     toolbar: { control: false, description: "본문 맨 위 도구 줄(오른쪽 정렬)" },
     footer: { control: false, description: "아래 고정 버튼 영역" },

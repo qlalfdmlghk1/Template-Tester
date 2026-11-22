@@ -27,11 +27,19 @@ export interface AppModalProps {
   onSubmit?: (event: FormEvent<HTMLFormElement>) => void;
   /** 바깥(어두운 영역) 클릭으로 닫기. 기본 true — 기존 모달 동작 유지 */
   closeOnOverlay?: boolean;
+  /**
+   * 저장·분석 중. true면 Esc·닫기(X)·바깥 클릭을 모두 무시한다 — 진행 중에 닫혀 입력이 사라지지 않게.
+   * 닫기를 막는 기준은 DS 확인 모달의 loading과 같지만, X는 숨기지 않고 남겨 둔다 (DS AppModal에 X 비활성화 옵션이 없고,
+   * busy마다 hideClose를 토글하면 X에 있던 포커스가 사라진다 — DS에 옵션이 생기면 비활성화로 바꾼다)
+   */
+  busy?: boolean;
   /** 본문 래퍼 클래스. 기본 세로 간격 gap-3 */
   bodyClassName?: string;
 }
 
 const DS_SIZE: Record<AppModalSize, "sm" | "md" | "lg"> = { sm: "sm", md: "md", lg: "lg", xl: "lg" };
+
+function noop() {}
 
 /**
  * 모달 — DS `AppModal` 어댑터.
@@ -51,6 +59,7 @@ function AppModalAdapter({
   formId,
   onSubmit,
   closeOnOverlay = true,
+  busy = false,
   bodyClassName,
 }: AppModalProps) {
   const body = (
@@ -67,12 +76,12 @@ function AppModalAdapter({
   return (
     <AppModal
       open={open}
-      onClose={onClose}
+      onClose={busy ? noop : onClose}
       title={title}
       description={description}
       size={DS_SIZE[size]}
       className={size === "xl" ? "app-modal--xl" : undefined}
-      closeOnOverlay={closeOnOverlay}
+      closeOnOverlay={closeOnOverlay && !busy}
       footer={footer}
     >
       {formId ? (

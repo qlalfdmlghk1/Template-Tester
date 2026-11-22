@@ -41,6 +41,9 @@
 - [2026-11-22] 브라우저 확인: 탭 목록(overflow-x:auto)이 탭의 margin-bottom:-1px만큼 밑줄을 잘라내고 세로 1px 스크롤 → `.app-tabs .cds-tabs__list`에 padding-bottom:1px
 - [2026-11-22] 다크 테마 확인: DS 바탕(#131217)·테두리가 앱 남색(#1E293B·#334155)과 달라 모달·입력창이 떠 보임(#98부터 입력창에 있던 차이, 모달로 면적이 커져 드러남) → DS `--surface`·`--line`·`--ink`를 앱 변수에, `--surface-raised`·`--surface-hover`는 `color-mix`(앱 바탕 94%·88% + 글자색)로 연결 (사용자 결정: 이번 PR에 포함). 라이트는 값이 거의 같아 변화 없음 확인
 
+- [2026-11-23] 저장·분석 중 모달 닫힘: AppModal `busy` — Esc·X·바깥 클릭 무시, 취소 버튼 disabled (사용자 결정). X는 숨기지 않음(DS에 비활성화 옵션 없음, hideClose 토글 시 포커스 소실). 지원 등록 툴바의 "링크로 시도" 추출 중은 범위 밖(후속 판단)
+- [2026-11-23] `testTimeout` 15초: 전체 병렬 실행에서 DS userEvent 테스트 2건이 부하로 5.4~5.7초(단독 1~2초) → 상향. QA 재측정에선 5초로도 통과해 범위 축소 여지는 기록만
+
 ### 🐛 트러블슈팅
 
 <!-- /note troubleshoot 으로 추가 -->
@@ -151,3 +154,23 @@
 **다음 작업**
 
 - AppModal busy (저장·분석 중 닫기 막기) → Round 2
+
+### Commit — 2026-11-23 01:03
+
+- Message: `Fix:#104 저장·분석 중 모달 닫힘 막기 및 테스트 시간 제한 조정`
+- Issue: `#104`
+- Jira: `미사용`
+
+**변경 요약**
+
+- (/review-converge Round 2) AppModal `busy` + 사용처 4곳 연결(지원 등록·전형 편집 saving, 공고 붙여넣기 extracting, 시트 가져오기 isApplying), 취소 버튼 disabled
+- vitest `testTimeout: 15000`
+- AppModal 스토리 busy argTypes, JSDoc 정리. 테스트: AppModal busy 1건, StageEditDialog 저장 중 1건 (713건 통과)
+
+**결정 로그**
+
+- 리뷰 Round 2: Blocker 0. 시트 가져오기 낮은 화면 이중 스크롤·testTimeout 범위 축소·DS 탭 방향키(선택 없음) 개선 제안은 남김
+
+**다음 작업**
+
+- /review-converge Round 3 (확인)

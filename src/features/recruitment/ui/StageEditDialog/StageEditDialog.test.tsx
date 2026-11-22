@@ -60,4 +60,13 @@ describe("StageEditDialog (AppModal 사용처)", () => {
 
     expect(onClose).toHaveBeenCalledTimes(2);
   });
+
+  it("저장 중이면 Esc로 닫히지 않고 취소도 비활성이다", async () => {
+    const { onClose } = renderDialog({ saving: true });
+
+    await userEvent.keyboard("{Escape}");
+
+    expect(onClose).not.toHaveBeenCalled();
+    expect(screen.getByRole("button", { name: "취소" })).toBeDisabled();
+  });
 });

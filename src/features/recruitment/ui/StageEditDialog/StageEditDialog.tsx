@@ -52,12 +52,13 @@ export function StageEditDialog({
       title={STAGE_LABELS[stageKey]}
       description={companyName}
       onClose={onClose}
+      busy={saving}
       formId={STAGE_EDIT_FORM_ID}
       onSubmit={handleSubmit}
       bodyClassName="gap-4"
       footer={
         <>
-          <AppButton type="button" variant="outline" color="gray" size="sm" onClick={onClose}>
+          <AppButton type="button" variant="outline" color="gray" size="sm" onClick={onClose} disabled={saving}>
             취소
           </AppButton>
           <AppButton type="submit" form={STAGE_EDIT_FORM_ID} size="sm" loading={saving}>
