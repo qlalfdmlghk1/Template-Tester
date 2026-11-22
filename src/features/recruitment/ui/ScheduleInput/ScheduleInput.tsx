@@ -89,15 +89,18 @@ export function ScheduleInput({ value, defaultYear, onChange }: ScheduleInputPro
             type="time"
             aria-label="시각 (선택)"
             value={splitDateTime(value.at).time}
-            // 날짜 없이 시각만 넣으면 "T14:30" 같은 값이 저장되므로 날짜를 고른 뒤에만 입력받는다
-            disabled={!splitDateTime(value.at).date}
-            onChange={(event) =>
-              onChange({
-                ...value,
-                at: joinDateTime(splitDateTime(value.at).date, event.target.value),
-                hasTime: Boolean(event.target.value),
-              })
-            }
+            // 날짜 없이 시각만 넣으면 "T14:30" 같은 값이 저장되므로 날짜를 고른 뒤에만 입력받는다.
+            // 단 예전에 그렇게 저장된 값은 지울 수 있도록 남은 시각이 있으면 열어 둔다
+            disabled={!splitDateTime(value.at).date && !splitDateTime(value.at).time}
+            onChange={(event) => {
+              const { date } = splitDateTime(value.at);
+              onChange(
+                date
+                  ? { ...value, at: joinDateTime(date, event.target.value), hasTime: Boolean(event.target.value) }
+                  : // 날짜 없는 예전 시각("T14:30")은 건드리면 지운다 — 날짜 없이 시각만 남기지 않는다
+                    { ...value, at: "", hasTime: false },
+              );
+            }}
             // DS에 시간 입력이 없어 기본 input을 두고, 옆 AppDatePicker(size="sm", 32px)와 높이·테두리를 맞춘다
             className="w-[110px] h-8 px-3 text-sm bg-surface text-text border border-border rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
           />

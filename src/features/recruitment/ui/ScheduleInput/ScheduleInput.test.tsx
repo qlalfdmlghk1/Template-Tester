@@ -60,6 +60,17 @@ describe("ScheduleInput", () => {
       );
       expect(screen.getByLabelText("시각 (선택)")).toBeEnabled();
     });
+
+    it("예전에 날짜 없이 저장된 시각(\"T14:30\")은 지울 수 있고, 지우면 빈 일정이 된다", async () => {
+      const onChange = vi.fn();
+      render(<ScheduleInput value={{ kind: "exact", at: "T14:30", hasTime: true }} defaultYear={2026} onChange={onChange} />);
+
+      const time = screen.getByLabelText("시각 (선택)");
+      expect(time).toBeEnabled();
+      await userEvent.clear(time);
+
+      expect(onChange).toHaveBeenLastCalledWith({ kind: "exact", at: "", hasTime: false });
+    });
   });
 
   describe("기간", () => {

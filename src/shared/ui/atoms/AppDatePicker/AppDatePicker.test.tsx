@@ -98,6 +98,7 @@ describe("AppDatePicker (DS 어댑터)", () => {
     const pickNth = async (n: number) => {
       await userEvent.click(trigger());
       const day = document.querySelectorAll<HTMLElement>("button[data-key]:not(:disabled)")[n];
+      expect(day, `열린 달력에 고를 수 있는 ${n + 1}번째 칸이 없음`).toBeDefined();
       const key = day.dataset.key!;
       await userEvent.click(day);
       return key.replace(/-/g, ".");
