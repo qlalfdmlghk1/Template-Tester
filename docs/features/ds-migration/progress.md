@@ -4,7 +4,7 @@
 
 - 이슈: #98 (Refactor)
 - 브랜치: refactor/98-ds-migration
-- 단계: PR 리뷰 대기 (Toast·ConfirmDialog·Switch·Select·TextInput·DatePicker·Button·Chip·Pagination 완료)
+- 단계: 리뷰 완료 → PR #99 dev 머지. 후속은 #100 (DS v0.4.0 업그레이드·리뷰 후속)
 - 마지막 업데이트: 2026-11-22
 
 ---
@@ -30,9 +30,11 @@
 - [x] AppChip → DS `Badge` 어댑터
 - [x] AppPagination → DS `Pagination` 어댑터
 
+- [x] PR 리뷰 (4 페르소나, Blocker 0 · Non-blocker 14) → 후속 #100으로 분리
+
 ### 🚧 진행 중
 
-- [ ] PR 리뷰
+- (없음)
 
 ### 📝 결정 로그
 
@@ -55,6 +57,7 @@
 - [2026-11-22] AppChip: DS `Badge`(soft·sm 20px, 기존 py-0.5 text-xs와 같은 높이)로 교체. primary→brand, secondary→neutral, success→success, error→danger. DS에 없는 warning(시간초과)·purple(언어)은 **앱 색 유지**(사용자 결정) — neutral 위에 `.app-chip--warning/purple` 클래스 + index.css(앱 `--color-yellow/purple-100·700`, 다크 값 자동). 글자 굵기 600·글자 11px로 바뀜
 - [2026-11-22] AppPagination: DS `Pagination`으로 교체. 양옆 번호 2개(`siblingCount={2}`)로 기존 생략 규칙 유지, size sm(32). 동작 차이 — "이전"/"다음" 글자 버튼 → 화살표 아이콘 버튼(aria-label 유지), 현재 페이지는 파란 채움 → 옅은 brand 바탕. 페이지 크기 선택(`onPageSizeChange`)은 사용처가 없지만 props 호환을 위해 AppSelect로 유지
 - [2026-11-22] `@choi/ds/fonts.css`(Pretendard)는 import하지 않음 — 프로젝트 본문이 시스템 폰트라 DS 컴포넌트만 Pretendard가 되면 혼재. DS `--font-sans` 폴백(system-ui)으로 렌더. 폰트 통일은 토큰 통일 이슈에서 함께 처리
+- [2026-11-22] PR #99 리뷰: Blocker 0, 테스트 655건 통과. 결정 로그에 없던 동작 변화 2건 발견 — ① DS Select·Datepicker 트리거가 label prop 없이 자기 id를 `aria-labelledby`로 써서 바깥 `<label>`이 무시됨(지원 등록 "기업" 셀렉트는 접근성 회귀) ② DS Datepicker에 지우기가 없어 고른 날짜를 비울 수 없음. DS `main`에 v0.4.0(cws-ds#1~5 해결: aria-label·portal·z-index 토큰·hover 수정)이 있으나 태그 전이고 컴포넌트 이름이 `App*` 접두사로 바뀌어 어댑터 import 전부 수정 필요 → **PR #99는 그대로 머지하고 v0.4.0 업그레이드·①②·리뷰 Non-blocker는 #100에서 처리**(사용자 결정)
 
 ### 🐛 트러블슈팅
 
@@ -65,9 +68,9 @@
 ### ⏭️ 남은 작업
 
 - [ ] textarea → DS Textarea (이번 범위 제외)
-- [ ] 전체 테스트 실행 시 일부 테스트 5초 타임아웃 (단독 실행은 통과) — testTimeout 조정 여부 결정
-- [ ] Storybook 스토리 갱신
-- [ ] 영향받는 테스트 수정
+- [ ] #100 — DS v0.4.0 업그레이드(커밋 해시 고정), 라벨 연결, 날짜 지우기, 오버라이드 CSS 정리, 코드 정리, 테스트·스토리 보강(ScheduleInput·AppSelect 너비·AppPagination), testTimeout 결정
+- [x] 어댑터별 스토리·테스트 갱신 (AppPagination 스토리는 #100)
+- [x] 전체 테스트 655건 통과 (리뷰 시 실행, 5초 타임아웃 재현 안 됨)
 
 ### Commit — 2026-11-22
 
@@ -294,3 +297,22 @@
 **다음 작업**
 
 - PR #99 리뷰
+
+### Commit — 2026-11-22 20:08
+
+- Message: `Docs:#98 PR 리뷰 결과와 후속 이슈 분리 기록`
+- Issue: `#98`
+- Jira: `미사용`
+
+**변경 요약**
+
+- PR #99 리뷰 결과(Blocker 0 · Non-blocker 14, 테스트 655건 통과)와 발견된 동작 변화 2건을 결정 로그에 기록
+- 남은 작업을 후속 이슈 #100으로 정리, 현재 단계 갱신
+
+**결정 로그**
+
+- DS v0.4.0 업그레이드(라벨 연결·portal·z-index 토큰)와 날짜 지우기, 리뷰 Non-blocker는 #100에서 처리하고 PR #99는 그대로 머지
+
+**다음 작업**
+
+- PR #99 머지 → #100 착수
