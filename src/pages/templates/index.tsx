@@ -43,6 +43,7 @@ export default function TemplateTesterPage() {
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-medium text-textSecondary">카테고리</label>
               <AppSelect
+                ariaLabel="카테고리"
                 value={currentCategory}
                 onChange={(value) => handleCategoryChange(value as Category)}
                 options={categories.map((cat) => ({
@@ -58,6 +59,7 @@ export default function TemplateTesterPage() {
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-medium text-textSecondary">템플릿</label>
               <AppSelect
+                ariaLabel="템플릿"
                 value={selectedTemplateId}
                 onChange={(value) => handleTemplateChange(value as string)}
                 options={templates.map((template) => ({

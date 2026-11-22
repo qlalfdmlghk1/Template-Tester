@@ -40,6 +40,7 @@ function joinDateTime(date: string, time: string): string {
  *
  * 시트에 정확한 일시·기간·러프 표기가 섞여 있어 한 가지 입력 위젯으로는 담기지 않는다.
  * 종류를 먼저 고르고 그에 맞는 입력만 보여준다.
+ * 모달 안 스크롤 영역에서 쓰이므로 목록·달력은 portal로 띄워 잘리지 않게 한다.
  */
 export function ScheduleInput({ value, defaultYear, onChange }: ScheduleInputProps) {
   const kind: ScheduleKind = value?.kind ?? "none";
@@ -58,6 +59,8 @@ export function ScheduleInput({ value, defaultYear, onChange }: ScheduleInputPro
       <AppSelect
         size="sm"
         fullWidth
+        portal
+        ariaLabel="일정 종류"
         options={KIND_OPTIONS}
         value={kind}
         onChange={(next) => handleKindChange(String(next) as ScheduleKind)}
@@ -69,12 +72,16 @@ export function ScheduleInput({ value, defaultYear, onChange }: ScheduleInputPro
             size="sm"
             placeholder="일자"
             ariaLabel="일자"
+            clearable
+            portal
             value={splitDateTime(value.at).date}
             onChange={(date) =>
-              onChange({
-                ...value,
-                at: joinDateTime(date, splitDateTime(value.at).time),
-              })
+              onChange(
+                date
+                  ? { ...value, at: joinDateTime(date, splitDateTime(value.at).time) }
+                  : // 날짜를 지우면 시각만 남은 "T14:30" 같은 값이 되지 않도록 시각도 함께 비운다
+                    { ...value, at: "", hasTime: false },
+              )
             }
             className="flex-1 min-w-0"
           />
@@ -101,6 +108,8 @@ export function ScheduleInput({ value, defaultYear, onChange }: ScheduleInputPro
             size="sm"
             placeholder="시작일"
             ariaLabel="시작일"
+            clearable
+            portal
             value={value.start}
             onChange={(start) => onChange({ ...value, start })}
             className="flex-1 min-w-0"
@@ -110,6 +119,8 @@ export function ScheduleInput({ value, defaultYear, onChange }: ScheduleInputPro
             size="sm"
             placeholder="종료일"
             ariaLabel="종료일"
+            clearable
+            portal
             value={value.end}
             onChange={(end) => onChange({ ...value, end })}
             className="flex-1 min-w-0"
@@ -130,6 +141,8 @@ export function ScheduleInput({ value, defaultYear, onChange }: ScheduleInputPro
           <AppSelect
             size="sm"
             width="90px"
+            portal
+            ariaLabel="월"
             options={MONTH_OPTIONS}
             value={value.month}
             onChange={(next) => onChange({ ...value, month: Number(next) })}
@@ -137,6 +150,8 @@ export function ScheduleInput({ value, defaultYear, onChange }: ScheduleInputPro
           <AppSelect
             size="sm"
             width="110px"
+            portal
+            ariaLabel="시기"
             options={ROUGH_PARTS.map((part) => ({
               value: part,
               label: ROUGH_PART_LABELS[part],

@@ -74,3 +74,26 @@
 **다음 작업**
 
 - 라벨 연결·portal·날짜 지우기·테스트 커밋
+
+### Commit — 2026-11-22 21:20
+
+- Message: `Feat:#100 셀렉트·날짜 칸 접근성 이름·portal·날짜 지우기 추가`
+- Issue: `#100`
+- Jira: `미사용`
+
+**변경 요약**
+
+- AppSelect·AppDatePicker에 `ariaLabel`·`ariaLabelledby`·`portal`, AppDatePicker에 `clearable`과 빈 값 리마운트
+- 사용처 셀렉트 31곳 전부 이름 부여 (바깥 라벨은 id + ariaLabelledby, 필터·정렬은 ariaLabel)
+- 지원 등록·전형 편집 모달 안 셀렉트·달력 portal, 채용 일정 날짜 지우기(정확한 일시는 시각도 함께 비움)
+- 오답노트·템플릿 등록 import를 barrel로 통일
+- 테스트: ScheduleInput 신규 5, AppDatePicker +5, AppSelect +6, AppPagination +2 / 스토리: AppPagination 신설, AppSelect·AppDatePicker 새 props
+
+**결정 로그**
+
+- 오답노트 날짜(오늘 기본값·필수)에는 clearable을 켜지 않음
+- testTimeout은 올리지 않음 (전체 673건 통과, 타임아웃 재현 안 됨)
+
+**다음 작업**
+
+- PR(dev) 생성 및 리뷰

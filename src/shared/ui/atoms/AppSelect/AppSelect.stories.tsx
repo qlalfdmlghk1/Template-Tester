@@ -36,6 +36,9 @@ const meta: Meta<typeof AppSelect> = {
       control: "text",
       description: "하단 에러 문구 (error 상태일 때만 표시)",
     },
+    ariaLabel: { control: "text", description: "화면 라벨이 없을 때 스크린리더용 이름. 트리거가 '이름, 현재 값'으로 읽힌다" },
+    ariaLabelledby: { control: "text", description: "이름이 되는 바깥 라벨 요소의 id (ariaLabel보다 우선)" },
+    portal: { control: "boolean", description: "목록을 document.body에 띄움 — 모달 안 스크롤 영역에서 잘릴 때" },
   },
   args: {
     options: defaultOptions,
@@ -393,3 +396,45 @@ export const PageSizeSelector: Story = {
     },
   },
 };
+
+// --- 접근성 이름 ---
+
+export const AccessibleName: Story = {
+  render: () => <AccessibleNameDemo />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "라벨 없는 필터는 ariaLabel, 바깥 라벨이 있으면 라벨 id를 ariaLabelledby로 연결한다. DS 트리거는 버튼이라 `<label htmlFor>`만으로는 이름이 붙지 않는다.",
+      },
+      source: {
+        code: `<AppSelect ariaLabel="플랫폼" placeholder="플랫폼" options={options} value={v} onChange={setV} />
+
+<label id="company-label" htmlFor="company">기업</label>
+<AppSelect id="company" ariaLabelledby="company-label" options={options} value={v} onChange={setV} />`,
+      },
+    },
+  },
+};
+
+function AccessibleNameDemo() {
+  const [filter, setFilter] = useState<SelectValue | undefined>();
+  const [company, setCompany] = useState<SelectValue | undefined>();
+  return (
+    <div className="flex flex-col gap-4 w-72">
+      <AppSelect ariaLabel="플랫폼" placeholder="플랫폼" options={defaultOptions} value={filter} onChange={(v) => setFilter(v as SelectValue)} />
+      <div className="flex flex-col gap-1">
+        <label id="story-company-label" htmlFor="story-company" className="text-sm font-medium text-text">
+          기업
+        </label>
+        <AppSelect
+          id="story-company"
+          ariaLabelledby="story-company-label"
+          options={defaultOptions}
+          value={company}
+          onChange={(v) => setCompany(v as SelectValue)}
+        />
+      </div>
+    </div>
+  );
+}

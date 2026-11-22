@@ -17,7 +17,10 @@ const meta: Meta<typeof AppDatePicker> = {
     min: { control: "text", description: "고를 수 있는 가장 이른 날짜" },
     max: { control: "text", description: "고를 수 있는 가장 늦은 날짜" },
     label: { control: "text", description: "위 라벨" },
-    ariaLabel: { control: "text", description: "화면 라벨이 없을 때 스크린리더용 이름 (래퍼 group에 붙음)" },
+    ariaLabel: { control: "text", description: "화면 라벨이 없을 때 스크린리더용 이름. 트리거가 '이름, 현재 값'으로 읽힌다" },
+    ariaLabelledby: { control: "text", description: "이름이 되는 바깥 라벨 요소의 id (ariaLabel보다 우선)" },
+    clearable: { control: "boolean", description: "값이 있을 때 옆에 지우기 버튼. 누르면 onChange(\"\")" },
+    portal: { control: "boolean", description: "달력을 document.body에 띄움 — 모달 안 스크롤 영역에서 잘릴 때" },
     error: { control: "text", description: "에러 문구" },
     disabled: { control: "boolean", description: "비활성화" },
     align: { control: "select", options: ["start", "end"], description: "달력 정렬" },
@@ -95,6 +98,38 @@ export const Disabled: Story = {
     docs: {
       source: {
         code: `<AppDatePicker value={date} onChange={setDate} disabled />`,
+      },
+    },
+  },
+};
+
+export const Clearable: Story = {
+  render: () => <ControlledDemo initial="2026-11-22" ariaLabel="종료일" clearable />,
+  parameters: {
+    docs: {
+      description: { story: "값이 있으면 오른쪽에 지우기 버튼이 생긴다. 미정으로 되돌릴 수 있어야 하는 날짜(채용 일정 등)에 쓴다." },
+      source: {
+        code: `<AppDatePicker value={end} onChange={setEnd} ariaLabel="종료일" clearable />`,
+      },
+    },
+  },
+};
+
+export const LabelledBy: Story = {
+  render: () => (
+    <div className="flex flex-col gap-1 w-72">
+      <label id="story-date-label" htmlFor="story-date" className="text-sm font-medium text-text">
+        날짜
+      </label>
+      <ControlledDemo initial="" id="story-date" ariaLabelledby="story-date-label" />
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: { story: "DS 트리거는 버튼이라 `<label htmlFor>`만으로는 이름이 붙지 않는다. 라벨에 id를 주고 ariaLabelledby로 연결한다." },
+      source: {
+        code: `<label id="date-label" htmlFor="date">날짜</label>
+<AppDatePicker id="date" ariaLabelledby="date-label" value={date} onChange={setDate} />`,
       },
     },
   },

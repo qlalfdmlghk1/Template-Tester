@@ -82,6 +82,7 @@ export function RecruitmentToolbar({
       />
 
       <AppSelect
+        ariaLabel="반기"
         size="sm"
         fullWidth
         className={FILTER_WIDTH}
@@ -92,6 +93,7 @@ export function RecruitmentToolbar({
       />
 
       <AppSelect
+        ariaLabel="직무"
         size="sm"
         fullWidth
         className={FILTER_WIDTH}
@@ -103,6 +105,7 @@ export function RecruitmentToolbar({
       />
 
       <AppSelect
+        ariaLabel="상태"
         size="sm"
         fullWidth
         className={FILTER_WIDTH}
@@ -117,6 +120,7 @@ export function RecruitmentToolbar({
       />
 
       <AppSelect
+        ariaLabel="분류"
         size="sm"
         fullWidth
         className={FILTER_WIDTH}

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -29,9 +30,77 @@ describe("AppDatePicker (DS 어댑터)", () => {
     expect(container.firstElementChild).not.toHaveClass("w-full");
   });
 
-  it("ariaLabel을 주면 래퍼가 그 이름의 group이 된다", () => {
+  it("ariaLabel은 트리거의 이름이 되어 '이름, 현재 값'으로 읽힌다", () => {
     render(<AppDatePicker value="2026-11-22" ariaLabel="시작일" onChange={vi.fn()} />);
 
-    expect(screen.getByRole("group", { name: "시작일" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^시작일/ })).toHaveAccessibleName("시작일 2026.11.22");
+  });
+
+  it("ariaLabelledby로 바깥 라벨을 트리거 이름으로 연결한다", () => {
+    render(
+      <>
+        <span id="date-label">날짜</span>
+        <AppDatePicker value="" ariaLabelledby="date-label" placeholder="날짜 선택" onChange={vi.fn()} />
+      </>,
+    );
+
+    expect(screen.getByRole("button", { name: /^날짜/ })).toBeInTheDocument();
+  });
+
+  describe("clearable", () => {
+    it("값이 있을 때만 지우기 버튼을 보여주고, 누르면 빈 문자열로 onChange를 부른다", async () => {
+      const onChange = vi.fn();
+      const { rerender } = render(<AppDatePicker value="" ariaLabel="종료일" clearable onChange={onChange} />);
+      expect(screen.queryByRole("button", { name: "종료일 지우기" })).not.toBeInTheDocument();
+
+      rerender(<AppDatePicker value="2026-11-22" ariaLabel="종료일" clearable onChange={onChange} />);
+      await userEvent.click(screen.getByRole("button", { name: "종료일 지우기" }));
+
+      expect(onChange).toHaveBeenCalledWith("");
+    });
+
+    it("disabled면 지우기 버튼을 숨긴다", () => {
+      render(<AppDatePicker value="2026-11-22" clearable disabled onChange={vi.fn()} />);
+
+      expect(screen.queryByRole("button", { name: "날짜 지우기" })).not.toBeInTheDocument();
+    });
+
+    it("지우면 빈 칸(placeholder)으로 돌아가고 포커스는 날짜 트리거로 간다", async () => {
+      function Harness() {
+        const [value, setValue] = useState("2026-11-22");
+        return <AppDatePicker value={value} ariaLabel="일자" placeholder="일자 선택" clearable onChange={setValue} />;
+      }
+      render(<Harness />);
+
+      await userEvent.click(screen.getByRole("button", { name: "일자 지우기" }));
+
+      const trigger = screen.getByRole("button", { name: /^일자/ });
+      expect(trigger).toHaveTextContent("일자 선택");
+      expect(trigger).toHaveFocus();
+    });
+  });
+
+  it("비운 뒤 다시 고른 날짜가 이전에 고른 날짜로 돌아가지 않는다", async () => {
+    function Harness() {
+      const [value, setValue] = useState("");
+      return (
+        <>
+          <AppDatePicker value={value} ariaLabel="일자" placeholder="일자 선택" onChange={setValue} />
+          <button type="button" onClick={() => setValue("")}>
+            외부에서 비우기
+          </button>
+        </>
+      );
+    }
+    render(<Harness />);
+
+    await userEvent.click(screen.getByRole("button", { name: /^일자/ }));
+    const day = document.querySelector<HTMLElement>("[data-key]:not([aria-disabled='true'])");
+    await userEvent.click(day!);
+    expect(screen.getByRole("button", { name: /^일자/ })).not.toHaveTextContent("일자 선택");
+
+    await userEvent.click(screen.getByRole("button", { name: "외부에서 비우기" }));
+
+    expect(screen.getByRole("button", { name: /^일자/ })).toHaveTextContent("일자 선택");
   });
 });
