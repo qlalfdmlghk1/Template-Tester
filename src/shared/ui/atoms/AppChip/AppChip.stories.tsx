@@ -8,7 +8,8 @@ const meta: Meta<typeof AppChip> = {
     variant: {
       control: "select",
       options: ["primary", "secondary", "success", "warning", "error", "purple"],
-      description: "칩 색상 변형",
+      description:
+        "칩 색상 변형. DS Badge(soft·sm) 기반 — primary→brand, secondary→neutral, success→success, error→danger. warning·purple은 DS에 없어 앱 색을 덧입힘",
     },
     children: { control: "text", description: "칩 텍스트" },
     className: { control: "text", description: "추가 CSS 클래스" },

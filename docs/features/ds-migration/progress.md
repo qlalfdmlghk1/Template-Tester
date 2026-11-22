@@ -4,7 +4,7 @@
 
 - 이슈: #98 (Refactor)
 - 브랜치: refactor/98-ds-migration
-- 단계: PR 리뷰 대기 (Toast·ConfirmDialog·Switch·Select·TextInput·DatePicker·Button 완료, Chip·Pagination 남음)
+- 단계: PR 리뷰 대기 (Toast·ConfirmDialog·Switch·Select·TextInput·DatePicker·Button·Chip·Pagination 완료)
 - 마지막 업데이트: 2026-11-22
 
 ---
@@ -27,6 +27,8 @@
 - [x] DS 입력창 회색·테두리·hover 색을 앱에 맞춤
 - [x] AppTextInput·AppDatePicker 추가 + 앱 전체 입력창 교체 (한 줄 입력 43곳·날짜 5곳)
 - [x] AppButton → DS `Button` 어댑터
+- [x] AppChip → DS `Badge` 어댑터
+- [x] AppPagination → DS `Pagination` 어댑터
 
 ### 🚧 진행 중
 
@@ -50,6 +52,8 @@
 - [2026-11-22] AppTextInput·AppDatePicker는 래퍼 div가 너비 클래스를 받고 DS 필드는 항상 꽉 채움 — DS 필드 자체 너비(280px/100%)가 Tailwind보다 뒤에 로드돼 너비 클래스가 지기 때문. 날짜 값은 기존과 같은 'YYYY-MM-DD'라 저장 데이터 변경 없음. DS Datepicker가 aria-label을 받지 않아 `ariaLabel`은 래퍼 `role="group"`에 붙임 (cws-ds#4). 연봉 칸은 DS가 aria-describedby를 덮어써 "만원"·안내를 `suffix`·`helperText`로 옮김 (cws-ds#5)
 - [2026-11-22] size 기준: 같은 줄 셀렉트에 맞춤. 오답노트 작성·수정 폼과 목록 필터·정렬·검색은 md(40), 채용 화면(필터·모달 폼·일정)은 sm(32)
 - [2026-11-22] AppButton: DS 모양 4종으로 매핑 — solid 파랑→primary, 빨강→danger, 회색→secondary / outline→secondary / ghost→ghost. outline·ghost의 파란 글자는 DS처럼 중립색, **빨간 글자만 유지**(삭제 버튼 4곳, 사용자 결정) — `.app-btn--danger` 클래스 + index.css(`--danger-ink`, hover `--danger-soft`). 높이 lg 50→48 · md 44→40 · sm 36→32, xs는 sm(32). props 유지로 94곳 사용처 수정 없음
+- [2026-11-22] AppChip: DS `Badge`(soft·sm 20px, 기존 py-0.5 text-xs와 같은 높이)로 교체. primary→brand, secondary→neutral, success→success, error→danger. DS에 없는 warning(시간초과)·purple(언어)은 **앱 색 유지**(사용자 결정) — neutral 위에 `.app-chip--warning/purple` 클래스 + index.css(앱 `--color-yellow/purple-100·700`, 다크 값 자동). 글자 굵기 600·글자 11px로 바뀜
+- [2026-11-22] AppPagination: DS `Pagination`으로 교체. 양옆 번호 2개(`siblingCount={2}`)로 기존 생략 규칙 유지, size sm(32). 동작 차이 — "이전"/"다음" 글자 버튼 → 화살표 아이콘 버튼(aria-label 유지), 현재 페이지는 파란 채움 → 옅은 brand 바탕. 페이지 크기 선택(`onPageSizeChange`)은 사용처가 없지만 props 호환을 위해 AppSelect로 유지
 - [2026-11-22] `@choi/ds/fonts.css`(Pretendard)는 import하지 않음 — 프로젝트 본문이 시스템 폰트라 DS 컴포넌트만 Pretendard가 되면 혼재. DS `--font-sans` 폴백(system-ui)으로 렌더. 폰트 통일은 토큰 통일 이슈에서 함께 처리
 
 ### 🐛 트러블슈팅
@@ -60,7 +64,6 @@
 
 ### ⏭️ 남은 작업
 
-- [ ] AppChip / AppPagination 어댑터 교체
 - [ ] textarea → DS Textarea (이번 범위 제외)
 - [ ] 전체 테스트 실행 시 일부 테스트 5초 타임아웃 (단독 실행은 통과) — testTimeout 조정 여부 결정
 - [ ] Storybook 스토리 갱신
@@ -270,3 +273,24 @@
 **다음 작업**
 
 - PR 리뷰 (사용자가 다음 날 진행), AppChip·AppPagination
+
+### Commit — 2026-11-22 16:26
+
+- Message: `Refactor:#98 AppChip·AppPagination을 DS Badge·Pagination 기반으로 교체`
+- Issue: `#98`
+- Jira: `미사용`
+
+**변경 요약**
+
+- `AppChip`: DS `Badge`(soft·sm) 래퍼로 교체. variant → tone 매핑, warning·purple은 `.app-chip--*` 클래스로 앱 색을 덧입힘 (`index.css`)
+- `AppPagination`: 자체 번호 계산·버튼을 DS `Pagination`(`siblingCount={2}`, sm)으로 교체. 페이지 크기 선택은 AppSelect로 유지
+- 어댑터 테스트 `AppChip.test.tsx`(7건)·`AppPagination.test.tsx`(5건) 추가, Chip 스토리 설명 갱신
+
+**결정 로그**
+
+- warning·purple 칩은 DS 4색으로 줄이지 않고 앱 색 유지 (사용자 결정)
+- 화면 확인 후 칩 글자(11px·600)와 페이지네이션 변화(화살표 버튼·옅은 현재 페이지 표시) 채택
+
+**다음 작업**
+
+- PR #99 리뷰
