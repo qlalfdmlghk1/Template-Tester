@@ -3,6 +3,7 @@ import PageHeader from "@/shared/ui/molecules/PageHeader/PageHeader";
 import AppFallback from "@/shared/ui/molecules/AppFallback/AppFallback";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
 import { AppConfirmDialog } from "@/shared/ui/molecules/AppConfirmDialog";
+import { AppCheckbox } from "@/shared/ui/atoms/AppCheckbox";
 import { useCompanyForm } from "../../model/useCompanyForm";
 import { useCompanyDelete } from "../../model/useCompanyDelete";
 import { CompanyResearchForm } from "../CompanyResearchForm/CompanyResearchForm";
@@ -100,21 +101,13 @@ export function CompanyResearchEditor({
         onCancel={remove.cancel}
       >
         {remove.applicationCount > 0 && (
-          <label className="flex items-start gap-2 px-3 py-2 bg-gray-100 rounded-sm cursor-pointer">
-            <input
-              type="checkbox"
-              checked={remove.cascade}
-              onChange={(event) => remove.setCascade(event.target.checked)}
-              className="mt-0.5"
-            />
-            <span className="text-sm text-text">
-              이 기업의 지원 건 {remove.applicationCount}건도 함께 삭제
-              <span className="block text-xs text-textSecondary">
-                체크하지 않으면 지원 건은 남지만 기업 정보가 끊겨 「(삭제된 기업)」으로
-                표시됩니다.
-              </span>
-            </span>
-          </label>
+          <AppCheckbox
+            checked={remove.cascade}
+            onChange={(event) => remove.setCascade(event.target.checked)}
+            className="w-full px-3 py-2 bg-gray-100 rounded-sm"
+            label={`이 기업의 지원 건 ${remove.applicationCount}건도 함께 삭제`}
+            description="체크하지 않으면 지원 건은 남지만 기업 정보가 끊겨 「(삭제된 기업)」으로 표시됩니다."
+          />
         )}
       </AppConfirmDialog>
     </>

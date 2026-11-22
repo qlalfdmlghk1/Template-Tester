@@ -1,4 +1,4 @@
-import { AppPagination as DsPagination } from "@choi/ds";
+import { AppPagination } from "@choi/ds";
 import AppSelect from "@/shared/ui/atoms/AppSelect/AppSelect";
 
 interface AppPaginationProps {
@@ -10,7 +10,7 @@ interface AppPaginationProps {
   pageSizeOptions?: number[];
 }
 
-export default function AppPagination({
+function AppPaginationAdapter({
   currentPage,
   totalPages,
   pageSize,
@@ -37,7 +37,7 @@ export default function AppPagination({
       )}
 
       {totalPages > 1 && (
-        <DsPagination
+        <AppPagination
           pageCount={totalPages}
           page={currentPage}
           onChange={onPageChange}
@@ -48,3 +48,7 @@ export default function AppPagination({
     </div>
   );
 }
+
+AppPaginationAdapter.displayName = "AppPagination";
+
+export default AppPaginationAdapter;

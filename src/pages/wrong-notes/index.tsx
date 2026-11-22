@@ -11,6 +11,9 @@ import { AppDatePicker } from "@/shared/ui/atoms/AppDatePicker";
 import AppPagination from "@/shared/ui/molecules/AppPagination/AppPagination";
 import ToggleButtonGroup from "@/shared/ui/atoms/ToggleButtonGroup/ToggleButtonGroup";
 import CodeEditor from "@/shared/ui/molecules/CodeEditor/CodeEditor";
+import { AppTextarea } from "@/shared/ui/atoms/AppTextarea";
+import { AppCheckbox } from "@/shared/ui/atoms/AppCheckbox";
+import { AppTabs } from "@/shared/ui/atoms/AppTabs";
 import { usePagination } from "@/shared/lib/usePagination";
 import { useWrongNoteFilter } from "@/entities/wrong-note/model/useWrongNoteFilter";
 import { useWrongNoteList } from "@/entities/wrong-note/model/useWrongNoteList";
@@ -137,33 +140,21 @@ export default function WrongNotes() {
             <PageHeader title="오답노트" />
 
             {/* 탭 */}
-            <div className="flex items-end gap-2 mt-6 border-b border-border">
-              <button
-                onClick={() => setActiveTab("list")}
-                className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
-                  activeTab === "list"
-                    ? "text-primary border-primary"
-                    : "text-textSecondary border-transparent hover:text-text"
-                }`}
-              >
-                목록
-              </button>
-              <button
-                onClick={() => setActiveTab("friends")}
-                className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
-                  activeTab === "friends"
-                    ? "text-primary border-primary"
-                    : "text-textSecondary border-transparent hover:text-text"
-                }`}
-              >
-                친구 오답노트
-              </button>
-              <div className="ml-auto pb-2">
+            <AppTabs
+              className="mt-6"
+              ariaLabel="오답노트 보기"
+              items={[
+                { value: "list", label: "목록" },
+                { value: "friends", label: "친구 오답노트" },
+              ]}
+              value={activeTab}
+              onChange={setActiveTab}
+              actions={
                 <AppButton variant="outline" size="sm" onClick={() => setActiveTab("write")}>
                   + 작성
                 </AppButton>
-              </div>
-            </div>
+              }
+            />
           </>
         )}
 
@@ -654,16 +645,18 @@ export default function WrongNotes() {
 
             <div className="flex flex-col sm:flex-row w-full gap-4 sm:justify-between sm:items-start">
               <div className="w-full sm:w-[50%]">
-                <label className="block text-sm font-medium text-text leading-[30px] mb-2">제출 결과</label>
+                <p id="wrong-note-result-label" className="block text-sm font-medium text-text leading-[30px] mb-2">제출 결과</p>
                 <ToggleButtonGroup
+                  ariaLabelledby="wrong-note-result-label"
                   options={resultOptions}
                   value={formData.result}
                   onChange={(value) => handleInputChange("result", value)}
                 />
               </div>
               <div className="w-full sm:w-[50%]">
-                <label className="block text-sm font-medium text-text leading-[30px] mb-2">작성 이유 (복수 선택 가능)</label>
+                <p id="wrong-note-tags-label" className="block text-sm font-medium text-text leading-[30px] mb-2">작성 이유 (복수 선택 가능)</p>
                 <ToggleButtonGroup
+                  ariaLabelledby="wrong-note-tags-label"
                   options={tagOptions}
                   value={formData.tags}
                   onChange={(value) => handleInputChange("tags", value)}
@@ -750,29 +743,23 @@ export default function WrongNotes() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-text leading-[30px] mb-2">코멘트</label>
-              <textarea
+              <label htmlFor="wrong-note-comment" className="block text-sm font-medium text-text leading-[30px] mb-2">코멘트</label>
+              <AppTextarea
+                id="wrong-note-comment"
                 value={formData.comment}
                 onChange={(e) => handleInputChange("comment", e.target.value)}
                 placeholder="이 문제에서 배운 점, 주의할 점 등을 기록하세요..."
                 rows={4}
-                className="w-full px-4 py-3 text-sm outline outline-1 outline-border rounded-md bg-surface text-text
-                  hover:outline-primary focus:outline-primary focus:ring-2 focus:ring-blue-200 transition-all resize-none"
+                resize="none"
               />
             </div>
 
-            <div className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                id="share"
-                checked={formData.share}
-                onChange={(e) => handleInputChange("share", e.target.checked)}
-                className="w-4 h-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
-              />
-              <label htmlFor="share" className="text-sm text-text cursor-pointer">
-                다른 사용자에게 공유하기
-              </label>
-            </div>
+            <AppCheckbox
+              id="share"
+              checked={formData.share}
+              onChange={(e) => handleInputChange("share", e.target.checked)}
+              label="다른 사용자에게 공유하기"
+            />
 
             <div className="flex justify-end pt-4">
               <AppButton variant="solid" size="lg" onClick={handleSubmit} disabled={isSubmitting}>

@@ -1,5 +1,5 @@
 import { type ReactNode, type CSSProperties, type ButtonHTMLAttributes } from "react";
-import { AppButton as DsButton } from "@choi/ds";
+import { AppButton } from "@choi/ds";
 import { cn } from "@/shared/lib/cn";
 
 export type AppButtonVariant = "solid" | "outline" | "ghost";
@@ -39,7 +39,7 @@ function toDsVariant(variant: AppButtonVariant, color: AppButtonColor): DsVarian
  * 버튼 — DS `AppButton` 어댑터.
  * 테두리·투명 버튼의 빨강은 삭제처럼 위험한 동작 표시라 유지한다 (index.css `.app-btn--danger`).
  */
-export default function AppButton({
+function AppButtonAdapter({
   variant = "solid",
   color = "primary",
   size = "md",
@@ -55,7 +55,7 @@ export default function AppButton({
   const mergedStyle: CSSProperties | undefined = width ? { ...style, width } : style;
 
   return (
-    <DsButton
+    <AppButton
       {...props}
       type={type}
       variant={toDsVariant(variant, color)}
@@ -67,3 +67,7 @@ export default function AppButton({
     />
   );
 }
+
+AppButtonAdapter.displayName = "AppButton";
+
+export default AppButtonAdapter;

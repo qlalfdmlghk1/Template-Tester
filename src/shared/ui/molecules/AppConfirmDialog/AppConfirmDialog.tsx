@@ -1,4 +1,4 @@
-import { AppConfirmModal as DsConfirmModal } from "@choi/ds";
+import { AppConfirmModal } from "@choi/ds";
 
 export interface AppConfirmDialogProps {
   open: boolean;
@@ -34,7 +34,7 @@ export default function AppConfirmDialog({
   onCancel,
 }: AppConfirmDialogProps) {
   return (
-    <DsConfirmModal
+    <AppConfirmModal
       open={open}
       title={title}
       description={
@@ -48,6 +48,6 @@ export default function AppConfirmDialog({
       onClose={onCancel}
     >
       {children}
-    </DsConfirmModal>
+    </AppConfirmModal>
   );
 }

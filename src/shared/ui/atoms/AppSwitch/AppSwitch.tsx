@@ -1,4 +1,4 @@
-import { AppSwitch as DsSwitch } from "@choi/ds";
+import { AppSwitch } from "@choi/ds";
 
 export type AppSwitchSize = "sm" | "md";
 
@@ -18,7 +18,7 @@ export interface AppSwitchProps {
  * 체크박스와 달리 "제출해야 적용되는 선택"이 아니라 "지금 켜져 있는 상태"를 나타낸다.
  * 목록 필터처럼 누르는 즉시 결과가 바뀌는 곳에 쓴다.
  */
-export default function AppSwitch({
+function AppSwitchAdapter({
   checked,
   onChange,
   label,
@@ -27,7 +27,7 @@ export default function AppSwitch({
   id,
 }: AppSwitchProps) {
   return (
-    <DsSwitch
+    <AppSwitch
       id={id}
       checked={checked}
       onChange={(event) => onChange(event.target.checked)}
@@ -37,3 +37,7 @@ export default function AppSwitch({
     />
   );
 }
+
+AppSwitchAdapter.displayName = "AppSwitch";
+
+export default AppSwitchAdapter;
