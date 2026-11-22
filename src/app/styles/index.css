@@ -262,8 +262,10 @@
 /* ===== @choi/ds v0.4.0 오버라이드 =====
    DS CSS(@choi/ds/styles.css)가 이 파일보다 뒤에 로드되므로 `html`로 specificity를 올린다.
    content에 없는 DS 클래스라 @layer 안에 두면 Tailwind가 지우므로 레이어 밖에 둔다.
-   DS 버전을 올릴 때는 아래 토큰(--z-*, --line-strong, --ink-muted, --danger-*)과 클래스(.cds-input, .cds-btn, .cds-badge)가
-   그대로 있는지 확인하고, Storybook·dev 서버에서 모달·토스트 겹침 순서와 입력창 테두리, 빨간 버튼, 노랑·보라 칩을 본다. */
+   DS 버전을 올릴 때는 아래 토큰(--z-*, --surface, --surface-raised, --surface-hover, --line, --line-strong, --ink, --ink-muted,
+   --danger-*)과 클래스(.cds-input, .cds-btn, .cds-badge, .cds-tabs__list, .cds-modal__panel)가 그대로 있는지 확인하고,
+   Storybook·dev 서버에서 모달·토스트 겹침 순서, 입력창 테두리, 빨간 버튼, 노랑·보라 칩, 탭 밑줄, 시트 가져오기 모달 너비,
+   다크 테마의 모달·입력창 바탕을 본다. */
 
 /* 오버레이 층위 — DS 기본값(modal 100 · portal 150 · toast 200 · tooltip 300)이 프로젝트 navbar(1000)보다 낮아
    tailwind.config.js의 zIndex 스케일에 맞춘다. portal로 띄운 목록·달력은 모달 위에 와야 한다. [유지: 앱 층위 정책] */

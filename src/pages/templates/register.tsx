@@ -80,8 +80,9 @@ export default function TemplateRegistration() {
           </div>
 
           <div className="mb-6">
-            <label className="block text-sm font-semibold text-text mb-2">템플릿 설명</label>
+            <label htmlFor="template-description" className="block text-sm font-semibold text-text mb-2">템플릿 설명</label>
             <AppTextarea
+              id="template-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="예: 정렬되어 있는 리스트에서 탐색 범위를 절반씩 좁혀가며 데이터를 탐색하는 알고리즘"

@@ -105,6 +105,8 @@ export function XlsxImportDialog({
           color="gray"
           loading={isReading}
           onClick={() => fileInputRef.current?.click()}
+          // DS 모달은 본문 첫 입력에 포커스를 주는데 그게 숨긴 file input이라 포커스가 밖에 남는다 — 이 버튼으로 받는다
+          data-autofocus
         >
           xlsx 파일 선택
         </AppButton>
@@ -134,7 +136,8 @@ export function XlsxImportDialog({
       )}
 
       {rows.length > 0 && (
-        <div className="flex-1 min-h-0 overflow-auto border border-border rounded-md">
+        <div className="max-h-96 overflow-auto border border-border rounded-md">
+          {/* 표 안에서 스크롤해야 머리줄(sticky)이 붙어 있다 — 모달 본문 스크롤에 맡기면 머리줄이 함께 밀려 올라간다 */}
           <table className="w-full border-collapse text-sm">
             <thead className="sticky top-0 bg-gray-100">
               <tr>

@@ -166,6 +166,7 @@ export default function DailySession() {
                 /* 서술형 */
                 <div className="mt-5">
                   <AppTextarea
+                    aria-label="서술형 답안"
                     value={textAnswer}
                     onChange={(e) => setTextAnswer(e.target.value)}
                     disabled={revealed}

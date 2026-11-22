@@ -1,3 +1,4 @@
+// DS AppChip(누르는 선택형 칩) — 앱 atoms/AppChip(DS AppBadge 기반 표시용 배지)과 다른 컴포넌트다
 import { AppChip } from "@choi/ds";
 
 interface ToggleOption {

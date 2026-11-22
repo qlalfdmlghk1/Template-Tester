@@ -743,8 +743,9 @@ export default function WrongNotes() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-text leading-[30px] mb-2">코멘트</label>
+              <label htmlFor="wrong-note-comment" className="block text-sm font-medium text-text leading-[30px] mb-2">코멘트</label>
               <AppTextarea
+                id="wrong-note-comment"
                 value={formData.comment}
                 onChange={(e) => handleInputChange("comment", e.target.value)}
                 placeholder="이 문제에서 배운 점, 주의할 점 등을 기록하세요..."

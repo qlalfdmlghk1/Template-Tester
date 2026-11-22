@@ -49,12 +49,18 @@ export const Default: Story = {
     const [value, setValue] = useState<string | string[]>("all");
     return <ToggleButtonGroup {...args} value={value} onChange={setValue} />;
   },
+  parameters: {
+    docs: { source: { code: `<ToggleButtonGroup ariaLabelledby="result-label" options={options} value={result} onChange={setResult} />` } },
+  },
 };
 
 export const NoneSelected: Story = {
   render: (args) => {
     const [value, setValue] = useState<string | string[]>("");
     return <ToggleButtonGroup {...args} value={value} onChange={setValue} />;
+  },
+  parameters: {
+    docs: { source: { code: `<ToggleButtonGroup options={options} value="" onChange={setResult} />  // 켜진 칩을 다시 누르면 ""로 해제` } },
   },
 };
 
@@ -73,6 +79,9 @@ export const Multiple: Story = {
       </div>
     );
   },
+  parameters: {
+    docs: { source: { code: `<ToggleButtonGroup multiple ariaLabelledby="tags-label" options={tagOptions} value={tags} onChange={setTags} />` } },
+  },
 };
 
 export const MultipleNoneSelected: Story = {
@@ -80,6 +89,9 @@ export const MultipleNoneSelected: Story = {
   render: (args) => {
     const [value, setValue] = useState<string | string[]>([]);
     return <ToggleButtonGroup {...args} value={value} onChange={setValue} />;
+  },
+  parameters: {
+    docs: { source: { code: `<ToggleButtonGroup multiple options={tagOptions} value={[]} onChange={setTags} />` } },
   },
 };
 
@@ -90,5 +102,8 @@ export const ManyOptions: Story = {
   render: (args) => {
     const [value, setValue] = useState<string | string[]>("react");
     return <ToggleButtonGroup {...args} value={value} onChange={setValue} />;
+  },
+  parameters: {
+    docs: { source: { code: `<ToggleButtonGroup options={manyOptions} value={selected} onChange={setSelected} />  // 넘치면 줄바꿈` } },
   },
 };

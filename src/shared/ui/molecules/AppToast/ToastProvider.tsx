@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+// DS useToast({ toast }) — 같은 폴더의 앱 useToast({ showToast }, ./useToast)와 다른 훅이다. 이 파일에서만 DS 것을 쓴다
 import { AppToastProvider, useToast } from "@choi/ds";
 import { TOAST_TONE, ToastContext } from "./ToastContext";
 import type { ToastType } from "./ToastContext";

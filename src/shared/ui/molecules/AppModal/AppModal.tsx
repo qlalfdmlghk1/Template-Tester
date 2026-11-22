@@ -20,7 +20,7 @@ export interface AppModalProps {
   footer?: ReactNode;
   children?: ReactNode;
   /**
-   * 넘기면 본문을 이 id의 form으로 감싼다. footer는 form 밖에 그려지므로
+   * 넘기면 본문을 이 id의 form으로 감싼다. 기본 제출은 어댑터가 항상 막는다. footer는 form 밖에 그려지므로
    * 저장 버튼은 `type="submit" form={formId}`로 연결한다.
    */
   formId?: string;
@@ -55,7 +55,10 @@ function AppModalAdapter({
 }: AppModalProps) {
   const body = (
     <>
-      {toolbar && <div className="flex flex-wrap justify-end gap-1">{toolbar}</div>}
+      {/* 0·"" 같은 값이 그대로 찍히지 않게 노드가 있을 때만 그린다 */}
+      {toolbar != null && toolbar !== false && toolbar !== "" && (
+        <div className="flex flex-wrap justify-end gap-1">{toolbar}</div>
+      )}
       {children}
     </>
   );
@@ -73,7 +76,15 @@ function AppModalAdapter({
       footer={footer}
     >
       {formId ? (
-        <form id={formId} onSubmit={onSubmit} className={bodyClass}>
+        <form
+          id={formId}
+          // 브라우저 기본 제출(현재 URL로 GET → 새로고침, name 붙은 값이 쿼리에 실림)은 항상 막는다
+          onSubmit={(event) => {
+            event.preventDefault();
+            onSubmit?.(event);
+          }}
+          className={bodyClass}
+        >
           {body}
         </form>
       ) : (

@@ -128,3 +128,26 @@
 **다음 작업**
 
 - PR(dev) + /review-converge
+
+### Commit — 2026-11-23 00:33
+
+- Message: `Fix:#104 탭 키보드 접근·시트 가져오기 포커스·표 머리줄 고정 회귀 수정`
+- Issue: `#104`
+- Jira: `미사용`
+
+**변경 요약**
+
+- (/review-converge Round 1 자동 반영) AppTabs: value가 items에 없으면 첫 활성 탭이 Tab을 받게 보정(DS가 모두 tabIndex=-1) — 데일리 "+ 새 주제" 화면 키보드 회귀
+- 시트 가져오기: 열릴 때 DS가 숨긴 file input에 포커스를 주려다 실패해 포커스가 밖에 남던 문제 → 파일 선택 버튼 `data-autofocus`. 표는 `max-h-96` 안에서 스크롤해 머리줄 sticky 복구
+- 여러 줄 입력 4곳 접근성 이름(오답노트 코멘트 2곳·템플릿 설명 label 연결, 데일리 서술형 aria-label)
+- AppModal: form 기본 제출 항상 차단, toolbar 0/"" 렌더 방지
+- DS AppChip·useToast 이름 겹침 주석, index.css DS 버전업 점검 목록에 새 토큰·클래스 추가
+- 테스트: StageEditDialog 사용처 4건(저장 form 연결·메모 공백·취소/Esc), AppTabs 키보드 2건, AppTextarea 값 단언. ToggleButtonGroup 스토리 예시 코드 (711건 통과)
+
+**결정 로그**
+
+- 리뷰 Round 1: Blocker 0. 저장 중 닫힘은 사용자 결정으로 "닫히지 않게"(Round 2에서 반영). prop 표기·Atomic 분류·탭 value 타입·스토리 Controls·모달 4곳 사용처 테스트 확장은 남김
+
+**다음 작업**
+
+- AppModal busy (저장·분석 중 닫기 막기) → Round 2
