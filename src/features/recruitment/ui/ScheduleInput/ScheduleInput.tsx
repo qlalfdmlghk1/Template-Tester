@@ -101,8 +101,9 @@ export function ScheduleInput({ value, defaultYear, onChange }: ScheduleInputPro
                     { ...value, at: "", hasTime: false },
               );
             }}
-            // DS에 시간 입력이 없어 기본 input을 두고, 옆 AppDatePicker(size="sm", 32px)와 높이·테두리를 맞춘다
-            className="w-[110px] h-8 px-3 text-sm bg-surface text-text border border-border rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+            // DS에 시간 입력이 없어 기본 input을 두고, 옆 AppDatePicker(size="sm", 32px)와 높이·테두리를 맞춘다.
+            // 너비 128px: 한국어 로캘 표시("오후 03:00" + 시계 아이콘)가 잘리지 않는 최소 폭(125px) 이상
+            className="w-32 shrink-0 h-8 px-3 text-sm bg-surface text-text border border-border rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
           />
         </div>
       )}
