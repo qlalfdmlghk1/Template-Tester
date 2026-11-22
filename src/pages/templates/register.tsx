@@ -3,7 +3,7 @@ import Navbar from "@/widgets/Navbar/Navbar";
 import PageHeader from "@/shared/ui/molecules/PageHeader/PageHeader";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
 import AppSelect from "@/shared/ui/atoms/AppSelect/AppSelect";
-import AppTextInput from "@/shared/ui/atoms/AppTextInput/AppTextInput";
+import { AppTextInput } from "@/shared/ui/atoms/AppTextInput";
 import CodeEditor from "@/shared/ui/molecules/CodeEditor/CodeEditor";
 import { useTemplateForm } from "@/entities/template/model/useTemplateForm";
 import type { Category, TemplateType } from "@/entities/template/model/template.type";
@@ -50,8 +50,10 @@ export default function TemplateRegistration() {
 
         <div className="bg-surface p-6 rounded-lg border border-border mb-6">
           <div className="mb-6">
-            <label className="block text-sm font-semibold text-text mb-2">카테고리</label>
+            <label id="template-category-label" htmlFor="template-category" className="block text-sm font-semibold text-text mb-2">카테고리</label>
             <AppSelect
+              id="template-category"
+              ariaLabelledby="template-category-label"
               value={currentCategory}
               onChange={(value) => setCurrentCategory(value as Category)}
               options={[

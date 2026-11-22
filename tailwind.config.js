@@ -113,7 +113,10 @@ export default {
         navbar: '1000',
         // 모달은 네비게이션까지 덮어야 한다
         modal: '1100',
+        // DS portal로 띄운 목록·달력 — 모달 안에서 열려도 모달 위에 온다
+        portal: '1150',
         toast: '1200',
+        tooltip: '1300',
       },
     },
   },

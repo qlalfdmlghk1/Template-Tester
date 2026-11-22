@@ -34,6 +34,12 @@ export interface AppSelectProps {
   hint?: string;
   /** HTML id 속성 */
   id?: string;
+  /** 화면에 라벨이 없을 때 스크린리더가 읽을 이름 (예: "플랫폼"). 트리거는 "이름, 현재 값"으로 읽힌다 */
+  ariaLabel?: string;
+  /** 이름이 되는 바깥 라벨 요소의 id. ariaLabel보다 우선 — DS 트리거는 버튼이라 `<label htmlFor>`로는 이름이 붙지 않는다 */
+  ariaLabelledby?: string;
+  /** 목록을 document.body에 띄운다. 모달 본문처럼 스크롤되는 영역 안에서 목록이 잘릴 때 켠다 */
+  portal?: boolean;
   /** 추가 CSS 클래스 */
   className?: string;
 }

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { ToastProvider as DsToastProvider, useToast as useDsToast } from "@choi/ds";
+import { AppToastProvider as DsToastProvider, useToast as useDsToast } from "@choi/ds";
 import { TOAST_TONE, ToastContext } from "./ToastContext";
 import type { ToastType } from "./ToastContext";
 

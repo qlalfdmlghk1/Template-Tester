@@ -1,5 +1,6 @@
-import { Badge } from "@choi/ds";
-import type { BadgeProps } from "@choi/ds";
+import { AppBadge as DsBadge } from "@choi/ds";
+import type { AppBadgeProps as DsBadgeProps } from "@choi/ds";
+import { cn } from "@/shared/lib/cn";
 
 export type ChipVariant = "primary" | "secondary" | "success" | "warning" | "error" | "purple";
 
@@ -9,8 +10,8 @@ interface ChipProps {
   className?: string;
 }
 
-/** DS Badge 의미 색(4가지)에 대응. warning·purple은 DS에 없어 앱 색 클래스를 덧입힌다 (index.css `.app-chip--*`). */
-const toneMap: Record<ChipVariant, NonNullable<BadgeProps["tone"]>> = {
+/** DS AppBadge 의미 색(4가지)에 대응. warning·purple은 DS에 없어 앱 색 클래스를 덧입힌다 (index.css `.app-chip--*`). */
+const toneMap: Record<ChipVariant, NonNullable<DsBadgeProps["tone"]>> = {
   primary: "brand",
   secondary: "neutral",
   success: "success",
@@ -24,12 +25,10 @@ const appColorClass: Partial<Record<ChipVariant, string>> = {
   purple: "app-chip--purple",
 };
 
-export default function AppChip({ variant = "primary", children, className = "" }: ChipProps) {
-  const classes = [appColorClass[variant], className].filter(Boolean).join(" ");
-
+export default function AppChip({ variant = "primary", children, className }: ChipProps) {
   return (
-    <Badge tone={toneMap[variant]} variant="soft" size="sm" className={classes || undefined}>
+    <DsBadge tone={toneMap[variant]} variant="soft" size="sm" className={cn(appColorClass[variant], className) || undefined}>
       {children}
-    </Badge>
+    </DsBadge>
   );
 }

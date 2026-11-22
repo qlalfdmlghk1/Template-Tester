@@ -143,7 +143,9 @@ export function ApplicationFormDialog({
           )}
 
           <div>
+            {/* DS 셀렉트 트리거는 버튼이라 htmlFor로는 이름이 붙지 않는다 — 클릭은 htmlFor, 이름은 aria-labelledby */}
             <label
+              id="company-label"
               htmlFor="company"
               className="block mb-1 text-sm font-medium text-text"
             >
@@ -151,6 +153,8 @@ export function ApplicationFormDialog({
             </label>
             <AppSelect
               id="company"
+              ariaLabelledby="company-label"
+              portal
               size="sm"
               fullWidth
               disabled={form.isEdit}

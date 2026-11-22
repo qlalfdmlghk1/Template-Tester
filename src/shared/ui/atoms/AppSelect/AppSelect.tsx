@@ -1,4 +1,4 @@
-import { MultiSelect, Select } from "@choi/ds";
+import { AppMultiSelect as DsMultiSelect, AppSelect as DsSelect } from "@choi/ds";
 import { cn } from "@/shared/lib/cn";
 import type { AppSelectProps, SelectOption, SelectValue } from "./AppSelect.type";
 
@@ -12,10 +12,10 @@ function fromKey(options: SelectOption[], key: string): SelectValue {
 }
 
 /**
- * 단일·다중 선택 셀렉트 — DS `Select` / `MultiSelect` 어댑터.
+ * 단일·다중 선택 셀렉트 — DS `AppSelect` / `AppMultiSelect` 어댑터.
  *
  * `width`도 `fullWidth`도 없으면 부모 너비를 채운다 (DS 기본 280px 대신 기존 동작 유지).
- * 드롭다운 목록은 portal 없이 트리거 아래에 붙으므로, 스크롤 영역 안에서는 그 영역 안에 그려진다.
+ * 드롭다운 목록은 기본적으로 트리거 아래에 붙는다. 스크롤 영역 안에서 잘리면 `portal`을 켠다.
  */
 export default function AppSelect({
   options = [],
@@ -30,6 +30,9 @@ export default function AppSelect({
   fullWidth = false,
   hint,
   id,
+  ariaLabel,
+  ariaLabelledby,
+  portal = false,
   className = "",
 }: AppSelectProps) {
   const dsOptions = options.map((option) => ({
@@ -42,6 +45,9 @@ export default function AppSelect({
 
   const common = {
     id,
+    "aria-label": ariaLabel,
+    "aria-labelledby": ariaLabelledby,
+    portal,
     options: dsOptions,
     placeholder,
     size,
@@ -56,7 +62,7 @@ export default function AppSelect({
       style={width && !fullWidth ? { width, flexShrink: 0 } : undefined}
     >
       {multiple ? (
-        <MultiSelect
+        <DsMultiSelect
           {...common}
           // 좁은 필터 칸에서 태그가 넘치지 않도록 하나만 보이고 나머지는 +N
           maxTagCount={1}
@@ -64,7 +70,7 @@ export default function AppSelect({
           onChange={(keys) => onChange?.(keys.map((key) => fromKey(options, key)))}
         />
       ) : (
-        <Select
+        <DsSelect
           {...common}
           // undefined면 DS가 비제어로 전환되므로 빈 문자열로 제어 상태를 유지한다
           value={value === undefined || value === null || Array.isArray(value) ? "" : toKey(value)}

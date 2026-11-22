@@ -4,8 +4,8 @@ import PageHeader from "@/shared/ui/molecules/PageHeader/PageHeader";
 import AppButton from "@/shared/ui/atoms/AppButton/AppButton";
 import AppChip from "@/shared/ui/atoms/AppChip/AppChip";
 import AppSelect from "@/shared/ui/atoms/AppSelect/AppSelect";
-import AppTextInput from "@/shared/ui/atoms/AppTextInput/AppTextInput";
-import AppDatePicker from "@/shared/ui/atoms/AppDatePicker/AppDatePicker";
+import { AppTextInput } from "@/shared/ui/atoms/AppTextInput";
+import { AppDatePicker } from "@/shared/ui/atoms/AppDatePicker";
 import ToggleButtonGroup from "@/shared/ui/atoms/ToggleButtonGroup/ToggleButtonGroup";
 import CodeEditor from "@/shared/ui/molecules/CodeEditor/CodeEditor";
 import { useWrongNoteDetail } from "@/entities/wrong-note/model/useWrongNoteDetail";
@@ -109,8 +109,10 @@ export default function WrongNoteDetail() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-text leading-[30px] mb-2">언어</label>
+                <label id="wrong-note-language-label" htmlFor="wrong-note-language" className="block text-sm font-medium text-text leading-[30px] mb-2">언어</label>
                 <AppSelect
+                  id="wrong-note-language"
+                  ariaLabelledby="wrong-note-language-label"
                   options={languageOptions}
                   value={formData.language}
                   onChange={(value) => handleInputChange("language", value as string)}
@@ -134,16 +136,19 @@ export default function WrongNoteDetail() {
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
-                <label htmlFor="wrong-note-date" className="block text-sm font-medium text-text leading-[30px] mb-2">날짜</label>
+                <label id="wrong-note-date-label" htmlFor="wrong-note-date" className="block text-sm font-medium text-text leading-[30px] mb-2">날짜</label>
                 <AppDatePicker
                   id="wrong-note-date"
+                  ariaLabelledby="wrong-note-date-label"
                   value={formData.date}
                   onChange={(value) => handleInputChange("date", value)}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-text leading-[30px] mb-2">알고리즘</label>
+                <label id="wrong-note-category-label" htmlFor="wrong-note-category" className="block text-sm font-medium text-text leading-[30px] mb-2">알고리즘</label>
                 <AppSelect
+                  id="wrong-note-category"
+                  ariaLabelledby="wrong-note-category-label"
                   options={categoryOptions}
                   value={formData.category}
                   onChange={(value) => handleInputChange("category", value as string)}
@@ -152,8 +157,10 @@ export default function WrongNoteDetail() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-text leading-[30px] mb-2">플랫폼</label>
+                <label id="wrong-note-platform-label" htmlFor="wrong-note-platform" className="block text-sm font-medium text-text leading-[30px] mb-2">플랫폼</label>
                 <AppSelect
+                  id="wrong-note-platform"
+                  ariaLabelledby="wrong-note-platform-label"
                   options={platformOptions}
                   value={formData.platform}
                   onChange={(value) => handlePlatformChange(value as string)}
@@ -162,8 +169,10 @@ export default function WrongNoteDetail() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-text leading-[30px] mb-2">등급</label>
+                <label id="wrong-note-grade-label" htmlFor="wrong-note-grade" className="block text-sm font-medium text-text leading-[30px] mb-2">등급</label>
                 <AppSelect
+                  id="wrong-note-grade"
+                  ariaLabelledby="wrong-note-grade-label"
                   options={getGradeOptions()}
                   value={formData.grade}
                   onChange={(value) => handleInputChange("grade", value as string)}
