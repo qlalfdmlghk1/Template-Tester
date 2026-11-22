@@ -1,4 +1,4 @@
-import { ConfirmModal } from "@choi/ds";
+import { AppConfirmModal as DsConfirmModal } from "@choi/ds";
 
 export interface AppConfirmDialogProps {
   open: boolean;
@@ -17,7 +17,7 @@ export interface AppConfirmDialogProps {
 }
 
 /**
- * 되돌리기 어려운 동작 전에 한 번 묻는 모달 — DS `ConfirmModal` 어댑터.
+ * 되돌리기 어려운 동작 전에 한 번 묻는 모달 — DS `AppConfirmModal` 어댑터.
  * 포커스(danger면 취소 버튼), Esc 닫기, 처리 중 닫기 차단은 DS가 맡는다.
  * DS 정책상 바깥(어두운 막) 클릭으로는 닫히지 않는다.
  */
@@ -34,7 +34,7 @@ export default function AppConfirmDialog({
   onCancel,
 }: AppConfirmDialogProps) {
   return (
-    <ConfirmModal
+    <DsConfirmModal
       open={open}
       title={title}
       description={
@@ -48,6 +48,6 @@ export default function AppConfirmDialog({
       onClose={onCancel}
     >
       {children}
-    </ConfirmModal>
+    </DsConfirmModal>
   );
 }
