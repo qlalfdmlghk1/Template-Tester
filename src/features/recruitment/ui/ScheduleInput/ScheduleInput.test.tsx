@@ -49,6 +49,17 @@ describe("ScheduleInput", () => {
 
       expect(onChange).toHaveBeenCalledWith({ kind: "exact", at: "", hasTime: false });
     });
+    it("날짜가 없으면 시각을 입력할 수 없다 (\"T14:30\" 같은 값 방지)", () => {
+      const { rerender } = render(
+        <ScheduleInput value={{ kind: "exact", at: "", hasTime: false }} defaultYear={2026} onChange={vi.fn()} />,
+      );
+      expect(screen.getByLabelText("시각 (선택)")).toBeDisabled();
+
+      rerender(
+        <ScheduleInput value={{ kind: "exact", at: "2026-11-10", hasTime: false }} defaultYear={2026} onChange={vi.fn()} />,
+      );
+      expect(screen.getByLabelText("시각 (선택)")).toBeEnabled();
+    });
   });
 
   describe("기간", () => {

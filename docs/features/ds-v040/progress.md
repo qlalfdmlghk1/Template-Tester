@@ -97,3 +97,24 @@
 **다음 작업**
 
 - PR(dev) 생성 및 리뷰
+
+### Commit — 2026-11-22 21:39
+
+- Message: `Fix:#100 날짜 없는 시각 입력과 날짜 칸 포커스 잔여 플래그 수정`
+- Issue: `#100`
+- Jira: `미사용`
+
+**변경 요약**
+
+- (/review-converge Round 1 자동 반영) ScheduleInput 정확한 일시: 날짜가 없으면 시각 입력 비활성 — 시각만 넣으면 `"T14:30"`이 저장되던 남은 경로 차단
+- AppDatePicker: 트리거를 `useId` id로 찾아 포커스(DOM 셀렉터 의존 제거), 포커스 플래그는 지우기 다음 렌더에서 무조건 내림. JSDoc에 "onChange 반영 필수", "clearable은 바깥 라벨과"
+- 템플릿 페이지 카테고리·템플릿 라벨을 id + ariaLabelledby로 (결정 로그와 일치)
+- 테스트: 날짜 칸 선택자 `button[data-key]:not(:disabled)`, 다시 고르기·포커스 유지 검증, 부모가 비우기 거부 케이스, 날짜 없을 때 시각 비활성 (675건 통과)
+
+**결정 로그**
+
+- 리뷰 Round 1: Blocker 0. 명백한 오류 4건만 자동 반영, 설계·취향 항목(prop 표기 통일, clearLabel, portal·multiple 테스트, 스토리 Controls 등)은 남김
+
+**다음 작업**
+
+- /review-converge Round 2

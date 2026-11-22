@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { AppDatepicker as DsDatepicker, AppIconButton as DsIconButton } from "@choi/ds";
 import { X } from "lucide-react";
 import { cn } from "@/shared/lib/cn";
@@ -36,6 +36,8 @@ export interface AppDatePickerProps {
 
 /**
  * 날짜 하나를 고르는 입력 — DS `AppDatepicker`(단일 모드) 어댑터.
+ * onChange로 받은 값은 value에 반영해야 한다. DS가 빈 값(null)을 비제어로 다뤄, 반영하지 않으면 화면과 상태가 어긋난다.
+ * clearable의 지우기 버튼은 트리거 옆에 붙으므로 label prop 대신 바깥 라벨(ariaLabelledby)과 함께 쓴다.
  * 값 형식이 기존 input type="date"와 같은 'YYYY-MM-DD' 문자열이라 저장 데이터는 바뀌지 않는다.
  * 너비는 AppTextInput과 같이 래퍼 div가 받는다.
  */
@@ -47,6 +49,7 @@ export default function AppDatePicker({
   ariaLabelledby,
   clearable = false,
   disabled,
+  id,
   className,
   ...props
 }: AppDatePickerProps) {
@@ -60,14 +63,17 @@ export default function AppDatePicker({
     if (prevValue && !value) setResetKey((key) => key + 1);
   }
 
-  // 지우기 버튼이 사라지면 포커스가 body로 빠지므로 날짜 트리거로 옮긴다
-  const wrapperRef = useRef<HTMLDivElement>(null);
+  // 지우기 버튼이 사라지면 포커스가 body로 빠지므로 날짜 트리거로 옮긴다.
+  // DS는 id를 트리거 button에 붙이므로 id로 찾는다. 플래그는 지우기 다음 렌더에서 무조건 내려,
+  // 부모가 비우기를 반영하지 않았을 때 나중의 상관없는 비우기에서 포커스를 가져가지 않게 한다.
+  const autoId = useId();
+  const triggerId = id ?? autoId;
   const focusAfterClear = useRef(false);
   useEffect(() => {
     if (!focusAfterClear.current) return;
     focusAfterClear.current = false;
-    wrapperRef.current?.querySelector<HTMLButtonElement>("button[aria-haspopup]")?.focus();
-  }, [resetKey]);
+    if (!value) document.getElementById(triggerId)?.focus();
+  });
 
   const handleClear = () => {
     focusAfterClear.current = true;
@@ -77,7 +83,7 @@ export default function AppDatePicker({
   const showClear = clearable && Boolean(value) && !disabled;
 
   return (
-    <div ref={wrapperRef} className={cn("w-full", clearable && "flex items-start gap-1", className)}>
+    <div className={cn("w-full", clearable && "flex items-start gap-1", className)}>
       <DsDatepicker
         key={resetKey}
         mode="single"
@@ -86,6 +92,7 @@ export default function AppDatePicker({
         onChange={(next) => {
           if (typeof next === "string") onChange(next);
         }}
+        id={triggerId}
         size={size}
         disabled={disabled}
         aria-label={ariaLabel}

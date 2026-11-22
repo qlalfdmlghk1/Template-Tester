@@ -80,7 +80,7 @@ describe("AppDatePicker (DS 어댑터)", () => {
     });
   });
 
-  it("비운 뒤 다시 고른 날짜가 이전에 고른 날짜로 돌아가지 않는다", async () => {
+  it("빈 값에서 고르면 포커스가 트리거에 남고, 비운 뒤 다시 고른 날짜가 이전 날짜로 돌아가지 않는다", async () => {
     function Harness() {
       const [value, setValue] = useState("");
       return (
@@ -93,14 +93,48 @@ describe("AppDatePicker (DS 어댑터)", () => {
       );
     }
     render(<Harness />);
+    const trigger = () => screen.getByRole("button", { name: /^일자/ });
+    // 값이 비어 있으면 달력이 오늘이 있는 달로 열리므로, 열린 달에서 고를 수 있는 칸을 그대로 쓴다
+    const pickNth = async (n: number) => {
+      await userEvent.click(trigger());
+      const day = document.querySelectorAll<HTMLElement>("button[data-key]:not(:disabled)")[n];
+      const key = day.dataset.key!;
+      await userEvent.click(day);
+      return key.replace(/-/g, ".");
+    };
 
-    await userEvent.click(screen.getByRole("button", { name: /^일자/ }));
-    const day = document.querySelector<HTMLElement>("[data-key]:not([aria-disabled='true'])");
-    await userEvent.click(day!);
-    expect(screen.getByRole("button", { name: /^일자/ })).not.toHaveTextContent("일자 선택");
+    const first = await pickNth(0);
+    expect(trigger()).toHaveTextContent(first);
+    expect(trigger()).toHaveFocus();
 
     await userEvent.click(screen.getByRole("button", { name: "외부에서 비우기" }));
+    expect(trigger()).toHaveTextContent("일자 선택");
 
-    expect(screen.getByRole("button", { name: /^일자/ })).toHaveTextContent("일자 선택");
+    const second = await pickNth(1);
+    expect(trigger()).toHaveTextContent(second);
+    expect(trigger()).not.toHaveTextContent(first);
+  });
+
+  it("부모가 비우기를 반영하지 않으면, 나중에 다른 이유로 비워질 때 포커스를 가져가지 않는다", async () => {
+    function Harness() {
+      const [value, setValue] = useState("2026-11-22");
+      const [tick, setTick] = useState(0);
+      return (
+        <>
+          {/* 지우기(onChange(""))를 무시하고 다시 렌더만 한다 */}
+          <AppDatePicker value={value} ariaLabel="일자" clearable onChange={() => setTick(tick + 1)} />
+          <button type="button" onClick={() => setValue("")}>
+            외부에서 비우기
+          </button>
+        </>
+      );
+    }
+    render(<Harness />);
+
+    await userEvent.click(screen.getByRole("button", { name: "일자 지우기" }));
+    const external = screen.getByRole("button", { name: "외부에서 비우기" });
+    await userEvent.click(external);
+
+    expect(external).toHaveFocus();
   });
 });

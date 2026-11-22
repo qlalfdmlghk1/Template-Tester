@@ -89,6 +89,8 @@ export function ScheduleInput({ value, defaultYear, onChange }: ScheduleInputPro
             type="time"
             aria-label="시각 (선택)"
             value={splitDateTime(value.at).time}
+            // 날짜 없이 시각만 넣으면 "T14:30" 같은 값이 저장되므로 날짜를 고른 뒤에만 입력받는다
+            disabled={!splitDateTime(value.at).date}
             onChange={(event) =>
               onChange({
                 ...value,
@@ -97,7 +99,7 @@ export function ScheduleInput({ value, defaultYear, onChange }: ScheduleInputPro
               })
             }
             // DS에 시간 입력이 없어 기본 input을 두고, 옆 AppDatePicker(size="sm", 32px)와 높이·테두리를 맞춘다
-            className="w-[110px] h-8 px-3 text-sm bg-surface text-text border border-border rounded-md"
+            className="w-[110px] h-8 px-3 text-sm bg-surface text-text border border-border rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
           />
         </div>
       )}
